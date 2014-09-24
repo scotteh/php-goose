@@ -1,5 +1,5 @@
 {
-    "name": "scotteh/goose",
+    "name": "scotteh/php-goose",
     "type": "library",
     "description": "Html Content / Article Extractor & Web Scrapping library written in PHP",
     "keywords": ["scraper", "http"],
