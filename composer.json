@@ -1,0 +1,28 @@
+{
+    "name": "scotteh/goose",
+    "type": "library",
+    "description": "Html Content / Article Extractor & Web Scrapping library written in PHP",
+    "keywords": ["scraper", "http"],
+    "homepage": "https://github.com/scotteh/Goose",
+    "license": "Apache-2.0",
+    "authors": [
+        {
+            "name": "Andrew Scott",
+            "email": "andrew@andrewscott.net.au"
+        }
+    ],
+    "require": {
+        "php": ">=5.4.0",
+        "fabpot/goutte": "2.*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Goose\\": "src/"
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0-dev"
+        }
+    }
+}
