@@ -19,6 +19,51 @@ The php version was rewritten by:
 
  - Andrew Scott
 
+##Requirement
+
+ - PHP 5.4 or later
+ - PSR-4 compatible autoloader
+
+##Install
+
+This library is designed to be installed via [Composer](https://getcomposer.org/doc/).
+
+Add the dependency into your projects composer.json.
+```
+{
+  "require": {
+    "scotteh/php-goose": "dev-master"
+  }
+}
+```
+
+Download the composer.phar
+``` bash
+curl -sS https://getcomposer.org/installer | php
+```
+
+Install the library.
+``` bash
+php composer.phar install
+```
+
+##Usage
+
+``` php
+use 
+$goose = new GooseClient();
+$article = $goose->extractContent('http://url.to/article');
+
+$title = $article->getTitle();
+$metaDescription = $article->getMetaDescription();
+$metaKeywords = $article->getMetaKeywords();
+$canonicalLink = $article->getCanonicalLink();
+$domain = $article->getDomain();
+$tags = $article->getTags();
+$movies = $article->getMovies();
+$articleText = $article->getCleanedArticleText();
+```
+
 ##Licensing
 
 PHP Goose is licensed by Gravity.com under the Apache 2.0 license, see the LICENSE file for more details
