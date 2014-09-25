@@ -44,7 +44,7 @@ class Crawler {
         $article->setDoc($docCleaner->clean($article));
 
         $article->setTopNode($extractor->calculateBestNodeBasedOnClustering($article));
-        $article->setMovies($extractor->extractVideos());
+        $article->setMovies($extractor->extractVideos($article->getTopNode()));
         $article->setTopNode($extractor->postExtractionCleanup($article->getTopNode()));
 
         $article->setCleanedArticleText($outputFormatter->getFormattedText($article->getTopNode()));
