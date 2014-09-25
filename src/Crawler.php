@@ -14,8 +14,6 @@ class Crawler {
 
     public function __construct($config = array()) {
         $this->config = $config;
-
-        Debug::init(true);
     }
 
     public function crawl($crawlCandidate) {
