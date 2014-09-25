@@ -280,7 +280,7 @@ class DocumentCleaner {
                         $prevSibNode = $prevSibNode->previousSibling;
                     }
 
-                    $replacementText[] = $text;
+                    $replacementText[] = $replaceText;
 
                     $nextSibNode = $kid->nextSibling;
 
