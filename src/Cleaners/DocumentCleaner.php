@@ -247,7 +247,7 @@ class DocumentCleaner {
 
     private function getFlushedBuffer($replacementText, $doc) {
         $fragment = $doc->createDocumentFragment();
-        $fragment->appendXML(implode('', $replacementText));
+        $fragment->appendXML(htmlentities(implode('', $replacementText)));
 
         $el = $doc->createElement('p');
         $el->appendChild($fragment);
