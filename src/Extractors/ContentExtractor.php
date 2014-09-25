@@ -337,6 +337,10 @@ class ContentExtractor {
         $youtubeStr = 'youtube';
         $vimdeoStr = 'vimeo';
 
+        if (!($node instanceof \DOMNode)) {
+            return [];
+        }
+
         foreach ($node->parentNode->filter('embed') as $e) {
             $candidates[] = $e;
         }
@@ -390,6 +394,10 @@ class ContentExtractor {
      */
     public function postExtractionCleanup($targetNode) {
         Debug::trace($this->logPrefix, "Starting cleanup Node");
+
+        if (!($targetNode instanceof \DOMNode)) {
+            return null;
+        }
 
         $node = $this->addSiblings($targetNode);
 
