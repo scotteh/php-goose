@@ -122,7 +122,7 @@ class ContentExtractor {
      */
     public function calculateBestNodeBasedOnClustering($article) {
         $doc = $article->getDoc();
-        $topNode = false;
+        $topNode = null;
         $nodesToCheck = $doc->filter(self::$TOP_NODE_TAGS);
         $startingBoost = 1.0;
         $cnt = 0;
@@ -341,11 +341,7 @@ class ContentExtractor {
             return [];
         }
 
-        foreach ($node->parentNode->filter('embed') as $e) {
-            $candidates[] = $e;
-        }
-
-        foreach ($node->parentNode->filter('object') as $e) {
+        foreach ($node->parentNode->filter('embed, object, iframe') as $e) {
             $candidates[] = $e;
         }
 
@@ -355,9 +351,9 @@ class ContentExtractor {
             $attr = $el->getAttribute('src');
 
             if (mb_strpos($attr, $youtubeStr) !== false || mb_strpos($attr, $vimdeoStr) !== false) {
-                Debug::trace($this->logPrefix, "This page has a video!: " . attr);
+                Debug::trace($this->logPrefix, "This page has a video!: " . $attr);
 
-                $goodMovies[] = $el;
+                $goodMovies[] = $el->getAttribute('src');
             }
         }
 
