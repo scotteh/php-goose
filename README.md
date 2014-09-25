@@ -50,7 +50,7 @@ php composer.phar install
 ##Usage
 
 ``` php
-use use Goose\Client as GooseClient;
+use Goose\Client as GooseClient;
 
 $goose = new GooseClient();
 $article = $goose->extractContent('http://url.to/article');
