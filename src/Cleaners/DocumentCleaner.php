@@ -133,15 +133,14 @@ class DocumentCleaner {
         $lists = [
             "[%s*='%s']" => $this->searchNodes,
             "[%s$='%s']" => $this->endsWithNodes,
-            "[%s^='%s']" => $this->equalsNodes,
+            "[%s='%s']" => $this->equalsNodes,
         ];
 
         $attrs = [
             'id',
             'class',
             'name',
-        ];
-
+        ];echo '<pre>';
         foreach ($lists as $expr => $list) {
             foreach ($list as $value) {
                 foreach ($attrs as $attr) {
@@ -247,7 +246,7 @@ class DocumentCleaner {
 
     private function getFlushedBuffer($replacementText, $doc) {
         $fragment = $doc->createDocumentFragment();
-        $fragment->appendXML(htmlentities(implode('', $replacementText)));
+        $fragment->appendXML(htmlentities(implode('', $replacementText), ENT_COMPAT | ENT_XML1));
 
         $el = $doc->createElement('p');
         $el->appendChild($fragment);
