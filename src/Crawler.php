@@ -56,8 +56,14 @@ class Crawler {
         if (!empty($crawlCandidate->rawHTML)) {
             return $crawlCandidate->rawHTML;
         } else {
+            $config = $this->config->getGuzzle();
+
+            if (!is_array($config)) {
+                $config = array();
+            }
+
             $guzzle = new GuzzleClient();
-            $response = $guzzle->get($parsingCandidate->url);
+            $response = $guzzle->get($parsingCandidate->url, $config);
 
             return $response->getBody();
         }

@@ -129,4 +129,14 @@ class Configuration {
     public function getStopWords() {
         return $this->stopWords;
     }
+
+    protected $guzzle;
+
+    public function setGuzzle($guzzle) {
+        $this->guzzle = $guzzle;
+    }
+
+    public function getGuzzle() {
+        return $this->guzzle;
+    }
 }
