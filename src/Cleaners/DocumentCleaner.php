@@ -31,6 +31,10 @@ class DocumentCleaner {
         'legende', 'ajoutVideo', 'timestamp', 'js_replies',
     ];
 
+    private $exceptionSelectors = [
+        'html', 'body',
+    ];
+
     private $logPrefix = 'Cleaner: ';
 
     private $config;
@@ -147,10 +151,16 @@ class DocumentCleaner {
             'name',
         ];
 
+        $exceptions = array_map(function($value){
+            return ':not(' . $value . ')';
+        }, $this->exceptionSelectors);
+
+        $exceptions = implode('', $exceptions);
+
         foreach ($lists as $expr => $list) {
             foreach ($list as $value) {
                 foreach ($attrs as $attr) {
-                    $selector = sprintf($expr, $attr, $value);
+                    $selector = sprintf($expr, $attr, $value) . $exceptions;
 
                     foreach ($doc->filter($selector) as $node) {
                         $node->parentNode->removeChild($node);
