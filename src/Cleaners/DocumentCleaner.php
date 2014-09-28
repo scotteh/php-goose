@@ -5,8 +5,12 @@ namespace Goose\Cleaners;
 use Goose\Utils\Debug;
 
 class DocumentCleaner {
+    private $startsWithNodes = [
+        'adspot', 'conditionalAd-',
+    ];
+
     private $equalsNodes = [
-        'side', 'links', 'inset', 'print', 'fn'
+        'side', 'links', 'inset', 'print', 'fn', 'ad',
     ];
 
     private $endsWithNodes = [
@@ -131,6 +135,7 @@ class DocumentCleaner {
 
     private function cleanBadTags($doc) {
         $lists = [
+            "[%s^='%s']" => $this->startsWithNodes,
             "[%s*='%s']" => $this->searchNodes,
             "[%s$='%s']" => $this->endsWithNodes,
             "[%s='%s']" => $this->equalsNodes,
@@ -140,7 +145,8 @@ class DocumentCleaner {
             'id',
             'class',
             'name',
-        ];echo '<pre>';
+        ];
+
         foreach ($lists as $expr => $list) {
             foreach ($list as $value) {
                 foreach ($attrs as $attr) {
