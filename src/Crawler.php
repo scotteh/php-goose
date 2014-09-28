@@ -79,6 +79,16 @@ class Crawler {
         $internalErrors = libxml_use_internal_errors(true);
         $disableEntities = libxml_disable_entity_loader(true);
 
+        $fn = function($matches){
+            return (
+                isset($matches[1])
+                ? '</script> -->'
+                : '<!-- <script>'
+            );
+        };
+
+        $rawHtml = preg_replace_callback('@<([/])?script[^>]*>@i', $fn, $rawHtml);
+
         $doc = new DOMDocument(1.0);
         $doc->registerNodeClass('DOMElement', 'Goose\\DOM\\DOMElement');
         @$doc->loadHTML($rawHtml);
