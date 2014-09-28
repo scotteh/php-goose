@@ -51,8 +51,8 @@ class DocumentCleaner {
         $docToClean = $this->removeNodesViaFilter($docToClean, "[%s*='twitter']:not([%s*='-twitter'])", 2);
         $docToClean = $this->cleanUpSpanTagsInParagraphs($docToClean);
         $docToClean = $this->convertWantedTagsToParagraphs($docToClean, ['div', 'span', 'article']);
-        $docToClean = $this->convertDivsToParagraphs($docToClean, 'div');
-        $docToClean = $this->convertDivsToParagraphs($docToClean, 'span');
+        //$docToClean = $this->convertDivsToParagraphs($docToClean, 'div');
+        //$docToClean = $this->convertDivsToParagraphs($docToClean, 'span');
 
         return $docToClean;
     }
