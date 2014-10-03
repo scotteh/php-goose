@@ -51,24 +51,69 @@ class ContentExtractor {
         return $titleText;
     }
 
-    private function getMetaContent($doc, $metaName) {
+    private function getMetaContent($doc, $metaName, $attr = 'content') {
         $nodes = $doc->filter($metaName);
 
         if (!$nodes->length) {
             return '';
         }
 
-        $content = $nodes->item(0)->getAttribute('content');
+        $content = $nodes->item(0)->getAttribute($attr);
         $content = trim($content);
 
         return $content;
     }
 
     /**
+     * if the article has meta language set in the source, use that
+     */
+    public function getMetaLanguage($article) {
+        $lang = '';
+
+        $el = $article->getDoc()->filter('html[lang]');
+
+        if ($el->length) {
+            $lang = $el->item(0)->getAttribute('lang');
+        }
+
+        if (empty($lang)) {
+            $selectors = [
+                'meta[http-equiv=content-language]',
+                'meta[name=lang]',
+            ];
+
+            foreach ($selectors as $selector) {
+                $el = $article->getDoc()->filter($selector);
+
+                if ($el->length) {
+                    $attr = $el->getAttribute('content');
+                    break;
+                }
+            }
+        }
+
+        if (preg_match('@^[A-Za-z]{2}$@', $lang)) {
+            return strtolower($lang);
+        }
+
+        return '';
+    }
+
+    /**
      * if the article has meta description set in the source, use that
      */
     public function getMetaDescription($article) {
-        return $this->getMetaContent($article->getDoc(), 'meta[name=description]');
+        $desc = $this->getMetaContent($article->getDoc(), 'meta[name=description]');
+
+        if (empty($desc)) {
+            $desc = $this->getMetaContent($article->getDoc(), 'meta[property=og:description]');
+        }
+
+        if (empty($desc)) {
+            $desc = $this->getMetaContent($article->getDoc(), 'meta[name=twitter:description]');
+        }
+
+        return trim($desc);
     }
 
     /**
@@ -82,18 +127,39 @@ class ContentExtractor {
       * if the article has meta canonical link set in the url
       */
     public function getCanonicalLink($article) {
+        $href = '';
+
         $nodes = $article->getDoc()->filter('link[rel=canonical]');
 
         if ($nodes->length) {
             $href = $nodes->item(0)->getAttribute('href');
-            $href = trim($href);
-            
-            if (!empty($href)) {
-                return $href;
+        }
+
+        if (empty($href)) {
+            $nodes = $article->getDoc()->filter('meta[property=og:url]');
+
+            if ($nodes->length) {
+                $href = $nodes->item(0)->getAttribute('href');
             }
         }
 
-        return $article->getFinalUrl();
+        if (empty($href)) {
+            $nodes = $article->getDoc()->filter('meta[name=twitter:url]');
+
+            if ($nodes->length) {
+                $href = $nodes->item(0)->getAttribute('href');
+            }
+        }
+
+        if (!empty($href)) {
+            return trim($href);
+        } else {
+            return $article->getFinalUrl();
+        }
+    }
+
+    public function getDateFromURL($url) {
+        // TODO
     }
 
     public function getDomain($url) {
@@ -200,6 +266,10 @@ class ContentExtractor {
             }
         }
 
+        if ($topNode && $this->getScore($topNode) < 20) {
+            return null;
+        }
+
         return $topNode;
     }
 
@@ -221,7 +291,7 @@ class ContentExtractor {
         $siblings = $node->getSiblings();
 
         foreach ($siblings as $currentNode) {
-            if ($currentNode->nodeName == 'p') {
+            if ($currentNode->nodeName == 'p' || $currentNode->nodeName == 'strong') {
                 if ($stepsAway >= $maxStepsAwayFromNode) {
                     Debug::trace($this->logPrefix, "Next paragraph is too far away, not boosting");
 
@@ -259,8 +329,8 @@ class ContentExtractor {
      * @param e
      * @return
      */
-    private function isHighLinkDensity(DOMElement $e) {
-        $links = $e->filter('a');
+    private function isHighLinkDensity(DOMElement $e, $limit = 1.0) {
+        $links = $e->filter('a, [onclick]');
 
         if ($links->length == 0) {
             return false;
@@ -284,7 +354,7 @@ class ContentExtractor {
 
         Debug::trace($this->logPrefix, "Calulated link density score as: " . $score . " for node: " . $this->getShortText($e->textContent, 50));
 
-        if ($score >= 1.0) {
+        if ($score >= $limit) {
             return true;
         }
 
@@ -336,6 +406,10 @@ class ContentExtractor {
         $goodMovies = [];
         $youtubeStr = 'youtube';
         $vimdeoStr = 'vimeo';
+        $bliptvStr = 'blip';
+        $flickrStr = 'flickr';
+        $veohStr = 'veoh';
+        $dailymotionStr = 'dailymotion';
 
         if (!($node instanceof \DOMNode)) {
             return [];
@@ -350,7 +424,12 @@ class ContentExtractor {
         foreach ($candidates as $el) {
             $attr = $el->getAttribute('src');
 
-            if (mb_strpos($attr, $youtubeStr) !== false || mb_strpos($attr, $vimdeoStr) !== false) {
+            if (mb_strpos($attr, $youtubeStr) !== false ||
+                mb_strpos($attr, $vimdeoStr) !== false ||
+                mb_strpos($attr, $bliptvStr) !== false ||
+                mb_strpos($attr, $flickrStr) !== false ||
+                mb_strpos($attr, $veohStr) !== false ||
+                mb_strpos($attr, $dailymotionStr) !== false) {
                 Debug::trace($this->logPrefix, "This page has a video!: " . $attr);
 
                 $goodMovies[] = $el->getAttribute('src');
@@ -362,8 +441,30 @@ class ContentExtractor {
         return $goodMovies;
     }
 
-    public function isTableTagAndNoParagraphsExist($e) {
-        $subParagraphs = $e->filter('p');
+    /**
+     * pulls out links we like
+     *
+     * @return
+     */
+    public function extractLinks(\DOMNode $node) {
+        $goodLinks = [];
+
+        $candidates = $node->parentNode->filter('a[href]');
+
+        foreach ($candidates as $el) {
+            if ($el->getAttribute('href') != '#' && trim($el->getAttribute('href')) != '') {
+                $goodLinks[] = [
+                    'url' => $el->getAttribute('href'),
+                    'text' => $el->textContent,
+                ];
+            }
+        }
+
+        return $goodLinks;
+    }
+
+    public function isTableTagAndNoParagraphsExist(\DOMNode $e) {
+        $subParagraphs = $e->filter('p, strong');
 
         foreach ($subParagraphs as $p) {
             if (mb_strlen($p->textContent) < 25) {
@@ -374,7 +475,17 @@ class ContentExtractor {
         $subParagraphs2 = $e->filter('p');
 
         if ($subParagraphs2->length == 0 && $e->nodeName != 'td') {
-            Debug::trace($this->logPrefix, "Removing node because it doesn't have any paragraphs");
+            if ($e->nodeName == 'ul' || $e->nodeName == 'ol') {
+                $linkTextLength = array_sum(array_map(function($value){
+                    return mb_strlen($value->textContent);
+                }, $e->filter('a')));
+
+                $elementTextLength = mb_strlen($e->textContent);
+
+                if ($elementTextLength > 0 && ($linkTextLength / $elementTextLength) < 0.5) {
+                    return false;
+                }
+            }
 
             return true;
         }
@@ -398,7 +509,7 @@ class ContentExtractor {
         $node = $this->addSiblings($targetNode);
 
         foreach ($node->childNodes as $e) {
-            if ($e->nodeName != 'p') {
+            if ($e->nodeName != 'p' && $e->nodeName != 'strong') {
                 Debug::trace($this->logPrefix, "CLEANUP  NODE: " . $e->getAttribute('id') . " class: " . $e->getAttribute('class'));
 
                 if ($this->isHighLinkDensity($e)
@@ -439,10 +550,10 @@ class ContentExtractor {
     public function getSiblingContent($currentSibling, $baselineScoreForSiblingParagraphs) {
         if ($currentSibling->nodeType != XML_ELEMENT_NODE) {
             return [];
-        } else if ($currentSibling->nodeName == 'p' && !empty($currentSibling->textContent)) {
+        } else if (($currentSibling->nodeName == 'p' || $currentSibling->nodeName == 'strong') && !empty($currentSibling->textContent)) {
             return [$currentSibling];
         } else {
-            $potentialParagraphs = $currentSibling->filter('p');
+            $potentialParagraphs = $currentSibling->filter('p, strong');
 
             if ($potentialParagraphs->length == 0) {
                 return [];
@@ -497,7 +608,7 @@ class ContentExtractor {
         $base = 100000;
         $numberOfParagraphs = 0;
         $scoreOfParagraphs = 0;
-        $nodesToCheck = $topNode->filter('p');
+        $nodesToCheck = $topNode->filter('p, strong');
 
         foreach ($nodesToCheck as $node) {
             $nodeText = $node->textContent;

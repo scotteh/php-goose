@@ -3,13 +3,13 @@
 namespace Goose;
 
 class Client {
-    protected $config = array();
+    protected $config = [];
 
-    public function __construct($config = array()) {
+    public function __construct($config = []) {
         $this->config = $config;
     }
 
-    public function extractContent($url, $rawHTML = null, $config = array()) {
+    public function extractContent($url, $rawHTML = null, $config = []) {
         $config = new Configuration(array_merge($this->config, $config));
 
         $crawler = new Crawler($config);

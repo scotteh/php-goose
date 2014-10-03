@@ -6,9 +6,19 @@ class StopWords
 {
     private $config;
     private $cached = [];
+    private $languages = [
+        'ar', 'da', 'de', 'en', 'es', 'fi',
+        'fr', 'hu', 'id', 'it', 'ko', 'nb',
+        'nl', 'no', 'pl', 'pt', 'ru', 'sv',
+        'zh'
+    ];
 
     public function __construct($config, $language) {
         $this->config = $config;
+
+        if (!in_array($language, $this->languages)) {
+            $language = 'en';
+        }
 
         $file = sprintf(__DIR__ . '/../../resources/text/stopwords-%s.txt', $language);
 

@@ -19,12 +19,12 @@ class DocumentCleaner {
 
     private $searchNodes = [
         'combx', 'retweet', 'mediaarticlerelated', 'menucontainer', 'navbar',
-        'storytopbar-bucket', 'utility-bar', 'inline-share-tools', 'comment',
+        'storytopbar-bucket', 'utility-bar', 'inline-share-tools', 'comment', // not commented
         'PopularQuestions', 'contact', 'foot', 'footer', 'Footer', 'footnote',
         'cnn_strycaptiontxt', 'cnn_html_slideshow', 'cnn_strylftcntnt',
-        'shoutbox', 'sponsor', 'tags', 'socialnetworking', 'socialNetworking',
+        'shoutbox', 'sponsor', 'tags', 'socialnetworking', 'socialNetworking', 'scroll', // not scrollable
         'cnnStryHghLght', 'cnn_stryspcvbx', 'pagetools', 'post-attributes',
-        'welcome_form', 'contentTools2', 'the_answers', 'communitypromo',
+        'welcome_form', 'contentTools2', 'the_answers', 'communitypromo', 'promo_holder',
         'runaroundLeft', 'subscribe', 'vcard', 'articleheadings', 'date',
         'popup', 'author-dropdown', 'tools', 'socialtools', 'byline',
         'konafilter', 'KonaFilter', 'breadcrumbs', 'wp-caption-text',
@@ -47,7 +47,7 @@ class DocumentCleaner {
         $docToClean = $article->getDoc();
 
         $docToClean = $this->removeComments($docToClean);
-        $docToClean = $this->cleanEmTags($docToClean);
+        $docToClean = $this->cleanTextTags($docToClean);
         $docToClean = $this->removeDropCaps($docToClean);
         $docToClean = $this->removeScriptsAndStyles($docToClean);
         $docToClean = $this->cleanBadTags($docToClean);
@@ -76,16 +76,16 @@ class DocumentCleaner {
     }
 
     /**
-     * replaces <em> tags with textnodes
+     * replaces various tags with textnodes
      */
-    private function cleanEmTags($doc) {
-        $ems = $doc->filter('em');
+    private function cleanTextTags($doc) {
+        $ems = $doc->filter('em, strong, b, i, strike, del, ins');
 
         foreach ($ems as $node) {
             $images = $node->filter('img');
 
             if ($images->length == 0) {
-                $node->parentNode->replaceChild(new \DOMText($node->textContent), $node);
+                $node->parentNode->replaceChild(new \DOMText(trim($node->textContent) . ' '), $node);
             }
         }
 

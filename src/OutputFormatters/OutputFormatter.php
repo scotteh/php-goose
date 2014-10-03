@@ -46,6 +46,29 @@ class OutputFormatter {
     }
 
     /**
+     * Scape the node content and return the html
+     * @param topNode the top most node to format
+     * @return a formatted string with all HTML
+     */
+    public function cleanupHtml($topNode) {
+        if (empty($topNode)) {
+            return '';
+        }
+
+        $this->removeParagraphsWithFewWords($topNode);
+
+        return $this->convertToHtml($topNode);
+    }
+
+    private function convertToHtml($topNode) {
+        if (empty($topNode)) {
+            return '';
+        }
+
+        return $topNode->ownerDocument->saveHTML($topNode);
+    }
+
+    /**
      * cleans up and converts any nodes that should be considered text into text
      */
     private function convertLinksToText($topNode) {
@@ -104,12 +127,12 @@ class OutputFormatter {
      */
     private function removeParagraphsWithFewWords($topNode) {
         if (!empty($topNode)) {
-            $allNodes = $topNode->filter('*');
+            $paragraphs = $topNode->filter('p');
 
-            foreach ($allNodes as $el) {
+            foreach ($paragraphs as $el) {
                 $stopWords = $this->config->getStopWords()->getStopwordCount($el->textContent);
  
-                if ($stopWords->getStopWordCount() < 3 && count($el->filter('object')) == 0 && count($el->filter('embed')) == 0) {
+                if (mb_strlen($el->textContent) < 8 && $stopWords->getStopWordCount() < 3 && count($el->filter('object')) == 0 && count($el->filter('embed')) == 0) {
                     $el->parentNode->removeChild($el);
                 }
             }

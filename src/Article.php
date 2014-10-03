@@ -4,6 +4,19 @@ namespace Goose;
 
 class Article {
     /**
+     * language of the article
+     */
+    protected $language;
+
+    public function setLanguage($language) {
+        $this->language = $language;
+    }
+
+    public function getLanguage() {
+        return $this->language;
+    }
+
+    /**
      * title of the article
      */
     protected $title;
@@ -28,6 +41,19 @@ class Article {
 
     public function getCleanedArticleText() {
         return $this->cleanedArticleText;
+    }
+
+    /**
+     * article with the originals HTML tags (<p>, <a>, ..)
+     */
+    protected $htmlArticle;
+
+    public function setHtmlArticle($htmlArticle) {
+        $this->htmlArticle = $htmlArticle;
+    }
+
+    public function getHtmlArticle() {
+        return $this->htmlArticle;
     }
 
     /**
@@ -109,6 +135,19 @@ class Article {
     }
 
     /**
+     * holds all cadidate images from article
+     */
+    protected $allImages;
+
+    public function setAllImages($allImages) {
+        $this->allImages = $allImages;
+    }
+
+    public function getAllImages() {
+        return $this->allImages;
+    }
+
+    /**
      * holds a set of tags that may have been in the artcle, these are not meta keywords
      */
     protected $tags;
@@ -119,6 +158,19 @@ class Article {
 
     public function getTags() {
         return $this->tags;
+    }
+
+    /**
+     *  holds a list of links in the article
+     */
+    protected $links;
+
+    public function setLinks($links) {
+        $this->links = $links;
+    }
+
+    public function getLinks() {
+        return $this->links;
     }
 
     /**
@@ -226,5 +278,18 @@ class Article {
 
     public function getAdditionalData() {
         return $this->additionalData;
+    }
+
+    /**
+     * Facebook Open Graph data that that is found in Article Meta tags
+     */
+    protected $openGraphData;
+
+    public function setOpenGraphData($openGraphData) {
+        $this->openGraphData = $openGraphData;
+    }
+
+    public function getOpenGraphData() {
+        return $this->openGraphData;
     }
 }

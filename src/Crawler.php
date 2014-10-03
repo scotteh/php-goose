@@ -6,13 +6,14 @@ use GuzzleHttp\Client as GuzzleClient;
 use Goose\Utils\Debug;
 use Goose\Utils\URLHelper;
 use Goose\DOM\DOMDocument;
+use Goose\Images\StandardImageExtractor;
 use Goose\Cleaners\StandardDocumentCleaner;
-use Goose\OutputFormatters\OutputFormatter;
+use Goose\OutputFormatters\StandardOutputFormatter;
 
 class Crawler {
     protected $config;
 
-    public function __construct($config = array()) {
+    public function __construct($config = []) {
         $this->config = $config;
     }
 
@@ -34,6 +35,11 @@ class Crawler {
         $article->setDoc($doc);
         $article->setRawDoc(clone $doc);
 
+        $language = $extractor->getMetaLanguage($article);
+
+        $this->config->setLanguage($language);
+
+        $article->setLanguage($language);
         $article->setTitle($extractor->getTitle($article));
         $article->setPublishDate($this->config->getPublishDateExtractor($doc));
         $article->setAdditionalData($this->config->getAdditionalDataExtractor($doc));
@@ -43,11 +49,27 @@ class Crawler {
         $article->setTags($extractor->extractTags($article));
         $article->setDoc($docCleaner->clean($article));
 
-        $article->setTopNode($extractor->calculateBestNodeBasedOnClustering($article));
-        $article->setMovies($extractor->extractVideos($article->getTopNode()));
-        $article->setTopNode($extractor->postExtractionCleanup($article->getTopNode()));
+        /*if (!$article->getPublishDate()) {
+            $article->setPublishDate($extractor->getDateFromURL($article->getCanonicalLink()));
+        }*/
 
-        $article->setCleanedArticleText($outputFormatter->getFormattedText($article->getTopNode()));
+        $article->setTopNode($extractor->calculateBestNodeBasedOnClustering($article));
+
+        if ($article->getTopNode()) {
+            $article->setMovies($extractor->extractVideos($article->getTopNode()));
+            $article->setLinks($extractor->extractLinks($article->getTopNode()));
+
+            if ($this->config->getEnableImageFetching()) {
+                $imageExtractor = $this->getImageExtractor();
+
+                // TODO
+                $article->setTopImage('a');
+            }
+
+            $article->setTopNode($extractor->postExtractionCleanup($article->getTopNode()));
+            $article->setCleanedArticleText($outputFormatter->getFormattedText($article->getTopNode()));
+            $article->setHtmlArticle($outputFormatter->cleanupHtml($article->getTopNode()));
+        }
 
         return $article;
     }
@@ -59,7 +81,7 @@ class Crawler {
             $config = $this->config->getGuzzle();
 
             if (!is_array($config)) {
-                $config = array();
+                $config = [];
             }
 
             $guzzle = new GuzzleClient();
@@ -70,11 +92,11 @@ class Crawler {
     }
 
     private function getImageExtractor() {
-        // TODO
+        return new StandardImageExtractor($this->config);
     }
 
     private function getOutputFormatter() {
-        return new OutputFormatter($this->config);
+        return new StandardOutputFormatter($this->config);
     }
 
     private function getDocCleaner() {

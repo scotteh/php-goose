@@ -8,20 +8,36 @@ use Goose\Extractors\AdditionalDataExtractor;
 use Goose\Text\StopWords;
 
 class Configuration {
-    public function __construct($options = array()) {
+    public function __construct($options = []) {
         $this->contentExtractor = new StandardContentExtractor($this);
         $this->publishDateExtractor = new PublishDateExtractor($this);
         $this->additionalDataExtractor = new AdditionalDataExtractor($this);
 
-        $this->stopWords = new StopWords($this, 'en');
+        $this->initLanguage($this->language);
 
         foreach ($options as $key => $value) {
             $method = 'set' . ucfirst($key);
 
             if (method_exists($this, $method)) {
-                call_user_func(array($this, $method), $value);
+                call_user_func([$this, $method], $value);
             }
         }
+    }
+
+    public function initLanguage($language) {
+        $this->stopWords = new StopWords($this, $language);
+    }
+
+    protected $language = 'en';
+
+    public function setLanguage($language) {
+        $this->language = $language;
+
+        $this->initLanguage($language);
+    }
+
+    public function getLanguage() {
+        return $this->language;
     }
 
     protected $localStoragePath = '/tmp/goose';
@@ -42,6 +58,26 @@ class Configuration {
 
     public function getMinBytesForImages() {
         return $this->minBytesForImages;
+    }
+
+    protected $minWidth = 120;
+
+    public function setMinWidth(int $minWidth) {
+        $this->minWidth = $minWidth;
+    }
+
+    public function getMinWidth() {
+        return $this->minWidth;
+    }
+
+    protected $minHeight = 120;
+
+    public function setMinHeight(int $minHeight) {
+        $this->minHeight = $minHeight;
+    }
+
+    public function getMinHeight() {
+        return $this->minHeight;
     }
 
     protected $enableImageFetching = true;
@@ -72,6 +108,16 @@ class Configuration {
 
     public function getBrowserUserAgent() {
         return $this->browserUserAgent;
+    }
+
+    protected $browserReferer = 'https://www.google.com';
+
+    public function setBrowserReferer(string $browserReferer) {
+        $this->browserReferer = $browserReferer;
+    }
+
+    public function getBrowserReferer() {
+        return $this->browserReferer;
     }
 
     protected $contentExtractor;
@@ -114,6 +160,20 @@ class Configuration {
 
     public function getAdditionalDataExtractor() {
         return $this->additionalDataExtractor;
+    }
+
+    protected $openGraphDataExtractor;
+
+    public function setOpenGraphDataExtractor($openGraphDataExtractor) {
+        if (is_null($openGraphDataExtractor) || !is_object($openGraphDataExtractor)) {
+            throw new InvalidArgumentException('Extractor must be a valid object!');
+        }
+
+        $this->openGraphDataExtractor = $openGraphDataExtractor;
+    }
+
+    public function getOpenGraphDataExtractor() {
+        return $this->openGraphDataExtractor;
     }
 
     protected $stopWords;
