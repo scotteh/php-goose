@@ -2,7 +2,7 @@
     "name": "scotteh/php-goose",
     "type": "library",
     "description": "Html Content / Article Extractor & Web Scrapping library written in PHP",
-    "keywords": ["scraper", "http", "extractor"],
+    "keywords": ["scraper", "http", "extractor", "text", "content", "scraping", "website"],
     "homepage": "https://github.com/scotteh/php-goose",
     "license": "Apache-2.0",
     "authors": [
