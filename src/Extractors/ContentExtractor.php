@@ -106,11 +106,11 @@ class ContentExtractor {
         $desc = $this->getMetaContent($article->getDoc(), 'meta[name=description]');
 
         if (empty($desc)) {
-            $desc = $this->getMetaContent($article->getDoc(), 'meta[property=og:description]');
+            $desc = $this->getMetaContent($article->getDoc(), "meta[property='og:description']");
         }
 
         if (empty($desc)) {
-            $desc = $this->getMetaContent($article->getDoc(), 'meta[name=twitter:description]');
+            $desc = $this->getMetaContent($article->getDoc(), "meta[name='twitter:description']");
         }
 
         return trim($desc);
@@ -136,7 +136,7 @@ class ContentExtractor {
         }
 
         if (empty($href)) {
-            $nodes = $article->getDoc()->filter('meta[property=og:url]');
+            $nodes = $article->getDoc()->filter("meta[property='og:url']");
 
             if ($nodes->length) {
                 $href = $nodes->item(0)->getAttribute('href');
@@ -144,7 +144,7 @@ class ContentExtractor {
         }
 
         if (empty($href)) {
-            $nodes = $article->getDoc()->filter('meta[name=twitter:url]');
+            $nodes = $article->getDoc()->filter("meta[name='twitter:url']");
 
             if ($nodes->length) {
                 $href = $nodes->item(0)->getAttribute('href');
