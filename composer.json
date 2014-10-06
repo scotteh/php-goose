@@ -14,7 +14,7 @@
     "require": {
         "php": ">=5.4.0",
         "guzzlehttp/guzzle": "4.*",
-        "symfony/css-selector": "2.6.*@dev"
+        "symfony/css-selector": "2.5.*"
     },
     "autoload": {
         "psr-4": {
@@ -25,6 +25,5 @@
         "branch-alias": {
             "dev-master": "0.2-dev"
         }
-    },
-    "minimum-stability": "dev"
+    }
 }
