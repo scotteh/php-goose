@@ -51,8 +51,12 @@ class ContentExtractor {
         return $titleText;
     }
 
-    private function getMetaContent($doc, $metaName, $attr = 'content') {
-        $nodes = $doc->filter($metaName);
+    private function getNodesByLowercasePropertyValue($doc, $tag, $property, $value) {
+        return $doc->filterXPath("descendant-or-self::".$tag."[translate(@".$property.", 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz')='".$value."']");
+    }
+
+    private function getMetaContent($doc, $property, $value, $attr = 'content') {
+        $nodes = $this->getNodesByLowercasePropertyValue($doc, 'meta', $property, $value);
 
         if (!$nodes->length) {
             return '';
@@ -103,14 +107,14 @@ class ContentExtractor {
      * if the article has meta description set in the source, use that
      */
     public function getMetaDescription($article) {
-        $desc = $this->getMetaContent($article->getDoc(), 'meta[name=description]');
+        $desc = $this->getMetaContent($article->getDoc(), 'name', 'description');
 
         if (empty($desc)) {
-            $desc = $this->getMetaContent($article->getDoc(), "meta[property='og:description']");
+            $desc = $this->getMetaContent($article->getDoc(), 'property', 'og:description');
         }
 
         if (empty($desc)) {
-            $desc = $this->getMetaContent($article->getDoc(), "meta[name='twitter:description']");
+            $desc = $this->getMetaContent($article->getDoc(), 'name', 'twitter:description');
         }
 
         return trim($desc);
@@ -120,7 +124,7 @@ class ContentExtractor {
      * if the article has meta keywords set in the source, use that
      */
     public function getMetaKeywords($article) {
-        return $this->getMetaContent($article->getDoc(), 'meta[name=keywords]');
+        return $this->getMetaContent($article->getDoc(), 'name', 'keywords');
     }
 
     /**
@@ -129,14 +133,14 @@ class ContentExtractor {
     public function getCanonicalLink($article) {
         $href = '';
 
-        $nodes = $article->getDoc()->filter('link[rel=canonical]');
+        $nodes = $this->getNodesByLowercasePropertyValue($article->getDoc(), 'link', 'rel', 'canonical');
 
         if ($nodes->length) {
             $href = $nodes->item(0)->getAttribute('href');
         }
 
         if (empty($href)) {
-            $nodes = $article->getDoc()->filter("meta[property='og:url']");
+            $nodes = $this->getNodesByLowercasePropertyValue($article->getDoc(), 'meta', 'property', 'og:url');
 
             if ($nodes->length) {
                 $href = $nodes->item(0)->getAttribute('href');
@@ -144,7 +148,7 @@ class ContentExtractor {
         }
 
         if (empty($href)) {
-            $nodes = $article->getDoc()->filter("meta[name='twitter:url']");
+            $nodes = $this->getNodesByLowercasePropertyValue($article->getDoc(), 'meta', 'name', 'twitter:url');
 
             if ($nodes->length) {
                 $href = $nodes->item(0)->getAttribute('href');
