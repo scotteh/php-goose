@@ -89,7 +89,7 @@ class ContentExtractor {
             foreach ($selectors as $selector) {
                 $el = $article->getDoc()->filter($selector);
 
-                if ($el->length) {
+                if ($el->length && method_exists($el, 'getAttribute')) {
                     $attr = $el->getAttribute('content');
                     break;
                 }
