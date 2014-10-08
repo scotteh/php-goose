@@ -471,6 +471,8 @@ class ContentExtractor {
     }
 
     public function isTableTagAndNoParagraphsExist(\DOMNode $e) {
+        if (!method_exists($e, 'filter')) return false;
+
         $subParagraphs = $e->filter('p, strong');
 
         foreach ($subParagraphs as $p) {
