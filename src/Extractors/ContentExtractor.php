@@ -334,6 +334,9 @@ class ContentExtractor {
      * @return
      */
     private function isHighLinkDensity(DOMElement $e, $limit = 1.0) {
+        // Temporary fix for DOMText given instead of DOMElement
+        if (get_class($e) !== 'DOMElement') return false;
+
         $links = $e->filter('a, [onclick]');
 
         if ($links->length == 0) {
