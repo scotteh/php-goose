@@ -69,6 +69,7 @@ class Crawler {
             $article->setTopNode($extractor->postExtractionCleanup($article->getTopNode()));
             $article->setCleanedArticleText($outputFormatter->getFormattedText($article->getTopNode()));
             $article->setHtmlArticle($outputFormatter->cleanupHtml($article->getTopNode()));
+            $article->setPopularWords($extractor->getPopularWords($article->getCleanedArticleText()));
         }
 
         return $article;

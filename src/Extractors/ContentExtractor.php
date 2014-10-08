@@ -632,4 +632,39 @@ class ContentExtractor {
 
         return $base;
     }
+
+    public function getPopularWords($cleanedText, $limit = 5)
+    {
+        $minFrequency = 2;
+
+        $string = trim(preg_replace('/ss+/i', '', $cleanedText));
+        $string = preg_replace('/[^a-zA-Z -]/', '', $string); // only take alphabet characters, but keep the spaces and dashes too
+
+        preg_match_all('/\b.*?\b/i', $string, $matchWords);
+        $matchWords = $matchWords[0];
+
+        $stopWords = & $this->config->getStopWords()->getCurrentStopWords();
+
+        foreach ($matchWords as $key => &$item) {
+            if ($item == '' || in_array(strtolower($item), $stopWords) || strlen($item) <= 3 ) {
+                unset($matchWords[$key]);
+            }
+        }
+
+        $wordCount = str_word_count( implode(" ", $matchWords) , 1);
+        $frequency = array_count_values($wordCount);
+        arsort($frequency);
+
+        $keywords = [];
+
+        foreach ($frequency as $word => &$freq) {
+            if ($freq >= $minFrequency) {
+                $keywords[$word] = $freq;
+            }
+
+            if (count($keywords) >= $limit) break;
+        }
+
+        return $keywords;
+    }
 }

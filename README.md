@@ -14,7 +14,7 @@ Goose will try to extract the following information:
  - Meta Description
  - Meta tags
  - Publish Date
- 
+
 The php version was rewritten by:
 
  - Andrew Scott
@@ -63,6 +63,7 @@ $domain = $article->getDomain();
 $tags = $article->getTags();
 $movies = $article->getMovies();
 $articleText = $article->getCleanedArticleText();
+$entities = $article->getPopularWords();
 ```
 
 ##Licensing
