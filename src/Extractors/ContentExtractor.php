@@ -514,7 +514,10 @@ class ContentExtractor {
 
         foreach ($node->childNodes as $e) {
             if ($e->nodeName != 'p' && $e->nodeName != 'strong') {
-                Debug::trace($this->logPrefix, "CLEANUP  NODE: " . $e->getAttribute('id') . " class: " . $e->getAttribute('class'));
+
+                if (method_exists($e, 'getAttribute')) {
+                    Debug::trace($this->logPrefix, "CLEANUP  NODE: " . $e->getAttribute('id') . " class: " . $e->getAttribute('class'));
+                }
 
                 if ($this->isHighLinkDensity($e)
                     || $this->isTableTagAndNoParagraphsExist($e)
