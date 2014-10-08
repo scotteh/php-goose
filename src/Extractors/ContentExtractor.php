@@ -375,7 +375,11 @@ class ContentExtractor {
      * @return
      */
     private function getScore($node) {
-        return (int)$node->getAttribute('gravityScore');
+        if (method_exists($node, 'getAttribute')) {
+            return (int)$node->getAttribute('gravityScore');
+        }
+
+        return 0;
     }
 
     /**
