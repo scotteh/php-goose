@@ -3,5 +3,5 @@
 namespace Goose\Images;
 
 abstract class ImageExtractor {
-    abstract public function getBestImage($doc, $topNode);
+    abstract public function getBestImage($article);
 }

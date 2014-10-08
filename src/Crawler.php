@@ -59,17 +59,14 @@ class Crawler {
             $article->setMovies($extractor->extractVideos($article->getTopNode()));
             $article->setLinks($extractor->extractLinks($article->getTopNode()));
 
-            if ($this->config->getEnableImageFetching()) {
-                $imageExtractor = $this->getImageExtractor();
-
-                // TODO
-                $article->setTopImage('a');
-            }
-
             $article->setTopNode($extractor->postExtractionCleanup($article->getTopNode()));
             $article->setCleanedArticleText($outputFormatter->getFormattedText($article->getTopNode()));
             $article->setHtmlArticle($outputFormatter->cleanupHtml($article->getTopNode()));
             $article->setPopularWords($extractor->getPopularWords($article->getCleanedArticleText()));
+        }
+
+        if ($this->config->getEnableImageFetching()) {
+            $article->setTopImage($this->getImageExtractor()->getBestImage($article));
         }
 
         return $article;

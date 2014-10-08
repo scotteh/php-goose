@@ -64,6 +64,7 @@ $tags = $article->getTags();
 $movies = $article->getMovies();
 $articleText = $article->getCleanedArticleText();
 $entities = $article->getPopularWords();
+$image = $article->getTopImage();
 ```
 
 ##Licensing
