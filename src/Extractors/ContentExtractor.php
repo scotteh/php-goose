@@ -404,6 +404,8 @@ class ContentExtractor {
      * @param addToCount
      */
     private function updateNodeCount($node, $addToCount) {
+        if (!method_exists($node, 'getAttribute')) return;
+
         $currentScore = (int)$node->getAttribute('gravityNodes');
 
         $node->setAttribute('gravityNodes', $currentScore + $addToCount);
