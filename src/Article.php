@@ -292,4 +292,17 @@ class Article {
     public function getOpenGraphData() {
         return $this->openGraphData;
     }
+
+    /**
+     * most popular words used in the lovely article content
+     */
+    protected $popularWords;
+
+    public function setPopularWords($popularWords) {
+        $this->popularWords = $popularWords;
+    }
+
+    public function getPopularWords() {
+        return $this->popularWords;
+    }
 }
