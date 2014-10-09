@@ -390,6 +390,8 @@ class ContentExtractor {
      * @param addToScore - the score to add to the node
      */
     private function updateScore($node, $addToScore) {
+        if (!method_exists($node, 'getAttribute')) return;
+
         $currentScore = (int)$node->getAttribute('gravityScore');
 
         $node->setAttribute('gravityScore', $currentScore + $addToScore);
