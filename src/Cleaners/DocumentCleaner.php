@@ -6,7 +6,7 @@ use Goose\Utils\Debug;
 
 class DocumentCleaner {
     private $startsWithNodes = [
-        'adspot', 'conditionalAd-', 'hidden-', 'social-', 'publication'
+        'adspot', 'conditionalAd-', 'hidden-', 'social-', 'publication', 'share-'
     ];
 
     private $equalsNodes = [
@@ -29,7 +29,7 @@ class DocumentCleaner {
         'popup', 'author-dropdown', 'tools', 'socialtools', 'byline',
         'konafilter', 'KonaFilter', 'breadcrumbs', 'wp-caption-text',
         'legende', 'ajoutVideo', 'timestamp', 'js_replies', 'creative_commons', 'topics',
-        'pagination', 'mtl', 'author', 'credit'
+        'pagination', 'mtl', 'author', 'credit', 'toc_container', 'sharedaddy'
     ];
 
     private $exceptionSelectors = [
