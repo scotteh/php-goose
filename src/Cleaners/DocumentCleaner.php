@@ -6,7 +6,8 @@ use Goose\Utils\Debug;
 
 class DocumentCleaner {
     private $startsWithNodes = [
-        'adspot', 'conditionalAd-', 'hidden-', 'social-', 'publication', 'share-', 'hp-', 'ad-'
+        'adspot', 'conditionalAd-', 'hidden-', 'social-', 'publication', 'share-',
+        'hp-', 'ad-', 'recommended-'
     ];
 
     private $equalsNodes = [
