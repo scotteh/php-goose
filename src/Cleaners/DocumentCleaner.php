@@ -6,7 +6,7 @@ use Goose\Utils\Debug;
 
 class DocumentCleaner {
     private $startsWithNodes = [
-        'adspot', 'conditionalAd-',
+        'adspot', 'conditionalAd-', 'hidden-', 'social-', 'publication'
     ];
 
     private $equalsNodes = [
@@ -28,7 +28,8 @@ class DocumentCleaner {
         'runaroundLeft', 'subscribe', 'vcard', 'articleheadings', 'date',
         'popup', 'author-dropdown', 'tools', 'socialtools', 'byline',
         'konafilter', 'KonaFilter', 'breadcrumbs', 'wp-caption-text',
-        'legende', 'ajoutVideo', 'timestamp', 'js_replies',
+        'legende', 'ajoutVideo', 'timestamp', 'js_replies', 'creative_commons', 'topics',
+        'pagination', 'mtl', 'author', 'credit'
     ];
 
     private $exceptionSelectors = [
@@ -50,6 +51,7 @@ class DocumentCleaner {
         $docToClean = $this->cleanTextTags($docToClean);
         $docToClean = $this->removeDropCaps($docToClean);
         $docToClean = $this->removeScriptsAndStyles($docToClean);
+        $docToClean = $this->removeUselessTags($docToClean);
         $docToClean = $this->cleanBadTags($docToClean);
         $docToClean = $this->removeNodesViaFilter($docToClean, "[%s='caption']");
         $docToClean = $this->removeNodesViaFilter($docToClean, "[%s*=' google ']");
@@ -132,6 +134,22 @@ class DocumentCleaner {
 
         foreach ($styles as $style) {
             $style->parentNode->removeChild($style);
+        }
+
+        return $doc;
+    }
+
+    private function removeUselessTags($doc) {
+        $tags = [
+            'header', 'footer', 'input', 'form', 'button', 'aside', 'meta'
+        ];
+
+        foreach ($tags as &$tag) {
+            $nodes = $doc->filter($tag);
+
+            foreach ($nodes as $node) {
+                $node->parentNode->removeChild($node);
+            }
         }
 
         return $doc;
@@ -283,7 +301,7 @@ class DocumentCleaner {
                 $nodesToReturn[] = $kid;
             } else if ($kid->nodeType == XML_TEXT_NODE) {
                 $replaceText = preg_replace('@[\n\r\s\t]+@', "\n", $kid->textContent);
-                
+
                 if (mb_strlen(trim($replaceText)) > 0) {
                     $prevSibNode = $kid->previousSibling;
 
@@ -307,7 +325,7 @@ class DocumentCleaner {
                         $nextSibNode = $nextSibNode->nextSibling;
                     }
                 }
-                
+
                 $nodesToRemove[] = $kid;
             } else {
                 $nodesToReturn[] = $kid;
