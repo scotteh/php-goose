@@ -90,6 +90,16 @@ class Configuration {
         return $this->enableImageFetching;
     }
 
+    protected $enableAllImagesFetching = false;
+
+    public function setEnableAllImagesFetching(bool $enableAllImagesFetching) {
+        $this->enableAllImagesFetching = $enableAllImagesFetching;
+    }
+
+    public function getEnableAllImagesFetching() {
+        return $this->enableAllImagesFetching;
+    }
+
     protected $timeout = 10000;
 
     public function setTimeout(int $timeout) {

@@ -14,7 +14,8 @@
     "require": {
         "php": ">=5.4.0",
         "guzzlehttp/guzzle": "4.*",
-        "symfony/css-selector": "2.5.*"
+        "symfony/css-selector": "2.5.*",
+        "jakeasmith/http_build_url": "~0.1.2"
     },
     "autoload": {
         "psr-4": {
