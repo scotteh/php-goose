@@ -57,7 +57,9 @@ class OutputFormatter {
 
         $this->removeParagraphsWithFewWords($topNode);
 
-        return $this->convertToHtml($topNode);
+        $html = $this->convertToHtml($topNode);
+
+        return str_replace(['<p></p>', '<p>&nbsp;</p>'], '', $html);
     }
 
     private function convertToHtml($topNode) {
@@ -131,7 +133,7 @@ class OutputFormatter {
 
             foreach ($paragraphs as $el) {
                 $stopWords = $this->config->getStopWords()->getStopwordCount($el->textContent);
- 
+
                 if (mb_strlen($el->textContent) < 8 && $stopWords->getStopWordCount() < 3 && count($el->filter('object')) == 0 && count($el->filter('embed')) == 0) {
                     $el->parentNode->removeChild($el);
                 }
