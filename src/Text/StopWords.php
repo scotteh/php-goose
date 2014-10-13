@@ -50,4 +50,9 @@ class StopWords
             'stopWords' => $overlappingStopWords,
         ]);
     }
+
+    public function getCurrentStopWords()
+    {
+        return $this->cached;
+    }
 }

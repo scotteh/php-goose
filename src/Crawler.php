@@ -122,7 +122,7 @@ class Crawler {
 
         $doc = new DOMDocument(1.0);
         $doc->registerNodeClass('DOMElement', 'Goose\\DOM\\DOMElement');
-        @$doc->loadHTML($rawHtml);
+        @$doc->loadHTML(html_entity_decode($rawHtml));
 
         libxml_use_internal_errors($internalErrors);
         libxml_disable_entity_loader($disableEntities);

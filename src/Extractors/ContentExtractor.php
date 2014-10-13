@@ -89,7 +89,7 @@ class ContentExtractor {
             foreach ($selectors as $selector) {
                 $el = $article->getDoc()->filter($selector);
 
-                if ($el->length) {
+                if ($el->length && method_exists($el, 'getAttribute')) {
                     $attr = $el->getAttribute('content');
                     break;
                 }
@@ -334,6 +334,9 @@ class ContentExtractor {
      * @return
      */
     private function isHighLinkDensity(DOMElement $e, $limit = 1.0) {
+        // Temporary fix for DOMText given instead of DOMElement
+        if (!method_exists($e, 'filter')) return false;
+
         $links = $e->filter('a, [onclick]');
 
         if ($links->length == 0) {
@@ -372,7 +375,11 @@ class ContentExtractor {
      * @return
      */
     private function getScore($node) {
-        return (int)$node->getAttribute('gravityScore');
+        if (method_exists($node, 'getAttribute')) {
+            return (int)$node->getAttribute('gravityScore');
+        }
+
+        return 0;
     }
 
     /**
@@ -383,6 +390,8 @@ class ContentExtractor {
      * @param addToScore - the score to add to the node
      */
     private function updateScore($node, $addToScore) {
+        if (!method_exists($node, 'getAttribute')) return;
+
         $currentScore = (int)$node->getAttribute('gravityScore');
 
         $node->setAttribute('gravityScore', $currentScore + $addToScore);
@@ -395,6 +404,8 @@ class ContentExtractor {
      * @param addToCount
      */
     private function updateNodeCount($node, $addToCount) {
+        if (!method_exists($node, 'getAttribute')) return;
+
         $currentScore = (int)$node->getAttribute('gravityNodes');
 
         $node->setAttribute('gravityNodes', $currentScore + $addToCount);
@@ -468,6 +479,8 @@ class ContentExtractor {
     }
 
     public function isTableTagAndNoParagraphsExist(\DOMNode $e) {
+        if (!method_exists($e, 'filter')) return false;
+
         $subParagraphs = $e->filter('p, strong');
 
         foreach ($subParagraphs as $p) {
@@ -514,7 +527,10 @@ class ContentExtractor {
 
         foreach ($node->childNodes as $e) {
             if ($e->nodeName != 'p' && $e->nodeName != 'strong') {
-                Debug::trace($this->logPrefix, "CLEANUP  NODE: " . $e->getAttribute('id') . " class: " . $e->getAttribute('class'));
+
+                if (method_exists($e, 'getAttribute')) {
+                    Debug::trace($this->logPrefix, "CLEANUP  NODE: " . $e->getAttribute('id') . " class: " . $e->getAttribute('class'));
+                }
 
                 if ($this->isHighLinkDensity($e)
                     || $this->isTableTagAndNoParagraphsExist($e)
@@ -631,5 +647,40 @@ class ContentExtractor {
         }
 
         return $base;
+    }
+
+    public function getPopularWords($cleanedText, $limit = 5)
+    {
+        $minFrequency = 2;
+
+        $string = trim(preg_replace('/ss+/i', '', $cleanedText));
+        $string = preg_replace('/[^a-zA-Z -]/', '', $string); // only take alphabet characters, but keep the spaces and dashes too
+
+        preg_match_all('/\b.*?\b/i', $string, $matchWords);
+        $matchWords = $matchWords[0];
+
+        $stopWords = & $this->config->getStopWords()->getCurrentStopWords();
+
+        foreach ($matchWords as $key => &$item) {
+            if ($item == '' || in_array(strtolower($item), $stopWords) || strlen($item) <= 3 ) {
+                unset($matchWords[$key]);
+            }
+        }
+
+        $wordCount = str_word_count( implode(" ", $matchWords) , 1);
+        $frequency = array_count_values($wordCount);
+        arsort($frequency);
+
+        $keywords = [];
+
+        foreach ($frequency as $word => &$freq) {
+            if ($freq >= $minFrequency) {
+                $keywords[$word] = $freq;
+            }
+
+            if (count($keywords) >= $limit) break;
+        }
+
+        return $keywords;
     }
 }
