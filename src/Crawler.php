@@ -47,6 +47,11 @@ class Crawler {
         $article->setMetaKeywords($extractor->getMetaKeywords($article));
         $article->setCanonicalLink($extractor->getCanonicalLink($article));
         $article->setTags($extractor->extractTags($article));
+
+        if ($this->config->getEnableImageFetching()) {
+            $article->setTopImage($this->getImageExtractor()->getBestImage($article));
+        }
+
         $article->setDoc($docCleaner->clean($article));
 
         /*if (!$article->getPublishDate()) {
@@ -66,10 +71,6 @@ class Crawler {
             $article->setPopularWords($extractor->getPopularWords(
                 $article->getCleanedArticleText() ? $article->getCleanedArticleText() : $article->getMetaDescription()
             ));
-        }
-
-        if ($this->config->getEnableImageFetching()) {
-            $article->setTopImage($this->getImageExtractor()->getBestImage($article));
         }
 
         return $article;
