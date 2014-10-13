@@ -48,6 +48,7 @@ class Crawler {
         $article->setCanonicalLink($extractor->getCanonicalLink($article));
         $article->setTags($extractor->extractTags($article));
 
+        // Grabs the top image before cleaning up the doc
         if ($this->config->getEnableImageFetching()) {
             $article->setTopImage($this->getImageExtractor()->getBestImage($article));
         }
@@ -71,6 +72,12 @@ class Crawler {
             $article->setPopularWords($extractor->getPopularWords(
                 $article->getCleanedArticleText() ? $article->getCleanedArticleText() : $article->getMetaDescription()
             ));
+
+            // If the image has not been found yet, tries again using the topNode
+            if (!$article->getTopImage() && $this->config->getEnableImageFetching())
+            {
+                $article->setTopImage($this->getImageExtractor()->getBestImage($article));
+            }
         }
 
         return $article;
