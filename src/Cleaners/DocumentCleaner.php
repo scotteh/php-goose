@@ -28,7 +28,7 @@ class DocumentCleaner {
         'welcome_form', 'contentTools2', 'the_answers', 'communitypromo', 'promo_holder',
         'runaroundLeft', 'subscribe', 'vcard', 'articleheadings', 'date',
         'popup', 'author-dropdown', 'tools', 'socialtools', 'byline',
-        'konafilter', 'KonaFilter', 'breadcrumbs', 'wp-caption-text',
+        'konafilter', 'KonaFilter', 'breadcrumbs', 'wp-caption-text', 'source',
         'legende', 'ajoutVideo', 'timestamp', 'js_replies', 'creative_commons', 'topics',
         'pagination', 'mtl', 'author', 'credit', 'toc_container', 'sharedaddy', 'ad', 'po'
     ];
