@@ -127,10 +127,7 @@ class Crawler {
         $rawHtml = preg_replace_callback('@<([/])?script[^>]*>@i', $fn, $rawHtml);
 
         if (mb_detect_encoding($rawHtml, mb_detect_order(), true) === 'UTF-8') {
-            $rawHtml = preg_replace_callback('/[\x{80}-\x{10FFFF}]/u', function($match) {
-                list($utf8) = $match;
-                return mb_convert_encoding($utf8, 'HTML-ENTITIES', 'UTF-8');
-            }, $rawHtml);
+            $rawHtml = mb_convert_encoding($rawHtml, 'HTML-ENTITIES', 'UTF-8');
         }
 
         $doc = new DOMDocument(1.0);
