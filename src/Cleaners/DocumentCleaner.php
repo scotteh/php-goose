@@ -284,7 +284,7 @@ class DocumentCleaner {
         $fragment->appendXML(htmlentities(implode('', $replacementText), ENT_COMPAT | ENT_XML1));
 
         $el = $doc->createElement('p');
-        $el->appendChild($fragment);
+        @$el->appendChild($fragment);
 
         return $el;
     }

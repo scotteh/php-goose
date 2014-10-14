@@ -120,9 +120,16 @@ class Crawler {
 
         $rawHtml = preg_replace_callback('@<([/])?script[^>]*>@i', $fn, $rawHtml);
 
+        if (mb_detect_encoding($rawHtml, mb_detect_order(), true) === 'UTF-8') {
+            $rawHtml = preg_replace_callback('/[\x{80}-\x{10FFFF}]/u', function($match) {
+                list($utf8) = $match;
+                return mb_convert_encoding($utf8, 'HTML-ENTITIES', 'UTF-8');
+            }, $rawHtml);
+        }
+
         $doc = new DOMDocument(1.0);
         $doc->registerNodeClass('DOMElement', 'Goose\\DOM\\DOMElement');
-        @$doc->loadHTML(html_entity_decode($rawHtml));
+        @$doc->loadHTML($rawHtml);
 
         libxml_use_internal_errors($internalErrors);
         libxml_disable_entity_loader($disableEntities);
