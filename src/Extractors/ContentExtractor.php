@@ -89,8 +89,8 @@ class ContentExtractor {
             foreach ($selectors as $selector) {
                 $el = $article->getDoc()->filter($selector);
 
-                if ($el->length && method_exists($el, 'getAttribute')) {
-                    $attr = $el->getAttribute('content');
+                if ($el->length) {
+                    $attr = $el->item(0)->getAttribute('content');
                     break;
                 }
             }
@@ -217,7 +217,7 @@ class ContentExtractor {
         foreach ($nodesWithText as $node) {
             $boostScore = 0.0;
 
-            if ($this->isOkToBoost($node)) {
+            if ($node->nodeType == XML_ELEMENT_NODE && $this->isOkToBoost($node)) {
                 if ($cnt >= 0) {
                     $boostScore = (1.0 / $startingBoost) * 50;
                     $startingBoost += 1;
@@ -334,9 +334,6 @@ class ContentExtractor {
      * @return
      */
     private function isHighLinkDensity(DOMElement $e, $limit = 1.0) {
-        // Temporary fix for DOMText given instead of DOMElement
-        if (!method_exists($e, 'filter')) return false;
-
         $links = $e->filter('a, [onclick]');
 
         if ($links->length == 0) {
@@ -375,11 +372,7 @@ class ContentExtractor {
      * @return
      */
     private function getScore($node) {
-        if (method_exists($node, 'getAttribute')) {
-            return (int)$node->getAttribute('gravityScore');
-        }
-
-        return 0;
+        return (int)$node->getAttribute('gravityScore');
     }
 
     /**
@@ -390,8 +383,6 @@ class ContentExtractor {
      * @param addToScore - the score to add to the node
      */
     private function updateScore($node, $addToScore) {
-        if (!method_exists($node, 'getAttribute')) return;
-
         $currentScore = (int)$node->getAttribute('gravityScore');
 
         $node->setAttribute('gravityScore', $currentScore + $addToScore);
@@ -404,8 +395,6 @@ class ContentExtractor {
      * @param addToCount
      */
     private function updateNodeCount($node, $addToCount) {
-        if (!method_exists($node, 'getAttribute')) return;
-
         $currentScore = (int)$node->getAttribute('gravityNodes');
 
         $node->setAttribute('gravityNodes', $currentScore + $addToCount);
@@ -478,9 +467,7 @@ class ContentExtractor {
         return $goodLinks;
     }
 
-    public function isTableTagAndNoParagraphsExist(\DOMNode $e) {
-        if (!method_exists($e, 'filter')) return false;
-
+    public function isTableTagAndNoParagraphsExist(DOMElement $e) {
         $subParagraphs = $e->filter('p, strong');
 
         foreach ($subParagraphs as $p) {
@@ -526,11 +513,9 @@ class ContentExtractor {
         $node = $this->addSiblings($targetNode);
 
         foreach ($node->childNodes as $e) {
-            if ($e->nodeName != 'p' && $e->nodeName != 'strong') {
+            if ($e->nodeType == XML_ELEMENT_NODE && $e->nodeName != 'p' && $e->nodeName != 'strong') {
 
-                if (method_exists($e, 'getAttribute')) {
-                    Debug::trace($this->logPrefix, "CLEANUP  NODE: " . $e->getAttribute('id') . " class: " . $e->getAttribute('class'));
-                }
+                Debug::trace($this->logPrefix, "CLEANUP  NODE: " . $e->getAttribute('id') . " class: " . $e->getAttribute('class'));
 
                 if ($this->isHighLinkDensity($e)
                     || $this->isTableTagAndNoParagraphsExist($e)
