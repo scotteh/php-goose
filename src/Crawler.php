@@ -61,6 +61,8 @@ class Crawler {
 
         $article->setTopNode($extractor->calculateBestNodeBasedOnClustering($article));
 
+        $txt = $article->getTitle() . $article->getMetaDescription();
+
         if ($article->getTopNode()) {
             $article->setMovies($extractor->extractVideos($article->getTopNode()));
             $article->setLinks($extractor->extractLinks($article->getTopNode()));
@@ -69,9 +71,7 @@ class Crawler {
             $article->setCleanedArticleText($outputFormatter->getFormattedText($article->getTopNode()));
             $article->setHtmlArticle($outputFormatter->cleanupHtml($article->getTopNode()));
 
-            $article->setPopularWords($extractor->getPopularWords(
-                $article->getCleanedArticleText() ? $article->getCleanedArticleText() : $article->getMetaDescription()
-            ));
+            $txt .= $article->getCleanedArticleText();
 
             // If the image has not been found yet, tries again using the topNode
             if (!$article->getTopImage() && $this->config->getEnableImageFetching())
@@ -79,6 +79,8 @@ class Crawler {
                 $article->setTopImage($this->getImageExtractor()->getBestImage($article));
             }
         }
+
+        $article->setPopularWords($extractor->getPopularWords($txt));
 
         return $article;
     }

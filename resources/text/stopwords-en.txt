@@ -225,6 +225,7 @@ into
 inward
 is
 isn't
+isnt
 it
 it'd
 it'll
