@@ -21,6 +21,30 @@ class DOMElement extends \DOMElement
         return $domxpath->query($xpath, $this);
     }
 
+    public function filterAsArray($selector) {
+        $results = $this->filter($selector);
+
+        $items = [];
+
+        foreach ($results as $key => $item) {
+            $items[$key] = $item;
+        }
+
+        return $items;
+    }
+
+    public function filterXPathAsArray($selector) {
+        $results = $this->filterXPath($selector);
+
+        $items = [];
+
+        foreach ($results as $key => $item) {
+            $items[$key] = $item;
+        }
+
+        return $items;
+    }
+
     public function getSiblings() {
         $currentSibling = $this->previousSibling;
         $b = [];

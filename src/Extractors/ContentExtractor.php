@@ -482,7 +482,7 @@ class ContentExtractor {
             if ($e->nodeName == 'ul' || $e->nodeName == 'ol') {
                 $linkTextLength = array_sum(array_map(function($value){
                     return mb_strlen($value->textContent);
-                }, $e->filter('a')));
+                }, $e->filterAsArray('a')));
 
                 $elementTextLength = mb_strlen($e->textContent);
 
