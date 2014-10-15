@@ -636,7 +636,7 @@ class ContentExtractor {
 
     public function getPopularWords($cleanedText, $limit = 5)
     {
-        $minFrequency = 2;
+        $minFrequency = 1;
 
         $string = trim(preg_replace('/ss+/i', '', $cleanedText));
         $string = preg_replace('/[^a-zA-Z -]/', '', $string); // only take alphabet characters, but keep the spaces and dashes too
