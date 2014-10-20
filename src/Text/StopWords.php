@@ -22,7 +22,7 @@ class StopWords
 
         $file = sprintf(__DIR__ . '/../../resources/text/stopwords-%s.txt', $language);
 
-        $this->cached = explode("\n", file_get_contents($file));
+        $this->cached = explode("\n", str_replace(array("\r\n", "\r"), "\n", file_get_contents($file)));
     }
 
     public function removePunctuation($str) {
@@ -39,8 +39,8 @@ class StopWords
 
         $overlappingStopWords = [];
         foreach ($candidateWords as $w) {
-            if (in_array(strtolower($w), $this->cached)) {
-                $overlappingStopWords[] = strtolower($w);
+            if (in_array(mb_strtolower($w), $this->cached)) {
+                $overlappingStopWords[] = mb_strtolower($w);
             }
         }
 
