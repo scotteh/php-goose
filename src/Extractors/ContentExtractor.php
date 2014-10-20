@@ -644,7 +644,7 @@ class ContentExtractor {
         preg_match_all('/\b.*?\b/i', $string, $matchWords);
         $matchWords = $matchWords[0];
 
-        $stopWords = & $this->config->getStopWords()->getCurrentStopWords();
+        $stopWords = $this->config->getStopWords()->getCurrentStopWords();
 
         foreach ($matchWords as $key => &$item) {
             if ($item == '' || in_array(strtolower($item), $stopWords) || strlen($item) <= 3 ) {
