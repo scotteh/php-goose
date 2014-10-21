@@ -67,7 +67,7 @@ class Crawler {
                 $article->setTopImage($imageExtractor->getBestImage($article));
 
                 if ($this->config->getEnableAllImagesFetching()) {
-                    $article->setAllImages($imageExtractor->getAllImages($article->getTopNode()));
+                    $article->setAllImages($imageExtractor->getAllImages($article));
                 }
             }
 

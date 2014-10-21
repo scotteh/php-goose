@@ -220,8 +220,34 @@ class StandardImageExtractor extends ImageExtractor {
         return $imageResults;
     }
 
-    public function getAllImages($topNode, $parentDepthLevel = 0, $siblingDepthLevel = 0) {
-        // TODO
+    public function getAllImages($article, $parentDepthLevel = 0, $siblingDepthLevel = 0) {
+        $images = [];
+
+        $candidateImages = $this->getImageCandidates($article, $article->getTopNode());
+
+        if (!empty($candidateImages)) {
+            foreach ($candidateImages as $cadidateImg) {
+                $locallyStoredImage = $this->getLocallyStoredImage($article->getLinkhash(), $this->buildImagePath($article, $cadidateImg->getAttribute('src')));
+
+                if ($locallyStoredImage) {
+                    $img = new Image();
+                    $img->setImageSrc($locallyStoredImage->getImgSrc());
+                    $img->setBytes($locallyStoredImage->getBytes());
+                    $img->setHeight($locallyStoredImage->getHeight());
+                    $img->setWidth($locallyStoredImage->getWidth());
+
+                    $images[] = $img;
+                }
+            }
+        } else {
+            $depthObj = $this->getDepthLevel($article->getTopNode(), $parentDepthLevel, $siblingDepthLevel);
+
+            if ($depthObj) {
+                return $this->checkForLargeImages($article, $depthObj->node, $depthObj->parentDepth, $depthObj->siblingDepth);
+            }
+        }
+
+        return $images;
     }
 
     /**

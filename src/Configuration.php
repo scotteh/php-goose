@@ -82,7 +82,7 @@ class Configuration {
 
     protected $enableImageFetching = true;
 
-    public function setEnableImageFetching(bool $enableImageFetching) {
+    public function setEnableImageFetching($enableImageFetching) {
         $this->enableImageFetching = $enableImageFetching;
     }
 
@@ -92,7 +92,7 @@ class Configuration {
 
     protected $enableAllImagesFetching = false;
 
-    public function setEnableAllImagesFetching(bool $enableAllImagesFetching) {
+    public function setEnableAllImagesFetching($enableAllImagesFetching) {
         $this->enableAllImagesFetching = $enableAllImagesFetching;
     }
 
