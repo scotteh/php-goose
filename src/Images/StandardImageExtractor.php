@@ -11,6 +11,13 @@ class StandardImageExtractor extends ImageExtractor {
         'adsatt', 'view\.atdmt',
     ];
 
+    private static $KNOWN_IMG_DOM_NAMES = [
+        'yn-story-related-media',
+        'cnn_strylccimg300cntr',
+        'big_photo',
+        'ap-smallphoto-a'
+    ];
+
     private $MAX_BYTES_SIZE = 15728640;
 
     private $config;
@@ -20,7 +27,7 @@ class StandardImageExtractor extends ImageExtractor {
     }
 
     public function getBestImage($article) {
-        $image = $this->checkForKnownElements();
+        $image = $this->checkForKnownElements($article);
 
         if ($image) {
             return $image;
@@ -270,13 +277,68 @@ class StandardImageExtractor extends ImageExtractor {
         return ImageUtils::storeImageToLocalFile($linkhash, $imageSrc, $this->config);
     }
 
+    public function getCleanDomain($article) {
+        return implode('.', array_slice(explode('.', $article->getDomain()), -2, 2));
+    }
+
     /**
      * in here we check for known image contains from sites we've checked out like yahoo, techcrunch, etc... that have
      * known  places to look for good images.
      * //todo enable this to use a series of settings files so people can define what the image ids/classes are on specific sites
      */
-    public function checkForKnownElements() {
-        // TODO
+    public function checkForKnownElements($article) {
+        if (!$article->getRawDoc()) {
+            return null;
+        }
+
+        $knownImgDomNames = self::$KNOWN_IMG_DOM_NAMES;
+
+        $domain = $this->getCleanDomain($article);
+
+        $customSiteMapping = $this->customSiteMapping();
+
+        if (isset($customSiteMapping[$domain])) {
+            foreach (explode('|', $customSiteMapping[$domain]) as $class) {
+                $knownImgDomNames[] = $class;
+            }
+        }
+
+        $knownImage = null;
+
+        foreach ($knownImgDomNames as $knownName) {
+            $known = $article->getRawDoc()->filter('#' . $knownName);
+
+            if (!$known->length) {
+                $known = $article->getRawDoc()->filter('.' . $knownName);
+            }
+
+            if ($known->length) {
+                $mainImage = $known->item(0)->filter('img');
+
+                if ($mainImage->length) {
+                    $knownImage = $mainImage->item(0);
+                }
+            }
+        }
+
+        if (is_null($knownImage)) {
+            return null;
+        }
+
+        $knownImgSrc = $knownImage->getAttribute('src');
+
+        $mainImage = new Image();
+        $mainImage->setImageSrc($this->buildImagePath($article, $knownImgSrc));
+        $mainImage->setImageExtractionType('known');
+        $mainImage->setConfidenceScore(90);
+        $locallyStoredImage = $this->getLocallyStoredImage($article->getLinkhash(), $mainImage->getImageSrc());
+        if ($locallyStoredImage) {
+            $mainImage->setBytes($locallyStoredImage->getBytes());
+            $mainImage->setHeight($locallyStoredImage->getHeight());
+            $mainImage->setWidth($locallyStoredImage->getWidth());
+        }
+
+        return $this->ensureMinimumImageSize($mainImage);
     }
 
     /**
@@ -292,4 +354,23 @@ class StandardImageExtractor extends ImageExtractor {
 
         return http_build_url($articleUrlParts, $imageUrlParts, HTTP_URL_JOIN_PATH);
     }
+
+    private static $CUSTOM_SITE_MAPPING = array();
+
+    private function customSiteMapping() {
+        if (empty(self::$CUSTOM_SITE_MAPPING)) {
+            $file = __DIR__ . '/../../resources/images/known-image-css.txt';
+
+            $lines = explode("\n", str_replace(array("\r\n", "\r"), "\n", file_get_contents($file)));
+
+            foreach ($lines as $line) {
+                list($domain, $css) = explode('^', $line);
+
+                self::$CUSTOM_SITE_MAPPING[$domain] = $css;
+            }
+        }
+
+        return self::$CUSTOM_SITE_MAPPING;
+    }
+    
 }
