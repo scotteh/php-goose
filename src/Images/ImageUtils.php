@@ -48,8 +48,8 @@ class ImageUtils {
         ];
 
         return (
-            isset($extnesions[$imageDetails->mime])
-            ? $extnesions[$imageDetails->mime]
+            isset($extensions[$imageDetails->mime])
+            ? $extensions[$imageDetails->mime]
             : 'NA'
         );
     }

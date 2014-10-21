@@ -22,7 +22,7 @@ class StopWords
 
         $file = sprintf(__DIR__ . '/../../resources/text/stopwords-%s.txt', $language);
 
-        $this->cached = explode("\n", str_replace(array("\r\n", "\r"), "\n", file_get_contents($file)));
+        $this->cached = explode("\n", str_replace(["\r\n", "\r"], "\n", file_get_contents($file)));
     }
 
     public function removePunctuation($str) {

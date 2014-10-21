@@ -39,7 +39,7 @@ class StandardImageExtractor extends ImageExtractor {
             return $image;
         }
 
-        $image = $this->checkForLargeImages($article, $topNode, 0, 0);
+        $image = $this->checkForLargeImages($article, $article->getTopNode(), 0, 0);
 
         if ($image) {
             return $image;
@@ -86,11 +86,66 @@ class StandardImageExtractor extends ImageExtractor {
      * @param node
      */
     private function checkForLargeImages($article, $node, $parentDepthLevel, $siblingDepthLevel) {
-        // TODO
+        $goodImages = $this->getImageCandidates($article, $node);
+
+        $scoredImages = $this->downloadImagesAndGetResults($article, $goodImages, $parentDepthLevel);
+
+        ksort($scoredImages);
+
+        if (!empty($scoredImages)) {
+            foreach ($scoredImages as $imageScore => $scoredImage) {
+                $mainImage = new Image();
+                $mainImage->setImageSrc($scoredImage->getImgSrc());
+                $mainImage->setImageExtractionType('bigimage');
+                $mainImage->setConfidenceScore(100 / count($scoredImages));
+                $mainImage->setImageScore($imageScore);
+                $mainImage->setBytes($scoredImage->getBytes());
+                $mainImage->setHeight($scoredImage->getHeight());
+                $mainImage->setWidth($scoredImage->getWidth());
+
+                return $mainImage;
+            }
+        } else {
+            $depthObj = $this->getDepthLevel($node, $parentDepthLevel, $siblingDepthLevel);
+
+            if ($depthObj) {
+                return $this->checkForLargeImages($article, $depthObj->node, $depthObj->parentDepth, $depthObj->siblingDepth);
+            }
+        }
+
+        return null;
     }
 
     private function getDepthLevel($node, $parentDepth, $siblingDepth) {
-        // TODO
+        if (is_null($node)) {
+            return null;
+        }
+
+        $MAX_PARENT_DEPTH = 2;
+
+        if ($parentDepth > $MAX_PARENT_DEPTH) {
+            return null;
+        } else {
+            do {
+                $siblingNode = $node->previousSibling;
+            } while ($siblingNode && $siblingNode->nodeType != XML_ELEMENT_NODE);
+
+            if (is_null($siblingNode)) {
+                return (object)[
+                    'node' => $node->parentNode,
+                    'parentDepth' => $parentDepth + 1,
+                    'siblingDepth' => 0,
+                ];
+            } else {
+                return (object)[
+                    'node' => $siblingNode,
+                    'parentDepth' => $parentDepth,
+                    'siblingDepth' => $siblingDepth + 1,
+                ];
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -104,8 +159,65 @@ class StandardImageExtractor extends ImageExtractor {
      * @param images
      * @return
      */
-    private function downloadImagesAndGetResults($images, $depthLevel) {
-        // TODO
+    private function downloadImagesAndGetResults($article, $images, $depthLevel) {
+        $imageResults = [];
+        $initialArea = 0.0;
+        $cnt = 1.0;
+        $MIN_WIDTH = 50;
+        $MIN_HEIGHT = 0;
+
+        $i = 0; foreach ($images as $image) {
+            if (++$i == 30) {
+                break;
+            }
+
+            $locallyStoredImage = $this->getLocallyStoredImage($article->getLinkhash(), $this->buildImagePath($article, $image->getAttribute('src')));
+
+            if ($locallyStoredImage) {
+                $width = $locallyStoredImage->getWidth();
+                $height = $locallyStoredImage->getHeight();
+                $fileExtension = $locallyStoredImage->getFileExtension();
+
+                if ($width <= $MIN_WIDTH) {
+                    continue;
+                }
+
+                if ($height <= $MIN_WIDTH) {
+                    continue;
+                }
+
+                if ($fileExtension == 'NA') {
+                    continue;
+                }
+
+                if (($depthLevel < 1 && $width < 300) || $depthLevel >= 1) {
+                    continue;
+                }
+
+                if ($this->isBannerDimensions($width, $height)) {
+                    continue;
+                }
+
+                $sequenceScore = 1.0 / $cnt;
+                $area = $width * $height;
+                $totalScore = 0;
+
+                if ($initialArea == 0) {
+                    $initialArea = $area * 1.48;
+                    $totalScore = 1;
+                } else {
+                    $areaDifference = $area * $initialArea;
+                    $totalScore = $sequenceScore * $areaDifference;
+                }
+
+                $cnt += 1;
+
+                $imageResults[$totalScore] = $locallyStoredImage;
+                $cnt += 1;
+            }
+        }
+
+        return $imageResults;
     }
 
     public function getAllImages($topNode, $parentDepthLevel = 0, $siblingDepthLevel = 0) {
@@ -120,7 +232,25 @@ class StandardImageExtractor extends ImageExtractor {
      * @param height
      */
     private function isBannerDimensions($width, $height) {
-        // TODO
+        if ($width == $height) {
+            return false;
+        }
+
+        if ($width > $height) {
+            $diff = $width / $height;
+            if ($diff > 5) {
+                return true;
+            }
+        }
+
+        if ($height > $width) {
+            $diff = $height / $width;
+            if ($diff > 5) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -165,7 +295,7 @@ class StandardImageExtractor extends ImageExtractor {
     }
 
     private function getImageCandidates($article, $node) {
-        $images = $node->select('img');
+        $images = $node->filter('img');
         $filteredImages = $this->filterBadNames($images);
         $goodImages = $this->findImagesThatPassByteSizeTest($article, $filteredImages);
 
@@ -178,7 +308,7 @@ class StandardImageExtractor extends ImageExtractor {
      * @param images
      * @return
      */
-    private function findImagesThatPassByteSizeTest($images) {
+    private function findImagesThatPassByteSizeTest($article, $images) {
         $cnt = 0;
         $goodImages = [];
 
@@ -355,13 +485,13 @@ class StandardImageExtractor extends ImageExtractor {
         return http_build_url($articleUrlParts, $imageUrlParts, HTTP_URL_JOIN_PATH);
     }
 
-    private static $CUSTOM_SITE_MAPPING = array();
+    private static $CUSTOM_SITE_MAPPING = [];
 
     private function customSiteMapping() {
         if (empty(self::$CUSTOM_SITE_MAPPING)) {
             $file = __DIR__ . '/../../resources/images/known-image-css.txt';
 
-            $lines = explode("\n", str_replace(array("\r\n", "\r"), "\n", file_get_contents($file)));
+            $lines = explode("\n", str_replace(["\r\n", "\r"], "\n", file_get_contents($file)));
 
             foreach ($lines as $line) {
                 list($domain, $css) = explode('^', $line);
