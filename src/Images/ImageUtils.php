@@ -19,10 +19,10 @@ class ImageUtils {
      * Writes an image src http string to disk as a temporary file and returns the LocallyStoredImage object that has the info you should need
      * on the image
      */
-    public static function storeImageToLocalFile($linkhash, $imageSrc, $config) {
+    public static function storeImageToLocalFile($imageSrc, $config) {
         // @TODO: Add cache check
 
-        $localFileName = self::handleEntity($linkhash, $imageSrc, $config);
+        $localFileName = self::handleEntity($imageSrc, $config);
 
         if ($localFileName) {
             $imageDetails = self::getImageDimensions($localFileName);
@@ -54,15 +54,15 @@ class ImageUtils {
         );
     }
 
-    private static function readExistingFileInfo($linkhash, $imageSrc, $config) {
+    private static function readExistingFileInfo($imageSrc, $config) {
         // TODO
     }
 
-    private static function writeEntityContentsToDisk($entity, $linkhash, $imageSrc, $config) {
+    private static function writeEntityContentsToDisk($entity, $imageSrc, $config) {
         $file = tempnam(sys_get_temp_dir(), 'goose');
     }
 
-    private static function handleEntity($linkhash, $imageSrc, $config) {
+    private static function handleEntity($imageSrc, $config) {
         $file = tempnam(sys_get_temp_dir(), 'goose');
 
         $config = $config->getGuzzle();

@@ -171,7 +171,7 @@ class StandardImageExtractor extends ImageExtractor {
                 break;
             }
 
-            $locallyStoredImage = $this->getLocallyStoredImage($article->getLinkhash(), $this->buildImagePath($article, $image->getAttribute('src')));
+            $locallyStoredImage = $this->getLocallyStoredImage($this->buildImagePath($article, $image->getAttribute('src')));
 
             if ($locallyStoredImage) {
                 $width = $locallyStoredImage->getWidth();
@@ -227,7 +227,7 @@ class StandardImageExtractor extends ImageExtractor {
 
         if (!empty($candidateImages)) {
             foreach ($candidateImages as $cadidateImg) {
-                $locallyStoredImage = $this->getLocallyStoredImage($article->getLinkhash(), $this->buildImagePath($article, $cadidateImg->getAttribute('src')));
+                $locallyStoredImage = $this->getLocallyStoredImage($this->buildImagePath($article, $cadidateImg->getAttribute('src')));
 
                 if ($locallyStoredImage) {
                     $img = new Image();
@@ -346,7 +346,7 @@ class StandardImageExtractor extends ImageExtractor {
 
             $imageSrc = $image->getAttribute('src');
 
-            $locallyStoredImage = $this->getLocallyStoredImage($article->getLinkhash(), $this->buildImagePath($article, $imageSrc));
+            $locallyStoredImage = $this->getLocallyStoredImage($this->buildImagePath($article, $imageSrc));
 
             if ($locallyStoredImage) {
                 $bytes = $locallyStoredImage->getBytes();
@@ -407,7 +407,7 @@ class StandardImageExtractor extends ImageExtractor {
         $mainImage->setImageSrc($imagePath);
         $mainImage->setImageExtractionType($type);
         $mainImage->setConfidenceScore(100);
-        $locallyStoredImage = $this->getLocallyStoredImage($article->getLinkhash(), $mainImage->getImageSrc());
+        $locallyStoredImage = $this->getLocallyStoredImage($mainImage->getImageSrc());
         if ($locallyStoredImage) {
             $mainImage->setBytes($locallyStoredImage->getBytes());
             $mainImage->setHeight($locallyStoredImage->getHeight());
@@ -429,8 +429,8 @@ class StandardImageExtractor extends ImageExtractor {
     /**
      * returns the bytes of the image file on disk
      */
-    public function getLocallyStoredImage($linkhash, $imageSrc) {
-        return ImageUtils::storeImageToLocalFile($linkhash, $imageSrc, $this->config);
+    public function getLocallyStoredImage($imageSrc) {
+        return ImageUtils::storeImageToLocalFile($imageSrc, $this->config);
     }
 
     public function getCleanDomain($article) {
@@ -487,7 +487,7 @@ class StandardImageExtractor extends ImageExtractor {
         $mainImage->setImageSrc($this->buildImagePath($article, $knownImgSrc));
         $mainImage->setImageExtractionType('known');
         $mainImage->setConfidenceScore(90);
-        $locallyStoredImage = $this->getLocallyStoredImage($article->getLinkhash(), $mainImage->getImageSrc());
+        $locallyStoredImage = $this->getLocallyStoredImage($mainImage->getImageSrc());
         if ($locallyStoredImage) {
             $mainImage->setBytes($locallyStoredImage->getBytes());
             $mainImage->setHeight($locallyStoredImage->getHeight());
