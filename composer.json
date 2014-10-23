@@ -2,7 +2,7 @@
     "name": "scotteh/php-goose",
     "type": "library",
     "description": "Html Content / Article Extractor & Web Scrapping library written in PHP",
-    "keywords": ["scraper", "http", "extractor", "text", "content", "scraping", "website"],
+    "keywords": ["scraper", "http", "extractor", "text", "content", "scraping", "website", "readability"],
     "homepage": "https://github.com/scotteh/php-goose",
     "license": "Apache-2.0",
     "authors": [
@@ -13,7 +13,7 @@
     ],
     "require": {
         "php": ">=5.4.0",
-        "guzzlehttp/guzzle": "4.*",
+        "guzzlehttp/guzzle": "5.*",
         "symfony/css-selector": "2.5.*",
         "jakeasmith/http_build_url": "~0.1.2"
     },
