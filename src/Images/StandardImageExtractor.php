@@ -226,18 +226,22 @@ class StandardImageExtractor extends ImageExtractor {
         $candidateImages = $this->getImageCandidates($article, $article->getTopNode());
 
         if (!empty($candidateImages)) {
+            $imageUrls = [];
+
             foreach ($candidateImages as $cadidateImg) {
-                $locallyStoredImage = $this->getLocallyStoredImage($this->buildImagePath($article, $cadidateImg->getAttribute('src')));
+                $imageUrls[] = $this->buildImagePath($article, $cadidateImg->getAttribute('src'));
+            }
 
-                if ($locallyStoredImage) {
-                    $img = new Image();
-                    $img->setImageSrc($locallyStoredImage->getImgSrc());
-                    $img->setBytes($locallyStoredImage->getBytes());
-                    $img->setHeight($locallyStoredImage->getHeight());
-                    $img->setWidth($locallyStoredImage->getWidth());
+            $locallyStoredImages = $this->getLocallyStoredImage($imageUrls);
 
-                    $images[] = $img;
-                }
+            foreach ($locallyStoredImages as $locallyStoredImage) {
+                $img = new Image();
+                $img->setImageSrc($locallyStoredImage->getImgSrc());
+                $img->setBytes($locallyStoredImage->getBytes());
+                $img->setHeight($locallyStoredImage->getHeight());
+                $img->setWidth($locallyStoredImage->getWidth());
+
+                $images[] = $img;
             }
         } else {
             $depthObj = $this->getDepthLevel($article->getTopNode(), $parentDepthLevel, $siblingDepthLevel);
@@ -336,29 +340,34 @@ class StandardImageExtractor extends ImageExtractor {
      */
     private function findImagesThatPassByteSizeTest($article, $images) {
         $cnt = 0;
+        $imageUrls = [];
+        $imageNodes = [];
         $goodImages = [];
 
         foreach ($images as $image) {
             if ($cnt > 30) {
                 // Abort! they have over 30 images near the top node.
-                return $goodImages;
+                break;
             }
 
-            $imageSrc = $image->getAttribute('src');
-
-            $locallyStoredImage = $this->getLocallyStoredImage($this->buildImagePath($article, $imageSrc));
-
-            if ($locallyStoredImage) {
-                $bytes = $locallyStoredImage->getBytes();
-
-                if (($bytes == 0 || $bytes > $this->config->getMinBytesForImages()) && $bytes < $this->MAX_BYTES_SIZE) {
-                    $goodImages[] = $image;
-                }else {
-                    $image->parentNode->removeChild($image);
-                }
-            }
+            $imageUrls[] = $this->buildImagePath($article, $image->getAttribute('src'));
+            $imageNodes[] = $image;
 
             $cnt++;
+        }
+
+        $locallyStoredImages = $this->getLocallyStoredImage($imageUrls, true);
+
+        foreach ($locallyStoredImages as $i => $locallyStoredImage) {
+            $image = $imageNodes[$i];
+
+            $bytes = $locallyStoredImage->getBytes();
+
+            if (($bytes == 0 || $bytes > $this->config->getMinBytesForImages()) && $bytes < $this->MAX_BYTES_SIZE) {
+                $goodImages[] = $image;
+            } else {
+                $image->parentNode->removeChild($image);
+            }
         }
 
         return $goodImages;
@@ -429,8 +438,8 @@ class StandardImageExtractor extends ImageExtractor {
     /**
      * returns the bytes of the image file on disk
      */
-    public function getLocallyStoredImage($imageSrc) {
-        return ImageUtils::storeImageToLocalFile($imageSrc, $this->config);
+    public function getLocallyStoredImage($imageSrc, $returnAll = false) {
+        return ImageUtils::storeImageToLocalFile($imageSrc, $returnAll, $this->config);
     }
 
     public function getCleanDomain($article) {

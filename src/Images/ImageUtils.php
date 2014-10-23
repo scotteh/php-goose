@@ -2,6 +2,7 @@
 
 namespace Goose\Images;
 
+use GuzzleHttp\Pool as GuzzlePool;
 use GuzzleHttp\Client as GuzzleClient;
 
 class ImageUtils {
@@ -19,25 +20,38 @@ class ImageUtils {
      * Writes an image src http string to disk as a temporary file and returns the LocallyStoredImage object that has the info you should need
      * on the image
      */
-    public static function storeImageToLocalFile($imageSrc, $config) {
-        // @TODO: Add cache check
+    public static function storeImageToLocalFile($imageSrcs, $returnAll, $config) {
+        $asArray = is_array($imageSrcs);
 
-        $localFileName = self::handleEntity($imageSrc, $config);
+        if (!$asArray) {
+            $imageSrcs = [$imageSrcs];
+        }
 
-        if ($localFileName) {
-            $imageDetails = self::getImageDimensions($localFileName);
+        $localImages = self::handleEntity($imageSrcs, $returnAll, $config);
 
-            return new LocallyStoredImage([
-                'imgSrc' => $imageSrc,
-                'localFileName' => $localFileName,
-                'bytes' => filesize($localFileName),
+        if (empty($localImages)) {
+            return null;
+        }
+
+        $locallyStoredImages = [];
+        foreach ($localImages as $localImage) {
+            $imageDetails = self::getImageDimensions($localImage->file);
+
+            $locallyStoredImages[] = new LocallyStoredImage([
+                'imgSrc' => $localImage->url,
+                'localFileName' => $localImage->file,
+                'bytes' => filesize($localImage->file),
                 'height' => $imageDetails->height,
                 'width' => $imageDetails->width,
                 'fileExtension' => self::getFileExtensionName($imageDetails),
             ]);
         }
 
-        return null;
+        return (
+            $asArray
+            ? $locallyStoredImages
+            : $locallyStoredImages[0]
+        );
     }
 
     private static function getFileExtensionName($imageDetails) {
@@ -62,24 +76,41 @@ class ImageUtils {
         $file = tempnam(sys_get_temp_dir(), 'goose');
     }
 
-    private static function handleEntity($imageSrc, $config) {
-        $file = tempnam(sys_get_temp_dir(), 'goose');
-
-        $config = $config->getGuzzle();
-
-        if (!is_array($config)) {
-            $config = [];
-        }
-
-        $config['save_to'] = $file;
-
+    private static function handleEntity($imageSrcs, $returnAll, $config) {
         $guzzle = new GuzzleClient();
-        $response = $guzzle->get($imageSrc, $config);
 
-        if ($response->getStatusCode() != 200) {
-            return null;
-        } else {
-            return $file;
+        $requests = [];
+
+        foreach ($imageSrcs as $imageSrc) {
+            $file = tempnam(sys_get_temp_dir(), 'goose');
+
+            $options = $config->getGuzzle();
+
+            if (!is_array($options)) {
+                $options = [];
+            }
+
+            $options['save_to'] = $file;
+
+            $requests[] = $guzzle->createRequest('GET', $imageSrc, $options);
         }
+
+        $responses = GuzzlePool::batch($guzzle, $requests);
+
+        $results = [];
+        foreach ($responses as $response) {
+            if ($returnAll || $response->getStatusCode() == 200) {
+                $results[] = (object)[
+                    'url' => $response->getEffectiveUrl(),
+                    'file' => $response->getBody()->getContents(),
+                ];
+            }
+        }
+
+        if (empty($results)) {
+            return null;
+        }
+
+        return $results;
     }
 }
