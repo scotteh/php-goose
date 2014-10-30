@@ -47,6 +47,14 @@ Install the library.
 php composer.phar install
 ```
 
+##Autoloading
+
+This library requires an autoloader, if you aren't already using one you can include [Composers autoloader](https://getcomposer.org/doc/01-basic-usage.md#autoloading).
+
+``` php
+require('vendor/autoload.php');
+```
+
 ##Usage
 
 ``` php
@@ -61,10 +69,12 @@ $metaKeywords = $article->getMetaKeywords();
 $canonicalLink = $article->getCanonicalLink();
 $domain = $article->getDomain();
 $tags = $article->getTags();
+$links = $article->getLinks();
 $movies = $article->getMovies();
 $articleText = $article->getCleanedArticleText();
 $entities = $article->getPopularWords();
 $image = $article->getTopImage();
+$allImages = $article->getAllImages();
 ```
 
 ##Licensing
