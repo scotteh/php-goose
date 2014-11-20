@@ -113,7 +113,7 @@ class StandardImageExtractor extends ImageExtractor {
             }
         }
 
-        return null;
+        return [];
     }
 
     private function getDepthLevel($node, $parentDepth, $siblingDepth) {
@@ -126,8 +126,10 @@ class StandardImageExtractor extends ImageExtractor {
         if ($parentDepth > $MAX_PARENT_DEPTH) {
             return null;
         } else {
+            $siblingNode = clone $node;
+
             do {
-                $siblingNode = $node->previousSibling;
+                $siblingNode = $siblingNode->previousSibling;
             } while ($siblingNode && $siblingNode->nodeType != XML_ELEMENT_NODE);
 
             if (is_null($siblingNode)) {
