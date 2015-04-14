@@ -1,6 +1,6 @@
 <?php
 
-namespace Goose/Exceptions;
+namespace Goose\Exceptions;
 
-class MalformedURLException extends Exception {
+class MalformedURLException extends \Exception {
 }

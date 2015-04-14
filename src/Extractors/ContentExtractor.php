@@ -23,14 +23,14 @@ class ContentExtractor {
     }
 
     public function getTitle($article) {
-        $nodes = $article->getDoc()->filter('title');
+        $nodes = $article->getDoc()->filter('html > head > title');
 
         if (!$nodes->length) return '';
 
         $titleText = $nodes->item(0)->textContent;
 
         foreach (self::$SPLITTER_CHARS as $char) {
-            if (strpos($titleText, $char)) {
+            if (strpos($titleText, $char) !== false) {
                 $length = 0;
 
                 $parts = explode($char, $titleText);
@@ -48,7 +48,7 @@ class ContentExtractor {
             }
         }
 
-        return $titleText;
+        return trim($titleText);
     }
 
     private function getNodesByLowercasePropertyValue($doc, $tag, $property, $value) {
@@ -82,8 +82,8 @@ class ContentExtractor {
 
         if (empty($lang)) {
             $selectors = [
-                'meta[http-equiv=content-language]',
-                'meta[name=lang]',
+                'html > head > meta[http-equiv=content-language]',
+                'html > head > meta[name=lang]',
             ];
 
             foreach ($selectors as $selector) {
@@ -143,7 +143,7 @@ class ContentExtractor {
             $nodes = $this->getNodesByLowercasePropertyValue($article->getDoc(), 'meta', 'property', 'og:url');
 
             if ($nodes->length) {
-                $href = $nodes->item(0)->getAttribute('href');
+                $href = $nodes->item(0)->getAttribute('content');
             }
         }
 
@@ -151,7 +151,7 @@ class ContentExtractor {
             $nodes = $this->getNodesByLowercasePropertyValue($article->getDoc(), 'meta', 'name', 'twitter:url');
 
             if ($nodes->length) {
-                $href = $nodes->item(0)->getAttribute('href');
+                $href = $nodes->item(0)->getAttribute('content');
             }
         }
 
@@ -164,6 +164,7 @@ class ContentExtractor {
 
     public function getDateFromURL($url) {
         // TODO
+		return '';
     }
 
     public function getDomain($url) {

@@ -19,12 +19,12 @@ class WordStats
      */
     private $stopWords = [];
 
-    public function __construct($options = array()) {
+    public function __construct($options = []) {
         foreach ($options as $key => $value) {
             $method = 'set' . ucfirst($key);
 
             if (method_exists($this, $method)) {
-                call_user_func(array($this, $method), $value);
+                call_user_func([$this, $method], $value);
             }
         }
     }
