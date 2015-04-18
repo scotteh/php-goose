@@ -244,7 +244,7 @@ class DocumentCleaner {
             } else {
                 $replacements = $this->getReplacementNodes($doc, $elem);
 
-                foreach ($elem->childNodes as $child) {
+                foreach ($elem->children() as $child) {
                     $elem->removeChild($child);
                 }
 
@@ -266,7 +266,7 @@ class DocumentCleaner {
             } else {
                 $replacements = $this->getReplacementNodes($doc, $div);
 
-                foreach ($div->childNodes as $child) {
+                foreach ($div->children() as $child) {
                     $div->removeChild($child);
                 }
 
@@ -281,7 +281,7 @@ class DocumentCleaner {
 
     private function getFlushedBuffer($replacementText, $doc) {
         $fragment = $doc->createDocumentFragment();
-        $fragment->appendXML(htmlentities(implode('', $replacementText), ENT_COMPAT | ENT_XML1));
+        $fragment->appendXML(str_replace('&', '&amp;', implode('', $replacementText)));
 
         $el = $doc->createElement('p');
         @$el->appendChild($fragment);
@@ -296,18 +296,17 @@ class DocumentCleaner {
 
         foreach ($div->childNodes as $kid) {
             if ($kid->nodeName == 'p' && count($replacementText) > 0) {
-                $newNode = $this->getFlushedBuffer($replacementText, $doc);
-                $nodesToReturn[] = $newNode;
+                $nodesToReturn[] = $this->getFlushedBuffer($replacementText, $doc);
                 $replacementText = [];
                 $nodesToReturn[] = $kid;
             } else if ($kid->nodeType == XML_TEXT_NODE) {
-                $replaceText = preg_replace('@[\n\r\s\t]+@', "\n", $kid->textContent);
+                $replaceText = preg_replace('@[\n\r\s\t]+@', " ", $kid->textContent);
 
                 if (mb_strlen(trim($replaceText)) > 0) {
                     $prevSibNode = $kid->previousSibling;
 
-                    while (!empty($prevSibNode) && $prevSibNode->nodeName == 'a' && $prevSibNode->getAttribute('grv-usedalready') != 'yes') {
-                        $replacementText[] = $doc->saveXml($prevSibNode);
+                    while ($prevSibNode && $prevSibNode->nodeName == 'a' && $prevSibNode->getAttribute('grv-usedalready') != 'yes') {
+                        $replacementText[] = ' ' . $doc->saveXml($prevSibNode) . ' ';
                         $nodesToRemove[] = $prevSibNode;
                         $prevSibNode->setAttribute('grv-usedalready', 'yes');
 
@@ -318,8 +317,8 @@ class DocumentCleaner {
 
                     $nextSibNode = $kid->nextSibling;
 
-                    while (!empty($nextSibNode) && $nextSibNode->nodeName == 'a' && $nextSibNode->getAttribute('grv-usedalready') != 'yes') {
-                        $replacementText[] = $doc->saveXml($nextSibNode);
+                    while ($nextSibNode && $nextSibNode->nodeName == 'a' && $nextSibNode->getAttribute('grv-usedalready') != 'yes') {
+                        $replacementText[] = ' ' . $doc->saveXml($nextSibNode) . ' ';
                         $nodesToRemove[] = $nextSibNode;
                         $nextSibNode->setAttribute('grv-usedalready', 'yes');
 
@@ -329,19 +328,29 @@ class DocumentCleaner {
 
                 $nodesToRemove[] = $kid;
             } else {
+                if ($replacementText) {
+                    $nodesToReturn[] = $this->getFlushedBuffer($replacementText, $doc);
+                    $replacementText = [];
+                }
                 $nodesToReturn[] = $kid;
             }
         }
 
-        if (!empty($replacementText)) {
-            $newNode = $this->getFlushedBuffer($replacementText, $doc);
-            $nodesToReturn[] = $newNode;
+        if ($replacementText) {
+            $nodesToReturn[] = $this->getFlushedBuffer($replacementText, $doc);
             $replacementText = [];
         }
 
         foreach ($nodesToRemove as $el) {
-            if (is_object($el->parentNode)) {
-                $el->parentNode->removeChild($el);
+            $div->removeChild($el);
+        }
+
+        // Remove potential duplicate <a> tags.
+        foreach ($nodesToRemove as $remove) {
+            foreach ($nodesToReturn as $key => $return) {
+                if ($remove === $return) {
+                    unset($nodesToReturn[$key]);
+                }
             }
         }
 

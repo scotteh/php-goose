@@ -60,6 +60,17 @@ class DOMElement extends \DOMElement
         return $b;
     }
 
+    // DOMNodeList is only array like. Removing items using foreach() has undesired results.
+    public function children() {
+        $node = [];
+
+        foreach ($this->childNodes as $node) {
+            $children[] = $node;
+        }
+
+        return $children;
+    }
+
     private function debugNode($e) {
         $sb = '';
 
