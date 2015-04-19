@@ -25,7 +25,7 @@ class Crawler {
         $doc = $this->getDocument($parseCandidate->url, $rawHtml);
 
         $extractor = $this->getExtractor();
-        $docCleaner = $this->getDocCleaner();
+        $documentCleaner = $this->getDocumentCleaner();
         $outputFormatter = $this->getOutputFormatter();
 
         $article->setFinalUrl($parseCandidate->url);
@@ -47,7 +47,8 @@ class Crawler {
         $article->setMetaKeywords($extractor->getMetaKeywords($article));
         $article->setCanonicalLink($extractor->getCanonicalLink($article));
         $article->setTags($extractor->extractTags($article));
-        $article->setDoc($docCleaner->clean($article));
+
+        $documentCleaner->clean($article);
 
         /*if (!$article->getPublishDate()) {
             $article->setPublishDate($extractor->getDateFromURL($article->getCanonicalLink()));
@@ -108,7 +109,7 @@ class Crawler {
         return new StandardOutputFormatter($this->config);
     }
 
-    private function getDocCleaner() {
+    private function getDocumentCleaner() {
         return new StandardDocumentCleaner($this->config);
     }
 
