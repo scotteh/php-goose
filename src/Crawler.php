@@ -6,6 +6,7 @@ use GuzzleHttp\Client as GuzzleClient;
 use Goose\Utils\URLHelper;
 use Goose\DOM\DOMDocument;
 use Goose\Images\StandardImageExtractor;
+use Goose\Extractors\ExtractorInterface;
 use Goose\Cleaners\StandardDocumentCleaner;
 use Goose\OutputFormatters\StandardOutputFormatter;
 
