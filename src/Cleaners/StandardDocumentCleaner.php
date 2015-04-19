@@ -338,7 +338,7 @@ class StandardDocumentCleaner extends DocumentCleaner implements DocumentCleaner
         $fragment->appendXML(str_replace('&', '&amp;', implode('', $replacementText)));
 
         $el = $this->document()->createElement('p');
-        @$el->appendChild($fragment);
+        $el->appendChild($fragment);
 
         return $el;
     }
@@ -389,7 +389,7 @@ class StandardDocumentCleaner extends DocumentCleaner implements DocumentCleaner
 
                 $nodesToRemove[] = $kid;
             } else {
-                if ($replacementText) {
+                if (!empty($replacementText)) {
                     $nodesToReturn[] = $this->getFlushedBuffer($replacementText);
                     $replacementText = [];
                 }
@@ -397,7 +397,7 @@ class StandardDocumentCleaner extends DocumentCleaner implements DocumentCleaner
             }
         }
 
-        if ($replacementText) {
+        if (!empty($replacementText)) {
             $nodesToReturn[] = $this->getFlushedBuffer($replacementText);
             $replacementText = [];
         }
