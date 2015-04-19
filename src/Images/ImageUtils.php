@@ -2,10 +2,23 @@
 
 namespace Goose\Images;
 
+use Goose\Configuration;
+
 use GuzzleHttp\Pool as GuzzlePool;
 use GuzzleHttp\Client as GuzzleClient;
 
+/**
+ * Image Utils
+ *
+ * @package Goose\Images
+ * @license http://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0
+ */
 class ImageUtils {
+    /**
+     * @param string $filePath
+     *
+     * @return object
+     */
     public static function getImageDimensions($filePath) {
         list($width, $height, $type) = getimagesize($filePath);
 
@@ -19,8 +32,14 @@ class ImageUtils {
     /**
      * Writes an image src http string to disk as a temporary file and returns the LocallyStoredImage object that has the info you should need
      * on the image
+     *
+     * @param string[]|string $imageSrcs
+     * @param bool $returnAll
+     * @param Configuration $config
+     *
+     * @return LocallyStoredImage|LocallyStoredImage[]
      */
-    public static function storeImageToLocalFile($imageSrcs, $returnAll, $config) {
+    public static function storeImageToLocalFile($imageSrcs, $returnAll, Configuration $config) {
         $asArray = is_array($imageSrcs);
 
         if (!$asArray) {
@@ -54,6 +73,11 @@ class ImageUtils {
         );
     }
 
+    /**
+     * @param object $imageDetails
+     *
+     * @return string
+     */
     private static function getFileExtensionName($imageDetails) {
         $extensions = [
             'image/gif' => '.gif',
@@ -68,14 +92,28 @@ class ImageUtils {
         );
     }
 
+    /**
+     * @todo
+     */
     private static function readExistingFileInfo($imageSrc, $config) {
-        // TODO
+        return null;
     }
 
+    /**
+     * @todo
+     */
     private static function writeEntityContentsToDisk($entity, $imageSrc, $config) {
         $file = tempnam(sys_get_temp_dir(), 'goose');
+        return null;
     }
 
+    /**
+     * @param string[]|striong $imageSrcs
+     * @param bool $returnAll
+     * @param Configuration $config
+     *
+     * @return object[]|null
+     */
     private static function handleEntity($imageSrcs, $returnAll, $config) {
         $guzzle = new GuzzleClient();
 

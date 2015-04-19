@@ -7,7 +7,7 @@ use Goose\Article;
 /**
  * Standard Document Cleaner
  *
- * @package  Goose\Cleaners
+ * @package Goose\Cleaners
  * @license http://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0
  */
 class StandardDocumentCleaner extends DocumentCleaner implements DocumentCleanerInterface {

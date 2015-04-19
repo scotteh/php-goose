@@ -10,19 +10,39 @@ use Goose\Extractors\ExtractorInterface;
 use Goose\Cleaners\StandardDocumentCleaner;
 use Goose\OutputFormatters\StandardOutputFormatter;
 
+/**
+ * Crawler
+ *
+ * @package Goose
+ * @license http://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0
+ */
 class Crawler {
+    /** @var Configuration */
     protected $config;
 
+    /**
+     * @param Configuration $config
+     */
     public function __construct(Configuration $config) {
         $this->config = $config;
     }
 
-    public function crawl($crawlCandidate) {
+    /**
+     * @param string $url
+     * @param string|null $rawHTML
+     *
+     * @return Article
+     */
+    public function crawl($url, $rawHTML = null) {
         $article = new Article();
 
-        $parseCandidate = URLHelper::getCleanedUrl($crawlCandidate->url);
-        $rawHtml = $this->getHTML($crawlCandidate, $parseCandidate);
-        $doc = $this->getDocument($rawHtml);
+        $parseCandidate = URLHelper::getCleanedUrl($url);
+
+        if (empty($rawHTML)) {
+            $rawHTML = $this->getHTML($parseCandidate->url);
+        }
+
+        $doc = $this->getDocument($rawHTML);
 
         $extractor = $this->getExtractor();
         $documentCleaner = $this->getDocumentCleaner();
@@ -33,7 +53,7 @@ class Crawler {
         $article->setFinalUrl($parseCandidate->url);
         $article->setDomain($parseCandidate->parts->host);
         $article->setLinkhash($parseCandidate->linkhash);
-        $article->setRawHtml($rawHtml);
+        $article->setRawHtml($rawHTML);
         $article->setDoc($doc);
         $article->setRawDoc(clone $doc);
 
@@ -88,36 +108,51 @@ class Crawler {
         return $article;
     }
 
-    private function getHTML($crawlCandidate, $parsingCandidate) {
-        if (!empty($crawlCandidate->rawHTML)) {
-            return $crawlCandidate->rawHTML;
-        } else {
-            $config = $this->config->getGuzzle();
+    /**
+     * @param string $url
+     *
+     * @return string
+     */
+    private function getHTML($url) {
+        $config = $this->config->getGuzzle();
 
-            if (!is_array($config)) {
-                $config = [];
-            }
-
-            $guzzle = new GuzzleClient();
-            $response = $guzzle->get($parsingCandidate->url, $config);
-
-            return $response->getBody();
+        if (!is_array($config)) {
+            $config = [];
         }
+
+        $guzzle = new GuzzleClient();
+        $response = $guzzle->get($url, $config);
+
+        return $response->getBody();
     }
 
+    /**
+     * @return ImageExtractor
+     */
     private function getImageExtractor() {
         return new StandardImageExtractor($this->config);
     }
 
+    /**
+     * @return OutputFormatter
+     */
     private function getOutputFormatter() {
         return new StandardOutputFormatter($this->config);
     }
 
+    /**
+     * @return DocumentCleaner
+     */
     private function getDocumentCleaner() {
         return new StandardDocumentCleaner($this->config);
     }
 
-    private function getDocument($rawHtml) {
+    /**
+     * @param string $rawHTML
+     *
+     * @return DOMDocument
+     */
+    private function getDocument($rawHTML) {
         $internalErrors = libxml_use_internal_errors(true);
         $disableEntities = libxml_disable_entity_loader(true);
 
@@ -129,15 +164,15 @@ class Crawler {
             );
         };
 
-        $rawHtml = preg_replace_callback('@<([/])?script[^>]*>@i', $fn, $rawHtml);
+        $rawHTML = preg_replace_callback('@<([/])?script[^>]*>@i', $fn, $rawHTML);
 
-        if (mb_detect_encoding($rawHtml, mb_detect_order(), true) === 'UTF-8') {
-            $rawHtml = mb_convert_encoding($rawHtml, 'HTML-ENTITIES', 'UTF-8');
+        if (mb_detect_encoding($rawHTML, mb_detect_order(), true) === 'UTF-8') {
+            $rawHTML = mb_convert_encoding($rawHTML, 'HTML-ENTITIES', 'UTF-8');
         }
 
         $doc = new DOMDocument(1.0);
         $doc->registerNodeClass('DOMElement', 'Goose\\DOM\\DOMElement');
-        $doc->loadHTML($rawHtml);
+        $doc->loadHTML($rawHTML);
 
         libxml_use_internal_errors($internalErrors);
         libxml_disable_entity_loader($disableEntities);
@@ -145,6 +180,9 @@ class Crawler {
         return $doc;
     }
 
+    /**
+     * @return ContentExtractor
+     */
     private function getExtractor() {
         return $this->config->getContentExtractor();
     }

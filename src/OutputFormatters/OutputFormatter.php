@@ -2,23 +2,35 @@
 
 namespace Goose\OutputFormatters;
 
+use Goose\Configuration;
+use Goose\DOM\DOMElement;
 use Goose\Utils\Debug;
 
+/**
+ * Output Formatter
+ *
+ * @package Goose\OutputFormatters
+ * @license http://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0
+ */
 class OutputFormatter {
+    /** @var Configuration */
     private $config;
 
-    public function __construct($config) {
+    /**
+     * @param Configuration $config
+     */
+    public function __construct(Configuration $config) {
         $this->config = $config;
     }
 
     /**
-     * Removes all unnecessarry elements and formats the selected text nodes
+     * Removes all unnecessary elements and formats the selected text nodes
      *
-     * @param Goose\DOM\DOMElement $topNode The top most node to format
+     * @param DOMElement $topNode The top most node to format
      *
      * @return string Formatted string with all HTML removed
      */
-    public function getFormattedText($topNode) {
+    public function getFormattedText(DOMElement $topNode) {
         $this->removeNodesWithNegativeScores($topNode);
         $this->convertLinksToText($topNode);
         $this->replaceTagsWithText($topNode);
@@ -30,11 +42,11 @@ class OutputFormatter {
     /**
      * Takes an element and turns the P tags into \n\n
      *
-     * @param Goose\DOM\DOMElement $topNode The top most node to format
+     * @param DOMElement $topNode The top most node to format
      *
      * @return string
      */
-    private function convertToText($topNode) {
+    private function convertToText(DOMElement $topNode) {
         if (empty($topNode)) {
             return '';
         }
@@ -50,11 +62,11 @@ class OutputFormatter {
     /**
      * Scrape the node content and return the html
      *
-     * @param Goose\DOM\DOMElement $topNode The top most node to format
+     * @param DOMElement $topNode The top most node to format
      *
      * @return string Formatted string with all HTML
      */
-    public function cleanupHtml($topNode) {
+    public function cleanupHtml(DOMElement $topNode) {
         if (empty($topNode)) {
             return '';
         }
@@ -66,7 +78,12 @@ class OutputFormatter {
         return str_replace(['<p></p>', '<p>&nbsp;</p>'], '', $html);
     }
 
-    private function convertToHtml($topNode) {
+    /**
+     * @param DOMElement $topNode
+     *
+     * @return string
+     */
+    private function convertToHtml(DOMElement $topNode) {
         if (empty($topNode)) {
             return '';
         }
@@ -76,8 +93,10 @@ class OutputFormatter {
 
     /**
      * cleans up and converts any nodes that should be considered text into text
+     *
+     * @param DOMElement $topNode
      */
-    private function convertLinksToText($topNode) {
+    private function convertLinksToText(DOMElement $topNode) {
         if (!empty($topNode)) {
             $links = $topNode->filter('a');
 
@@ -94,8 +113,10 @@ class OutputFormatter {
     /**
      * if there are elements inside our top node that have a negative gravity score, let's
      * give em the boot
+     *
+     * @param DOMElement $topNode
      */
-    private function removeNodesWithNegativeScores($topNode) {
+    private function removeNodesWithNegativeScores(DOMElement $topNode) {
         if (!empty($topNode)) {
             $gravityItems = $topNode->filter('*[gravityScore]');
 
@@ -112,8 +133,10 @@ class OutputFormatter {
     /**
      * replace common tags with just text so we don't have any crazy formatting issues
      * so replace <br>, <i>, <strong>, etc.... with whatever text is inside them
+     *
+     * @param DOMElement $topNode
      */
-    private function replaceTagsWithText($topNode) {
+    private function replaceTagsWithText(DOMElement $topNode) {
         if (!empty($topNode)) {
             $items = $topNode->filter('b, strong, i');
 
@@ -123,15 +146,23 @@ class OutputFormatter {
         }
     }
 
-    private function getTagCleanedText($item) {
-        // TODO
+    /**
+     * @todo Implement
+     *
+     * @param DOMElement $item
+     *
+     * @return string
+     */
+    private function getTagCleanedText(DOMElement $item) {
         return $item->textContent;
     }
 
     /**
      * remove paragraphs that have less than x number of words, would indicate that it's some sort of link
+     *
+     * @param DOMElement $topNode
      */
-    private function removeParagraphsWithFewWords($topNode) {
+    private function removeParagraphsWithFewWords(DOMElement $topNode) {
         if (!empty($topNode)) {
             $paragraphs = $topNode->filter('p');
 
@@ -143,7 +174,7 @@ class OutputFormatter {
                 }
             }
 
-            // TODO
+            /** @todo Implement */
         }
     }
 }

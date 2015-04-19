@@ -2,7 +2,18 @@
 
 namespace Goose\Images;
 
+use Goose\Article;
+use Goose\Configuration;
+use Goose\DOM\DOMElement;
+
+/**
+ * Standard Image Extractor
+ *
+ * @package Goose\Images
+ * @license http://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0
+ */
 class StandardImageExtractor extends ImageExtractor {
+    /** @var string[] */
     private $badFileNames = [
         '\.html', '\.gif', '\.ico', 'button', 'twitter\.jpg', 'facebook\.jpg',
         'ap_buy_photo', 'digg\.jpg', 'digg\.png', 'delicious\.png',
@@ -11,6 +22,7 @@ class StandardImageExtractor extends ImageExtractor {
         'adsatt', 'view\.atdmt',
     ];
 
+    /** @var string[] */
     private static $KNOWN_IMG_DOM_NAMES = [
         'yn-story-related-media',
         'cnn_strylccimg300cntr',
@@ -18,15 +30,25 @@ class StandardImageExtractor extends ImageExtractor {
         'ap-smallphoto-a'
     ];
 
+    /** @var int */
     private $MAX_BYTES_SIZE = 15728640;
 
+    /** @var Configuration */
     private $config;
 
-    public function __construct($config) {
+    /**
+     * @param Configuration $config
+     */
+    public function __construct(Configuration $config) {
         $this->config = $config;
     }
 
-    public function getBestImage($article) {
+    /**
+     * @param Article $article
+     *
+     * @return Image|null
+     */
+    public function getBestImage(Article $article) {
         $image = $this->checkForKnownElements($article);
 
         if ($image) {
@@ -51,8 +73,12 @@ class StandardImageExtractor extends ImageExtractor {
     /**
      * Prefer Twitter images (as they tend to have the right size for us), then Open Graph images
      * (which seem to be smaller), and finally linked images.
+     *
+     * @param Article $article
+     *
+     * @return Image|null
      */
-    private function checkForMetaTag($article) {
+    private function checkForMetaTag(Article $article) {
         $image = $this->checkForTwitterTag($article);
 
         if ($image) {
@@ -83,9 +109,14 @@ class StandardImageExtractor extends ImageExtractor {
      * 4. any images left over let's do a full GET request, download em to disk and check their dimensions
      * 5. Score images based on different factors like height/width and possibly things like color density
      *
-     * @param node
+     * @param Article $article
+     * @param DOMElement $node
+     * @param int $parentDepthLevel
+     * @param int $siblingDepthLevel
+     *
+     * @return Image|null
      */
-    private function checkForLargeImages($article, $node, $parentDepthLevel, $siblingDepthLevel) {
+    private function checkForLargeImages(Article $article, DOMElement $node, $parentDepthLevel, $siblingDepthLevel) {
         $goodImages = $this->getImageCandidates($article, $node);
 
         $scoredImages = $this->downloadImagesAndGetResults($article, $goodImages, $parentDepthLevel);
@@ -113,10 +144,17 @@ class StandardImageExtractor extends ImageExtractor {
             }
         }
 
-        return [];
+        return null;
     }
 
-    private function getDepthLevel($node, $parentDepth, $siblingDepth) {
+    /**
+     * @param DOMElement $node
+     * @param int $parentDepth
+     * @param int $siblingDepth
+     *
+     * @return object|null
+     */
+    private function getDepthLevel(DOMElement $node, $parentDepth, $siblingDepth) {
         if (is_null($node)) {
             return null;
         }
@@ -156,10 +194,13 @@ class StandardImageExtractor extends ImageExtractor {
      * we'll also make sure to try and weed out banner type ad blocks that have big widths and small heights or vice versa
      * so if the image is 3rd found in the dom it's sequence score would be 1 / 3 = .33 * diff in area from the first image
      *
-     * @param images
-     * @return
+     * @param Article $article
+     * @param DOMElement[] $images
+     * @param int $depthLevel
+     *
+     * @return LocallyStoredImage[]
      */
-    private function downloadImagesAndGetResults($article, $images, $depthLevel) {
+    private function downloadImagesAndGetResults(Article $article, $images, $depthLevel) {
         $imageResults = [];
         $initialArea = 0.0;
         $cnt = 1.0;
@@ -219,7 +260,14 @@ class StandardImageExtractor extends ImageExtractor {
         return $imageResults;
     }
 
-    public function getAllImages($article, $parentDepthLevel = 0, $siblingDepthLevel = 0) {
+    /**
+     * @param Article $article
+     * @param int $parentDepthLevel
+     * @param int $siblingDepthLevel
+     *
+     * @return Image[]
+     */
+    public function getAllImages(Article $article, $parentDepthLevel = 0, $siblingDepthLevel = 0) {
         $images = [];
 
         $candidateImages = $this->getImageCandidates($article, $article->getTopNode());
@@ -246,7 +294,7 @@ class StandardImageExtractor extends ImageExtractor {
             $depthObj = $this->getDepthLevel($article->getTopNode(), $parentDepthLevel, $siblingDepthLevel);
 
             if ($depthObj) {
-                return $this->checkForLargeImages($article, $depthObj->node, $depthObj->parentDepth, $depthObj->siblingDepth);
+                $images[] = $this->checkForLargeImages($article, $depthObj->node, $depthObj->parentDepth, $depthObj->siblingDepth);
             }
         }
 
@@ -257,8 +305,8 @@ class StandardImageExtractor extends ImageExtractor {
      * returns true if we think this is kind of a bannery dimension
      * like 600 / 100 = 6 may be a fishy dimension for a good image
      *
-     * @param width
-     * @param height
+     * @param int $width
+     * @param int $height
      */
     private function isBannerDimensions($width, $height) {
         if ($width == $height) {
@@ -285,10 +333,11 @@ class StandardImageExtractor extends ImageExtractor {
     /**
      * takes a list of image elements and filters out the ones with bad names
      *
-     * @param images
-     * @return
+     * @param DOMNodeList $images
+     *
+     * @return DOMElement[]
      */
-    private function filterBadNames($images) {
+    private function filterBadNames(\DOMNodeList $images) {
         $goodImages = [];
 
         foreach ($images as $image) {
@@ -305,9 +354,11 @@ class StandardImageExtractor extends ImageExtractor {
     /**
      * will check the image src against a list of bad image files we know of like buttons, etc...
      *
-     * @return
+     * @param DOMElement $imageNode
+     *
+     * @return bool
      */
-    private function isOkImageFileName($imageNode) {
+    private function isOkImageFileName(DOMElement $imageNode) {
         $imgSrc = $imageNode->getAttribute('src');
 
         if (empty($imgSrc)) {
@@ -323,7 +374,13 @@ class StandardImageExtractor extends ImageExtractor {
         return true;
     }
 
-    private function getImageCandidates($article, $node) {
+    /**
+     * @param Article $article
+     * @param DOMElement $node
+     *
+     * @return bool
+     */
+    private function getImageCandidates(Article $article, DOMElement $node) {
         $images = $node->filter('img');
         $filteredImages = $this->filterBadNames($images);
         $goodImages = $this->findImagesThatPassByteSizeTest($article, $filteredImages);
@@ -334,10 +391,12 @@ class StandardImageExtractor extends ImageExtractor {
     /**
      * loop through all the images and find the ones that have the best bytez to even make them a candidate
      *
-     * @param images
-     * @return
+     * @param Article $article
+     * @param DOMElement[] $images
+     *
+     * @return DOMElement[]
      */
-    private function findImagesThatPassByteSizeTest($article, $images) {
+    private function findImagesThatPassByteSizeTest(Article $article, $images) {
         $cnt = 0;
         $imageUrls = [];
         $imageNodes = [];
@@ -375,31 +434,45 @@ class StandardImageExtractor extends ImageExtractor {
     /**
      * checks to see if we were able to find feature image tags on this page
      *
-     * @return
+     * @param Article $article
+     *
+     * @return Image|null
      */
-    private function checkForLinkTag($article) {
+    private function checkForLinkTag(Article $article) {
         return $this->checkForTag($article, 'link[rel="image_src"]', 'href', 'linktag');
     }
 
     /**
      * checks to see if we were able to find open graph tags on this page
      *
-     * @return
+     * @param Article $article
+     *
+     * @return Image|null
      */
-    private function checkForOpenGraphTag($article) {
+    private function checkForOpenGraphTag(Article $article) {
         return $this->checkForTag($article, 'meta[property="og:image"]', 'content', 'opengraph');
     }
 
     /**
      * checks to see if we were able to find twitter tags on this page
      *
-     * @return
+     * @param Article $article
+     *
+     * @return Image|null
      */
-    private function checkForTwitterTag($article) {
+    private function checkForTwitterTag(Article $article) {
         return $this->checkForTag($article, 'meta[property="twitter:image"]', 'content', 'twitter');
     }
 
-    private function checkForTag($article, $selector, $attr, $type) {
+    /**
+     * @param Article $article
+     * @param string $selector
+     * @param string $attr
+     * @param string $type
+     *
+     * @return Image|null
+     */
+    private function checkForTag(Article $article, $selector, $attr, $type) {
         $meta = $article->getRawDoc()->filter($selector);
 
         if (!$meta->length) {
@@ -425,22 +498,39 @@ class StandardImageExtractor extends ImageExtractor {
         return $this->ensureMinimumImageSize($mainImage);
     }
 
-    private function ensureMinimumImageSize($mainImage) {
+    /**
+     * @param Image $mainImage
+     *
+     * @return Image|null
+     */
+    private function ensureMinimumImageSize(Image $mainImage) {
         if ($mainImage->getWidth() >= $this->config->getMinWidth()
           && $mainImage->getHeight() >= $this->config->getMinHeight()) {
             return $mainImage;
         }
 
-        return false;
+        return null;
     }
 
     /**
      * returns the bytes of the image file on disk
+     *
+     * @todo Re-factor into single / multiple getters.
+     *
+     * @param string[]|string $imageSrc
+     * @param bool $returnAll
+     *
+     * @return LocallyStoredImage|LocallyStoredImage[]
      */
     public function getLocallyStoredImage($imageSrc, $returnAll = false) {
         return ImageUtils::storeImageToLocalFile($imageSrc, $returnAll, $this->config);
     }
 
+    /**
+     * @param Article $article
+     *
+     * @return string
+     */
     public function getCleanDomain($article) {
         return implode('.', array_slice(explode('.', $article->getDomain()), -2, 2));
     }
@@ -449,8 +539,12 @@ class StandardImageExtractor extends ImageExtractor {
      * in here we check for known image contains from sites we've checked out like yahoo, techcrunch, etc... that have
      * known  places to look for good images.
      * //todo enable this to use a series of settings files so people can define what the image ids/classes are on specific sites
+     *
+     * @param Article $article
+     *
+     * @return Image|null
      */
-    public function checkForKnownElements($article) {
+    public function checkForKnownElements(Article $article) {
         if (!$article->getRawDoc()) {
             return null;
         }
@@ -509,18 +603,24 @@ class StandardImageExtractor extends ImageExtractor {
      * This method will take an image path and build out the absolute path to that image
      * using the initial url we crawled so we can find a link to the image if they use relative urls like ../myimage.jpg
      *
-     * @param imageSrc
-     * @return
+     * @param Article $article
+     * @param string $imageSrc
+     *
+     * @return string
      */
-    private function buildImagePath($article, $imageSrc) {
+    private function buildImagePath(Article $article, $imageSrc) {
         $articleUrlParts = parse_url($article->getFinalUrl());
         $imageUrlParts = parse_url($imageSrc);
 
         return http_build_url($articleUrlParts, $imageUrlParts, HTTP_URL_JOIN_PATH);
     }
 
+    /** @var string[] */
     private static $CUSTOM_SITE_MAPPING = [];
 
+    /**
+     * @param string[]
+     */
     private function customSiteMapping() {
         if (empty(self::$CUSTOM_SITE_MAPPING)) {
             $file = __DIR__ . '/../../resources/images/known-image-css.txt';

@@ -4,7 +4,20 @@ namespace Goose\Utils;
 
 use Goose\Exceptions\MalformedURLException;
 
+/**
+ * URL Helper
+ *
+ * @package Goose\Utils
+ * @license http://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0
+ */
 class URLHelper {
+    /**
+     * @todo Re-factor result into class
+     *
+     * @param string $urlToCrawl
+     *
+     * @return object
+     */
     public static function getCleanedUrl($urlToCrawl) {
         $parts = parse_url($urlToCrawl);
 
