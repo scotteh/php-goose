@@ -4,19 +4,13 @@ namespace Goose\Text;
 
 class WordStats
 {
-    /**
-     * total number of stopwords or good words that we can calculate
-     */
+    /** @var int Total number of stopwords or good words that we can calculate */
     private $stopWordCount = 0;
 
-    /**
-     * total number of words on a node
-     */
+    /** @var int Total number of words on a node */
     private $wordCount = 0;
 
-    /**
-     * holds an actual list of the stop words we found
-     */
+    /** @var array Holds an actual list of the stop words we found */
     private $stopWords = [];
 
     public function __construct($options = []) {
@@ -30,7 +24,7 @@ class WordStats
     }
 
     public function getStopWords() {
-        return $stopWords;
+        return $this->stopWords;
     }
 
     public function setStopWords($words) {

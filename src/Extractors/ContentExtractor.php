@@ -90,7 +90,7 @@ class ContentExtractor {
                 $el = $article->getDoc()->filter($selector);
 
                 if ($el->length) {
-                    $attr = $el->item(0)->getAttribute('content');
+                    $lang = $el->item(0)->getAttribute('content');
                     break;
                 }
             }
@@ -288,12 +288,11 @@ class ContentExtractor {
      * @return
      */
     private function isOkToBoost($node) {
-        $para = 'p';
         $stepsAway = 0;
         $minimumStopWordCount = 5;
         $maxStepsAwayFromNode = 3;
 
-        $siblings = $node->getSiblings();
+        $siblings = $node->siblings();
 
         foreach ($siblings as $currentNode) {
             if ($currentNode->nodeName == 'p' || $currentNode->nodeName == 'strong') {

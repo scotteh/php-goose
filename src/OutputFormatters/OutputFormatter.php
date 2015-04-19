@@ -5,8 +5,6 @@ namespace Goose\OutputFormatters;
 use Goose\Utils\Debug;
 
 class OutputFormatter {
-    private $logPrefix = 'OutputFormatter: ';
-
     private $config;
 
     public function __construct($config) {
@@ -15,22 +13,26 @@ class OutputFormatter {
 
     /**
      * Removes all unnecessarry elements and formats the selected text nodes
-     * @param topNode the top most node to format
-     * @return a formatted string with all HTML removed
+     *
+     * @param Goose\DOM\DOMElement $topNode The top most node to format
+     *
+     * @return string Formatted string with all HTML removed
      */
     public function getFormattedText($topNode) {
         $this->removeNodesWithNegativeScores($topNode);
         $this->convertLinksToText($topNode);
         $this->replaceTagsWithText($topNode);
         $this->removeParagraphsWithFewWords($topNode);
+
         return $this->convertToText($topNode);
     }
 
     /**
-     * Depricated use {@link #getFormattedText(Element)}
-     * takes an element and turns the P tags into \n\n
+     * Takes an element and turns the P tags into \n\n
      *
-     * @return
+     * @param Goose\DOM\DOMElement $topNode The top most node to format
+     *
+     * @return string
      */
     private function convertToText($topNode) {
         if (empty($topNode)) {
@@ -46,9 +48,11 @@ class OutputFormatter {
     }
 
     /**
-     * Scape the node content and return the html
-     * @param topNode the top most node to format
-     * @return a formatted string with all HTML
+     * Scrape the node content and return the html
+     *
+     * @param Goose\DOM\DOMElement $topNode The top most node to format
+     *
+     * @return string Formatted string with all HTML
      */
     public function cleanupHtml($topNode) {
         if (empty($topNode)) {

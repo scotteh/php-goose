@@ -8,10 +8,6 @@ use Symfony\Component\CssSelector\CssSelector;
 class DOMElement extends \DOMElement
 {
     public function filter($selector) {
-        if (!class_exists('Symfony\\Component\\CssSelector\\CssSelector')) {
-            throw new \RuntimeException('Unable to filter with a CSS selector as the Symfony CssSelector is not installed (you can use filterXPath instead).');
-        }
-
         return $this->filterXPath(CssSelector::toXPath($selector));
     }
 
@@ -45,7 +41,7 @@ class DOMElement extends \DOMElement
         return $items;
     }
 
-    public function getSiblings() {
+    public function siblings() {
         $currentSibling = $this->previousSibling;
         $b = [];
 
@@ -62,7 +58,7 @@ class DOMElement extends \DOMElement
 
     // DOMNodeList is only array like. Removing items using foreach() has undesired results.
     public function children() {
-        $node = [];
+        $children = [];
 
         foreach ($this->childNodes as $node) {
             $children[] = $node;
@@ -71,6 +67,9 @@ class DOMElement extends \DOMElement
         return $children;
     }
 
+    /**
+     * @codeCoverageIgnore
+     */
     private function debugNode($e) {
         $sb = '';
 

@@ -356,7 +356,7 @@ class StandardDocumentCleaner extends DocumentCleaner implements DocumentCleaner
         $nodesToRemove = [];
 
         foreach ($div->childNodes as $kid) {
-            if ($kid->nodeName == 'p' && count($replacementText) > 0) {
+            if ($kid->nodeName == 'p' && !empty($replacementText)) {
                 $nodesToReturn[] = $this->getFlushedBuffer($replacementText);
                 $replacementText = [];
                 $nodesToReturn[] = $kid;

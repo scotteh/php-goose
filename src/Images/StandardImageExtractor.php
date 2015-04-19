@@ -125,29 +125,27 @@ class StandardImageExtractor extends ImageExtractor {
 
         if ($parentDepth > $MAX_PARENT_DEPTH) {
             return null;
-        } else {
-            $siblingNode = clone $node;
-
-            do {
-                $siblingNode = $siblingNode->previousSibling;
-            } while ($siblingNode && $siblingNode->nodeType != XML_ELEMENT_NODE);
-
-            if (is_null($siblingNode)) {
-                return (object)[
-                    'node' => $node->parentNode,
-                    'parentDepth' => $parentDepth + 1,
-                    'siblingDepth' => 0,
-                ];
-            } else {
-                return (object)[
-                    'node' => $siblingNode,
-                    'parentDepth' => $parentDepth,
-                    'siblingDepth' => $siblingDepth + 1,
-                ];
-            }
         }
 
-        return null;
+        $siblingNode = clone $node;
+
+        do {
+            $siblingNode = $siblingNode->previousSibling;
+        } while ($siblingNode && $siblingNode->nodeType != XML_ELEMENT_NODE);
+
+        if (is_null($siblingNode)) {
+            return (object)[
+                'node' => $node->parentNode,
+                'parentDepth' => $parentDepth + 1,
+                'siblingDepth' => 0,
+            ];
+        }
+
+        return (object)[
+            'node' => $siblingNode,
+            'parentDepth' => $parentDepth,
+            'siblingDepth' => $siblingDepth + 1,
+        ];
     }
 
     /**
@@ -184,7 +182,7 @@ class StandardImageExtractor extends ImageExtractor {
                     continue;
                 }
 
-                if ($height <= $MIN_WIDTH) {
+                if ($height <= $MIN_HEIGHT) {
                     continue;
                 }
 

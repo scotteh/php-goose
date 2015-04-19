@@ -3,6 +3,7 @@
 namespace Goose;
 
 use GuzzleHttp\Client as GuzzleClient;
+use Goose\Configuration;
 use Goose\Utils\Debug;
 use Goose\Utils\URLHelper;
 use Goose\DOM\DOMDocument;
@@ -13,7 +14,7 @@ use Goose\OutputFormatters\StandardOutputFormatter;
 class Crawler {
     protected $config;
 
-    public function __construct($config = []) {
+    public function __construct(Configuration $config) {
         $this->config = $config;
     }
 
@@ -22,7 +23,7 @@ class Crawler {
 
         $parseCandidate = URLHelper::getCleanedUrl($crawlCandidate->url);
         $rawHtml = $this->getHTML($crawlCandidate, $parseCandidate);
-        $doc = $this->getDocument($parseCandidate->url, $rawHtml);
+        $doc = $this->getDocument($rawHtml);
 
         $extractor = $this->getExtractor();
         $documentCleaner = $this->getDocumentCleaner();
@@ -113,7 +114,7 @@ class Crawler {
         return new StandardDocumentCleaner($this->config);
     }
 
-    private function getDocument($url, $rawHtml) {
+    private function getDocument($rawHtml) {
         $internalErrors = libxml_use_internal_errors(true);
         $disableEntities = libxml_disable_entity_loader(true);
 

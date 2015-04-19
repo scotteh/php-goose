@@ -42,7 +42,7 @@ class Configuration {
 
     protected $localStoragePath = '/tmp/goose';
 
-    public function setLocalStoragePath(string $localStoragePath) {
+    public function setLocalStoragePath($localStoragePath) {
         $this->localStoragePath = $localStoragePath;
     }
 
@@ -52,7 +52,7 @@ class Configuration {
 
     protected $minBytesForImages = 4500;
 
-    public function setMinBytesForImages(int $minBytesForImages) {
+    public function setMinBytesForImages($minBytesForImages) {
         $this->minBytesForImages = $minBytesForImages;
     }
 
@@ -62,7 +62,7 @@ class Configuration {
 
     protected $minWidth = 120;
 
-    public function setMinWidth(int $minWidth) {
+    public function setMinWidth($minWidth) {
         $this->minWidth = $minWidth;
     }
 
@@ -72,7 +72,7 @@ class Configuration {
 
     protected $minHeight = 120;
 
-    public function setMinHeight(int $minHeight) {
+    public function setMinHeight($minHeight) {
         $this->minHeight = $minHeight;
     }
 
@@ -102,7 +102,7 @@ class Configuration {
 
     protected $timeout = 10000;
 
-    public function setTimeout(int $timeout) {
+    public function setTimeout($timeout) {
         $this->timeout = $timeout;
     }
 
@@ -112,7 +112,7 @@ class Configuration {
 
     protected $browserUserAgent = 'Mozilla/5.0 (X11; U; Linux x86_64; de; rv:1.9.2.8) Gecko/20100723 Ubuntu/10.04 (lucid) Firefox/3.6.8';
 
-    public function setBrowserUserAgent(string $browserUserAgent) {
+    public function setBrowserUserAgent($browserUserAgent) {
         $this->browserUserAgent = $browserUserAgent;
     }
 
@@ -122,7 +122,7 @@ class Configuration {
 
     protected $browserReferer = 'https://www.google.com';
 
-    public function setBrowserReferer(string $browserReferer) {
+    public function setBrowserReferer($browserReferer) {
         $this->browserReferer = $browserReferer;
     }
 

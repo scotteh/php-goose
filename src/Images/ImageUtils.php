@@ -7,7 +7,7 @@ use GuzzleHttp\Client as GuzzleClient;
 
 class ImageUtils {
     public static function getImageDimensions($filePath) {
-        list($width, $height, $type, $attr) = getimagesize($filePath);
+        list($width, $height, $type) = getimagesize($filePath);
 
         return (object)[
             'width' => $width,
