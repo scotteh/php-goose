@@ -2,6 +2,8 @@
 
 namespace Goose\Extractors;
 
+use Goose\Article;
+use Goose\Configuration;
 use Goose\Utils\Debug;
 use Goose\DOM\DOMElement;
 
@@ -18,11 +20,14 @@ class ContentExtractor {
 
     private $logPrefix = 'ContentExtractor: ';
 
-    public function __construct($config) {
+    /**
+     * @param Configuration $config
+     */
+    public function __construct(Configuration $config) {
         $this->config = $config;
     }
 
-    public function getTitle($article) {
+    public function getTitle(Article $article) {
         $nodes = $article->getDoc()->filter('html > head > title');
 
         if (!$nodes->length) return '';

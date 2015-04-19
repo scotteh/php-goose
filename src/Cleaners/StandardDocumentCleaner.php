@@ -1,17 +1,15 @@
 <?php
+
+namespace Goose\Cleaners;
+
+use Goose\Article;
+
 /**
  * Standard Document Cleaner
  *
  * @package  Goose\Cleaners
  * @license http://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0
  */
-
-namespace Goose\Cleaners;
-
-use Goose\Article;
-use Goose\Configuration;
-use Goose\Utils\Debug;
-
 class StandardDocumentCleaner extends DocumentCleaner implements DocumentCleanerInterface {
     /** @var array Element id/class/name to be removed that start with */
     private $startsWithNodes = [
@@ -53,7 +51,7 @@ class StandardDocumentCleaner extends DocumentCleaner implements DocumentCleaner
     /**
      * Clean the contents of the supplied article document
      *
-     * @param Goose\Article $article
+     * @param Article $article
      *
      * @return null
      */
@@ -193,7 +191,7 @@ class StandardDocumentCleaner extends DocumentCleaner implements DocumentCleaner
             'name',
         ];
 
-        $exceptions = array_map(function($value){
+        $exceptions = array_map(function($value) {
             return ':not(' . $value . ')';
         }, $this->exceptionSelectors);
 
@@ -268,7 +266,7 @@ class StandardDocumentCleaner extends DocumentCleaner implements DocumentCleaner
     /**
      * Convert wanted elements to <p> elements.
      *
-     * @param array $wantedTags tagNames of base elements to select
+     * @param string[] $wantedTags tagNames of base elements to select
      *
      * @return null
      */

@@ -200,7 +200,6 @@ class StandardImageExtractor extends ImageExtractor {
 
                 $sequenceScore = 1.0 / $cnt;
                 $area = $width * $height;
-                $totalScore = 0;
 
                 if ($initialArea == 0) {
                     $initialArea = $area * 1.48;

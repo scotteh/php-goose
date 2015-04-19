@@ -2,5 +2,10 @@
 
 namespace Goose\Extractors;
 
-class AdditionalDataExtractor extends Extractor {
+use Goose\Article;
+
+class AdditionalDataExtractor extends Extractor interface ExtractorInterface {
+    public function extract(Article $extract) {
+        return null;
+    }
 }

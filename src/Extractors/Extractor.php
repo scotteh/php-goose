@@ -2,10 +2,12 @@
 
 namespace Goose\Extractors;
 
+use Goose\Configuration;
+
 class Extractor {
     private $config;
 
-    public function __construct($config) {
+    public function __construct(Configuration $config) {
         $this->config = $config;
     }
 }

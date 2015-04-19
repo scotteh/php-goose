@@ -1,10 +1,4 @@
 <?php
-/**
- * Document Cleaner
- *
- * @package  Goose\Cleaners
- * @license http://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0
- */
 
 namespace Goose\Cleaners;
 
@@ -13,6 +7,12 @@ use Goose\Configuration;
 use Goose\DOM\DOMDocument;
 use Goose\Utils\Debug;
 
+/**
+ * Document Cleaner
+ *
+ * @package  Goose\Cleaners
+ * @license http://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0
+ */
 abstract class DocumentCleaner {
     protected $config;
 

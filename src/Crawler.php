@@ -3,8 +3,6 @@
 namespace Goose;
 
 use GuzzleHttp\Client as GuzzleClient;
-use Goose\Configuration;
-use Goose\Utils\Debug;
 use Goose\Utils\URLHelper;
 use Goose\DOM\DOMDocument;
 use Goose\Images\StandardImageExtractor;
@@ -28,6 +26,8 @@ class Crawler {
         $extractor = $this->getExtractor();
         $documentCleaner = $this->getDocumentCleaner();
         $outputFormatter = $this->getOutputFormatter();
+        $publishDateExtractor = $this->config->getPublishDateExtractor();
+        $additionalDataExtractor = $this->config->getAdditionalDataExtractor();
 
         $article->setFinalUrl($parseCandidate->url);
         $article->setDomain($parseCandidate->parts->host);
@@ -42,18 +42,20 @@ class Crawler {
 
         $article->setLanguage($language);
         $article->setTitle($extractor->getTitle($article));
-        $article->setPublishDate($this->config->getPublishDateExtractor($doc));
-        $article->setAdditionalData($this->config->getAdditionalDataExtractor($doc));
         $article->setMetaDescription($extractor->getMetaDescription($article));
         $article->setMetaKeywords($extractor->getMetaKeywords($article));
         $article->setCanonicalLink($extractor->getCanonicalLink($article));
         $article->setTags($extractor->extractTags($article));
 
-        $documentCleaner->clean($article);
+        if ($publishDateExtractor instanceof ExtractorInterface) {
+            $article->setPublishDate($publishDateExtractor->extract($article));
+        }
 
-        /*if (!$article->getPublishDate()) {
-            $article->setPublishDate($extractor->getDateFromURL($article->getCanonicalLink()));
-        }*/
+        if ($additionalDataExtractor instanceof ExtractorInterface) {
+            $article->setAdditionalData($additionalDataExtractor->extract($article));
+        }
+
+        $documentCleaner->clean($article);
 
         $article->setTopNode($extractor->calculateBestNodeBasedOnClustering($article));
 
@@ -118,7 +120,7 @@ class Crawler {
         $internalErrors = libxml_use_internal_errors(true);
         $disableEntities = libxml_disable_entity_loader(true);
 
-        $fn = function($matches){
+        $fn = function($matches) {
             return (
                 isset($matches[1])
                 ? '</script> -->'

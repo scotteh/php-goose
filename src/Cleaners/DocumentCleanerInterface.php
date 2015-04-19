@@ -1,16 +1,16 @@
 <?php
-/**
- * Document Cleaner Interface
- *
- * @package  Goose\Cleaners
- * @license http://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0
- */
 
 namespace Goose\Cleaners;
 
 use Goose\Article;
 use Goose\Configuration;
 
+/**
+ * Document Cleaner Interface
+ *
+ * @package  Goose\Cleaners
+ * @license http://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0
+ */
 interface DocumentCleanerInterface {
     public function __construct(Configuration $config);
 

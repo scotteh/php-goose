@@ -239,7 +239,7 @@ class Article {
         return $this->doc;
     }
 
-   /**
+    /**
      * this is the original DOM document that contains a pure object from the original HTML without any cleaning
      * options done on it
      */
