@@ -553,7 +553,7 @@ class ContentExtractor {
     }
 
     /**
-     * @param DOMElement $node
+     * @param DOMElement $e
      *
      * @return bool
      */
@@ -689,7 +689,7 @@ class ContentExtractor {
 
         $baselineScoreForSiblingParagraphs = $this->getBaselineScoreForSiblings($topNode);
 
-        foreach ($topNode->getSiblings() as $currentNode) {
+        foreach ($topNode->siblings() as $currentNode) {
             $results = $this->getSiblingContent($currentNode, $baselineScoreForSiblingParagraphs);
 
             foreach ($results as $result) {
@@ -738,13 +738,23 @@ class ContentExtractor {
     /**
      * @todo Clean-up
      *
-     * @param string $cleanedText
-     * @param int $limit
+     * @param Article $article
      *
      * @return string[]
      */
-    public function getPopularWords($cleanedText, $limit = 5)
-    {
+    public function getPopularWords(Article $article) {
+        $contents = [
+            $article->getTitle(),
+            $article->getMetaDescription(),
+        ];
+
+        if ($article->getTopNode()) {
+            $contents[] = $article->getCleanedArticleText();
+        }
+
+        $cleanedText = implode(' ', $contents);
+
+        $limit = 5;
         $minFrequency = 1;
 
         $string = trim(preg_replace('/ss+/i', '', $cleanedText));

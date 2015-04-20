@@ -78,11 +78,11 @@ class Crawler {
 
         $documentCleaner->clean($article);
 
-        $article->setTopNode($extractor->calculateBestNodeBasedOnClustering($article));
+        $topNode = $extractor->calculateBestNodeBasedOnClustering($article);
 
-        $txt = $article->getTitle() . $article->getMetaDescription();
+        if ($topNode) {
+            $article->setTopNode($topNode);
 
-        if ($article->getTopNode()) {
             $article->setMovies($extractor->extractVideos($article->getTopNode()));
             $article->setLinks($extractor->extractLinks($article->getTopNode()));
 
@@ -99,11 +99,9 @@ class Crawler {
             $article->setTopNode($extractor->postExtractionCleanup($article->getTopNode()));
             $article->setCleanedArticleText($outputFormatter->getFormattedText($article->getTopNode()));
             $article->setHtmlArticle($outputFormatter->cleanupHtml($article->getTopNode()));
-
-            $txt .= $article->getCleanedArticleText();
         }
 
-        $article->setPopularWords($extractor->getPopularWords($txt));
+        $article->setPopularWords($extractor->getPopularWords($article));
 
         return $article;
     }

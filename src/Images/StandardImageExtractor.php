@@ -530,7 +530,7 @@ class StandardImageExtractor extends ImageExtractor {
      * @param string[] $imageSrcs
      * @param bool $returnAll
      *
-     * @return LocallyStoredImage[]|null
+     * @return LocallyStoredImage[]
      */
     public function getLocallyStoredImages($imageSrcs, $returnAll = false) {
         return ImageUtils::storeImagesToLocalFile($imageSrcs, $returnAll, $this->config);

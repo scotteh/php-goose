@@ -36,13 +36,13 @@ class ImageUtils {
      * @param bool $returnAll
      * @param Configuration $config
      *
-     * @return LocallyStoredImage[]|null
+     * @return LocallyStoredImage[]
      */
     public static function storeImagesToLocalFile($imageSrcs, $returnAll, Configuration $config) {
         $localImages = self::handleEntity($imageSrcs, $returnAll, $config);
 
         if (empty($localImages)) {
-            return null;
+            return [];
         }
 
         $locallyStoredImages = [];

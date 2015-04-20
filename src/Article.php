@@ -5,7 +5,6 @@ namespace Goose;
 use Goose\Images\Image;
 use Goose\DOM\DOMElement;
 use Goose\DOM\DOMDocument;
-use Goose\Extractors\ExtractorInterface;
 
 /**
  * Article
@@ -17,16 +16,16 @@ class Article {
     /**
      * Language of the article
      *
-     * @var string|null
+     * @var string
      */
-    protected $language = null;
+    protected $language;
 
-    /** @param string|null $language */
+    /** @param string $language */
     public function setLanguage($language) {
         $this->language = $language;
     }
 
-    /** @return string|null */
+    /** @return string */
     public function getLanguage() {
         return $this->language;
     }
@@ -34,16 +33,16 @@ class Article {
     /**
      * Title of the article
      *
-     * @var string|null
+     * @var string
      */
-    protected $title = null;
+    protected $title;
 
-    /** @param string|null $title */
+    /** @param string $title */
     public function setTitle($title) {
         $this->title = $title;
     }
 
-    /** @return string|null */
+    /** @return string */
     public function getTitle() {
         return $this->title;
     }
@@ -52,16 +51,16 @@ class Article {
      * Stores the lovely, pure text from the article, stripped of html, formatting, etc...
      * just raw text with paragraphs separated by newlines. This is probably what you want to use.
      *
-     * @var string|null
+     * @var string
      */
-    protected $cleanedArticleText = null;
+    protected $cleanedArticleText;
 
-    /** @param string|null $cleanedArticleText */
+    /** @param string $cleanedArticleText */
     public function setCleanedArticleText($cleanedArticleText) {
         $this->cleanedArticleText = $cleanedArticleText;
     }
 
-    /** @return string|null */
+    /** @return string */
     public function getCleanedArticleText() {
         return $this->cleanedArticleText;
     }
@@ -69,16 +68,16 @@ class Article {
     /**
      * Article with the originals HTML tags (<p>, <a>, ..)
      *
-     * @var string|null
+     * @var string
      */
-    protected $htmlArticle = null;
+    protected $htmlArticle;
 
-    /** @param string|null $htmlArticle */
+    /** @param string $htmlArticle */
     public function setHtmlArticle($htmlArticle) {
         $this->htmlArticle = $htmlArticle;
     }
 
-    /** @return string|null */
+    /** @return string */
     public function getHtmlArticle() {
         return $this->htmlArticle;
     }
@@ -86,16 +85,16 @@ class Article {
     /**
      * Meta description field in HTML source
      *
-     * @var string|null
+     * @var string
      */
-    protected $metaDescription = null;
+    protected $metaDescription;
 
-    /** @param string|null $metaDescription */
+    /** @param string $metaDescription */
     public function setMetaDescription($metaDescription) {
         $this->metaDescription = $metaDescription;
     }
 
-    /** @return string|null */
+    /** @return string */
     public function getMetaDescription() {
         return $this->metaDescription;
     }
@@ -103,16 +102,16 @@ class Article {
     /**
      * Meta keywords field in the HTML source
      *
-     * @var string|null
+     * @var string
      */
-    protected $metaKeywords = null;
+    protected $metaKeywords;
 
-    /** @param string|null $metaKeywords */
+    /** @param string $metaKeywords */
     public function setMetaKeywords($metaKeywords) {
         $this->metaKeywords = $metaKeywords;
     }
 
-    /** @return string|null */
+    /** @return string */
     public function getMetaKeywords() {
         return $this->metaKeywords;
     }
@@ -120,16 +119,16 @@ class Article {
     /**
      * The canonical link of this article if found in the meta data
      *
-     * @var string|null
+     * @var string
      */
-    protected $canonicalLink = null;
+    protected $canonicalLink;
 
-    /** @param string|null $canonicalLink */
+    /** @param string $canonicalLink */
     public function setCanonicalLink($canonicalLink) {
         $this->canonicalLink = $canonicalLink;
     }
 
-    /** @return string|null */
+    /** @return string */
     public function getCanonicalLink() {
         return $this->canonicalLink;
     }
@@ -137,16 +136,16 @@ class Article {
     /**
      * Domain of the article we're parsing
      *
-     * @var string|null
+     * @var string
      */
-    protected $domain = null;
+    protected $domain;
 
-    /** @param string|null $domain */
+    /** @param string $domain */
     public function setDomain($domain) {
         $this->domain = $domain;
     }
 
-    /** @return string|null */
+    /** @return string */
     public function getDomain() {
         return $this->domain;
     }
@@ -154,16 +153,16 @@ class Article {
     /**
      * Top Element we think is a candidate for the main body of the article
      *
-     * @var DOMElement|null
+     * @var DOMElement
      */
-    protected $topNode = null;
+    protected $topNode;
 
-    /** @param DOMElement|null $topNode */
-    public function setTopNode(DOMElement $topNode = null) {
+    /** @param DOMElement $topNode */
+    public function setTopNode(DOMElement $topNode) {
         $this->topNode = $topNode;
     }
 
-    /** @return DOMElement|null */
+    /** @return DOMElement */
     public function getTopNode() {
         return $this->topNode;
     }
@@ -171,16 +170,16 @@ class Article {
     /**
      * Top Image object that we think represents this article
      *
-     * @var Image|null
+     * @var Image
      */
-    protected $topImage = null;
+    protected $topImage;
 
-    /** @param Image|null $topImage */
-    public function setTopImage(Image $topImage = null) {
+    /** @param Image $topImage */
+    public function setTopImage(Image $topImage) {
         $this->topImage = $topImage;
     }
 
-    /** @return Image|null */
+    /** @return Image */
     public function getTopImage() {
         return $this->topImage;
     }
@@ -193,7 +192,7 @@ class Article {
     protected $allImages = [];
 
     /** @param Image[] $allImages */
-    public function setAllImages(Image $allImages = null) {
+    public function setAllImages($allImages = []) {
         $this->allImages = $allImages;
     }
 
@@ -257,16 +256,16 @@ class Article {
      * Final URL that we're going to try and fetch content against, this would be expanded if any
      * escaped fragments were found in the starting url
      *
-     * @var string|null
+     * @var string
      */
-    protected $finalUrl = null;
+    protected $finalUrl;
 
-    /** @param string|null $finalUrl */
+    /** @param string $finalUrl */
     public function setFinalUrl($finalUrl) {
         $this->finalUrl = $finalUrl;
     }
 
-    /** @return string|null */
+    /** @return string */
     public function getFinalUrl() {
         return $this->finalUrl;
     }
@@ -274,16 +273,16 @@ class Article {
     /**
      * MD5 hash of the url to use for various identification tasks
      *
-     * @var string|null
+     * @var string
      */
-    protected $linkhash = null;
+    protected $linkhash;
 
-    /** @param string|null $linkhash */
+    /** @param string $linkhash */
     public function setLinkhash($linkhash) {
         $this->linkhash = $linkhash;
     }
 
-    /** @return string|null */
+    /** @return string */
     public function getLinkhash() {
         return $this->linkhash;
     }
@@ -291,16 +290,16 @@ class Article {
     /**
      * Raw HTML straight from the network connection
      *
-     * @var string|null
+     * @var string
      */
-    protected $rawHtml = null;
+    protected $rawHtml;
 
-    /** @param string|null $rawHtml */
+    /** @param string $rawHtml */
     public function setRawHtml($rawHtml) {
         $this->rawHtml = $rawHtml;
     }
 
-    /** @return string|null */
+    /** @return string */
     public function getRawHtml() {
         return $this->rawHtml;
     }
@@ -308,16 +307,16 @@ class Article {
     /**
      * DOM Document object
      *
-     * @var DOMDocument|null
+     * @var DOMDocument
      */
-    protected $doc = null;
+    protected $doc;
 
-    /** @param DOMDocument|null $doc */
-    public function setDoc(DOMDocument $doc = null) {
+    /** @param DOMDocument $doc */
+    public function setDoc(DOMDocument $doc) {
         $this->doc = $doc;
     }
 
-    /** @return DOMDocument|null */
+    /** @return DOMDocument */
     public function getDoc() {
         return $this->doc;
     }
@@ -326,16 +325,16 @@ class Article {
      * Original DOM document that contains a pure object from the original HTML without any cleaning
      * options done on it
      *
-     * @var DOMDocument|null
+     * @var DOMDocument
      */
-    protected $rawDoc = null;
+    protected $rawDoc;
 
-    /** @param DOMDocument|null $rawDoc */
-    public function setRawDoc(DOMDocument $rawDoc = null) {
+    /** @param DOMDocument $rawDoc */
+    public function setRawDoc(DOMDocument $rawDoc) {
         $this->rawDoc = $rawDoc;
     }
 
-    /** @return DOMDocument|null */
+    /** @return DOMDocument */
     public function getRawDoc() {
         return $this->rawDoc;
     }
@@ -343,16 +342,16 @@ class Article {
     /**
      * Sometimes useful to try and know when the publish date of an article was
      *
-     * @var string|null
+     * @var string
      */
-    protected $publishDate = null;
+    protected $publishDate;
 
-    /** @param string|null $publishDate */
+    /** @param string $publishDate */
     public function setPublishDate($publishDate) {
         $this->publishDate = $publishDate;
     }
 
-    /** @return string|null */
+    /** @return string */
     public function getPublishDate() {
         return $this->publishDate;
     }
@@ -360,16 +359,16 @@ class Article {
     /**
      * A property bucket for consumers of goose to store custom data extractions.
      *
-     * @return ExtractorInterface|null
+     * @return string
      */
-    protected $additionalData = null;
+    protected $additionalData;
 
-    /** @param ExtractorInterface|null $additionalData */
-    public function setAdditionalData(ExtractorInterface $additionalData = null) {
+    /** @param string $additionalData */
+    public function setAdditionalData($additionalData) {
         $this->additionalData = $additionalData;
     }
 
-    /** @return ExtractorInterface|null */
+    /** @return string */
     public function getAdditionalData() {
         return $this->additionalData;
     }
@@ -377,16 +376,16 @@ class Article {
     /**
      * Facebook Open Graph data that that is found in Article Meta tags
      *
-     * @return ExtractorInterface|null
+     * @return string
      */
-    protected $openGraphData = null;
+    protected $openGraphData;
 
-    /** @param ExtractorInterface|null $openGraphData */
-    public function setOpenGraphData(ExtractorInterface $openGraphData = null) {
+    /** @param string $openGraphData */
+    public function setOpenGraphData($openGraphData) {
         $this->openGraphData = $openGraphData;
     }
 
-    /** @return ExtractorInterface|null */
+    /** @return string */
     public function getOpenGraphData() {
         return $this->openGraphData;
     }
