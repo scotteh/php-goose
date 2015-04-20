@@ -279,7 +279,7 @@ class StandardImageExtractor extends ImageExtractor {
                 $imageUrls[] = $this->buildImagePath($article, $cadidateImg->getAttribute('src'));
             }
 
-            $locallyStoredImages = $this->getLocallyStoredImage($imageUrls);
+            $locallyStoredImages = $this->getLocallyStoredImages($imageUrls);
 
             foreach ($locallyStoredImages as $locallyStoredImage) {
                 $img = new Image();
@@ -414,7 +414,7 @@ class StandardImageExtractor extends ImageExtractor {
             $cnt++;
         }
 
-        $locallyStoredImages = $this->getLocallyStoredImage($imageUrls, true);
+        $locallyStoredImages = $this->getLocallyStoredImages($imageUrls, true);
 
         foreach ($locallyStoredImages as $i => $locallyStoredImage) {
             $image = $imageNodes[$i];
@@ -488,7 +488,9 @@ class StandardImageExtractor extends ImageExtractor {
         $mainImage->setImageSrc($imagePath);
         $mainImage->setImageExtractionType($type);
         $mainImage->setConfidenceScore(100);
+
         $locallyStoredImage = $this->getLocallyStoredImage($mainImage->getImageSrc());
+
         if (!empty($locallyStoredImage)) {
             $mainImage->setBytes($locallyStoredImage->getBytes());
             $mainImage->setHeight($locallyStoredImage->getHeight());
@@ -513,17 +515,25 @@ class StandardImageExtractor extends ImageExtractor {
     }
 
     /**
-     * returns the bytes of the image file on disk
-     *
-     * @todo Re-factor into single / multiple getters.
-     *
-     * @param string[]|string $imageSrc
+     * @param string $imageSrc
      * @param bool $returnAll
      *
-     * @return LocallyStoredImage|LocallyStoredImage[]
+     * @return LocallyStoredImage|null
      */
     public function getLocallyStoredImage($imageSrc, $returnAll = false) {
-        return ImageUtils::storeImageToLocalFile($imageSrc, $returnAll, $this->config);
+        $locallyStoredImages = ImageUtils::storeImagesToLocalFile([$imageSrc], $returnAll, $this->config);
+
+        return array_shift($locallyStoredImages);
+    }
+
+    /**
+     * @param string[] $imageSrcs
+     * @param bool $returnAll
+     *
+     * @return LocallyStoredImage[]|null
+     */
+    public function getLocallyStoredImages($imageSrcs, $returnAll = false) {
+        return ImageUtils::storeImagesToLocalFile($imageSrcs, $returnAll, $this->config);
     }
 
     /**
@@ -589,7 +599,9 @@ class StandardImageExtractor extends ImageExtractor {
         $mainImage->setImageSrc($this->buildImagePath($article, $knownImgSrc));
         $mainImage->setImageExtractionType('known');
         $mainImage->setConfidenceScore(90);
+
         $locallyStoredImage = $this->getLocallyStoredImage($mainImage->getImageSrc());
+
         if (!empty($locallyStoredImage)) {
             $mainImage->setBytes($locallyStoredImage->getBytes());
             $mainImage->setHeight($locallyStoredImage->getHeight());

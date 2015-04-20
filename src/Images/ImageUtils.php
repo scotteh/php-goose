@@ -32,19 +32,13 @@ class ImageUtils {
      * Writes an image src http string to disk as a temporary file and returns the LocallyStoredImage object that has the info you should need
      * on the image
      *
-     * @param string[]|string $imageSrcs
+     * @param string[] $imageSrcs
      * @param bool $returnAll
      * @param Configuration $config
      *
-     * @return LocallyStoredImage|LocallyStoredImage[]
+     * @return LocallyStoredImage[]|null
      */
-    public static function storeImageToLocalFile($imageSrcs, $returnAll, Configuration $config) {
-        $asArray = is_array($imageSrcs);
-
-        if (!$asArray) {
-            $imageSrcs = [$imageSrcs];
-        }
-
+    public static function storeImagesToLocalFile($imageSrcs, $returnAll, Configuration $config) {
         $localImages = self::handleEntity($imageSrcs, $returnAll, $config);
 
         if (empty($localImages)) {
@@ -52,6 +46,7 @@ class ImageUtils {
         }
 
         $locallyStoredImages = [];
+
         foreach ($localImages as $localImage) {
             $imageDetails = self::getImageDimensions($localImage->file);
 
@@ -65,11 +60,7 @@ class ImageUtils {
             ]);
         }
 
-        return (
-            $asArray
-            ? $locallyStoredImages
-            : $locallyStoredImages[0]
-        );
+        return $locallyStoredImages;
     }
 
     /**
@@ -107,7 +98,7 @@ class ImageUtils {
     }
 
     /**
-     * @param string[]|string $imageSrcs
+     * @param string[] $imageSrcs
      * @param bool $returnAll
      * @param Configuration $config
      *
