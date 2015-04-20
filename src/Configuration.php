@@ -10,7 +10,7 @@ use Goose\Text\StopWords;
 /**
  * Crawler
  *
- * @package Configuration
+ * @package Goose
  * @license http://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0
  */
 class Configuration {

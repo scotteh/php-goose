@@ -5,19 +5,33 @@ namespace Goose\Extractors;
 use Goose\Article;
 use Goose\Configuration;
 use Goose\Utils\Debug;
+use Goose\DOM\DOMDocument;
 use Goose\DOM\DOMElement;
 
+/**
+ * Content Extractor
+ *
+ * @package Goose\Extractors
+ * @license http://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0
+ *
+ * @todo Review DOMElement type hinting, \DOMNode elements may be called on these methods (though they shouldn't be).
+ */
 class ContentExtractor {
+    /** @var string[] */
     private static $SPLITTER_CHARS = [
         '|', '-', '»', ':',
     ];
 
+    /** @var string */
     private static $A_REL_TAG_SELECTOR = "a[rel='tag'], a[href*='/tag/']";
 
+    /** @var string */
     private static $TOP_NODE_TAGS = 'p, td, pre';
 
+    /** @var Configuration */
     private $config;
 
+    /** @var string */
     private $logPrefix = 'ContentExtractor: ';
 
     /**
@@ -27,6 +41,11 @@ class ContentExtractor {
         $this->config = $config;
     }
 
+    /**
+     * @param Article $article
+     *
+     * @return string
+     */
     public function getTitle(Article $article) {
         $nodes = $article->getDoc()->filter('html > head > title');
 
@@ -56,11 +75,27 @@ class ContentExtractor {
         return trim($titleText);
     }
 
-    private function getNodesByLowercasePropertyValue($doc, $tag, $property, $value) {
+    /**
+     * @param DOMDocument $doc
+     * @param string $tag
+     * @param string $property
+     * @param string $value
+     *
+     * @return \DOMNodeList
+     */
+    private function getNodesByLowercasePropertyValue(DOMDocument $doc, $tag, $property, $value) {
         return $doc->filterXPath("descendant-or-self::".$tag."[translate(@".$property.", 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz')='".$value."']");
     }
 
-    private function getMetaContent($doc, $property, $value, $attr = 'content') {
+    /**
+     * @param DOMDocument $doc
+     * @param string $property
+     * @param string $value
+     * @param string $attr
+     *
+     * @return string
+     */
+    private function getMetaContent(DOMDocument $doc, $property, $value, $attr = 'content') {
         $nodes = $this->getNodesByLowercasePropertyValue($doc, 'meta', $property, $value);
 
         if (!$nodes->length) {
@@ -74,9 +109,13 @@ class ContentExtractor {
     }
 
     /**
-     * if the article has meta language set in the source, use that
+     * If the article has meta language set in the source, use that
+     *
+     * @param Article $article
+     *
+     * @return string
      */
-    public function getMetaLanguage($article) {
+    public function getMetaLanguage(Article $article) {
         $lang = '';
 
         $el = $article->getDoc()->filter('html[lang]');
@@ -109,9 +148,13 @@ class ContentExtractor {
     }
 
     /**
-     * if the article has meta description set in the source, use that
+     * If the article has meta description set in the source, use that
+     *
+     * @param Article $article
+     *
+     * @return string
      */
-    public function getMetaDescription($article) {
+    public function getMetaDescription(Article $article) {
         $desc = $this->getMetaContent($article->getDoc(), 'name', 'description');
 
         if (empty($desc)) {
@@ -126,16 +169,24 @@ class ContentExtractor {
     }
 
     /**
-     * if the article has meta keywords set in the source, use that
+     * If the article has meta keywords set in the source, use that
+     *
+     * @param Article $article
+     *
+     * @return string
      */
-    public function getMetaKeywords($article) {
+    public function getMetaKeywords(Article $article) {
         return $this->getMetaContent($article->getDoc(), 'name', 'keywords');
     }
 
     /**
-      * if the article has meta canonical link set in the url
-      */
-    public function getCanonicalLink($article) {
+     * If the article has meta canonical link set in the url
+     *
+     * @param Article $article
+     *
+     * @return string
+     */
+    public function getCanonicalLink(Article $article) {
         $href = '';
 
         $nodes = $this->getNodesByLowercasePropertyValue($article->getDoc(), 'link', 'rel', 'canonical');
@@ -167,16 +218,33 @@ class ContentExtractor {
         }
     }
 
+    /**
+     * @todo
+     *
+     * @param string $url
+     *
+     * @return string
+     */
     public function getDateFromURL($url) {
         // TODO
-		return '';
+        return '';
     }
 
+    /**
+     * @param string $url
+     *
+     * @return string
+     */
     public function getDomain($url) {
         return parse_url($url, PHP_URL_HOST);
     }
 
-    public function extractTags($article) {
+    /**
+     * @param Article $article
+     *
+     * @return string[]
+     */
+    public function extractTags(Article $article) {
         $nodes = $article->getDoc()->filter(self::$A_REL_TAG_SELECTOR);
 
         $tags = [];
@@ -189,14 +257,17 @@ class ContentExtractor {
     }
 
     /**
-     * we're going to start looking for where the clusters of paragraphs are. We'll score a cluster based on the number of stopwords
+     * We're going to start looking for where the clusters of paragraphs are. We'll score a cluster based on the number of stopwords
      * and the number of consecutive paragraphs together, which should form the cluster of text that this node is around
      * also store on how high up the paragraphs are, comments are usually at the bottom and should get a lower score
      *
-     * // todo refactor this long method
-     * @return
+     * @todo Re-factor this long method
+     *
+     * @param Article $article
+     *
+     * @return DOMElement|null
      */
-    public function calculateBestNodeBasedOnClustering($article) {
+    public function calculateBestNodeBasedOnClustering(Article $article) {
         $doc = $article->getDoc();
         $topNode = null;
         $nodesToCheck = $doc->filter(self::$TOP_NODE_TAGS);
@@ -284,15 +355,15 @@ class ContentExtractor {
     }
 
     /**
-     * alot of times the first paragraph might be the caption under an image so we'll want to make sure if we're going to
+     * A lot of times the first paragraph might be the caption under an image so we'll want to make sure if we're going to
      * boost a parent node that it should be connected to other paragraphs, at least for the first n paragraphs
-     * so we'll want to make sure that the next sibling is a paragraph and has at least some substatial weight to it
+     * so we'll want to make sure that the next sibling is a paragraph and has at least some substantial weight to it
      *
+     * @param DOMElement $node
      *
-     * @param node
-     * @return
+     * @return bool
      */
-    private function isOkToBoost($node) {
+    private function isOkToBoost(DOMElement $node) {
         $stepsAway = 0;
         $minimumStopWordCount = 5;
         $maxStepsAwayFromNode = 3;
@@ -323,6 +394,12 @@ class ContentExtractor {
         return false;
     }
 
+    /**
+     * @param string $e
+     * @param int $max
+     *
+     * @return string
+     */
     public function getShortText($e, $max) {
         if (mb_strlen($e) > $max) {
             return mb_substr($e, 0, $max) . '...';
@@ -332,11 +409,13 @@ class ContentExtractor {
     }
 
     /**
-     * checks the density of links within a node, is there not much text and most of it contains linky shit?
+     * Checks the density of links within a node, is there not much text and most of it contains linky shit?
      * if so it's no good
      *
-     * @param e
-     * @return
+     * @param DOMElement $e
+     * @param double $limit
+     *
+     * @return bool
      */
     private function isHighLinkDensity(DOMElement $e, $limit = 1.0) {
         $links = $e->filter('a, [onclick]');
@@ -371,46 +450,49 @@ class ContentExtractor {
     }
 
     /**
-     * returns the gravityScore as an integer from this node
+     * Returns the gravityScore as an integer from this node
      *
-     * @param node
-     * @return
+     * @param DOMElement $node
+     *
+     * @return int
      */
-    private function getScore($node) {
+    private function getScore(DOMElement $node) {
         return (int)$node->getAttribute('gravityScore');
     }
 
     /**
-     * adds a score to the gravityScore Attribute we put on divs
+     * Adds a score to the gravityScore Attribute we put on divs
      * we'll get the current score then add the score we're passing in to the current
      *
-     * @param node
-     * @param addToScore - the score to add to the node
+     * @param DOMElement $node
+     * @param int $addToScore
      */
-    private function updateScore($node, $addToScore) {
+    private function updateScore(DOMElement $node, $addToScore) {
         $currentScore = (int)$node->getAttribute('gravityScore');
 
         $node->setAttribute('gravityScore', $currentScore + $addToScore);
     }
 
     /**
-     * stores how many decent nodes are under a parent node
+     * Stores how many decent nodes are under a parent node
      *
-     * @param node
-     * @param addToCount
+     * @param DOMElement $node
+     * @param int $addToCount
      */
-    private function updateNodeCount($node, $addToCount) {
+    private function updateNodeCount(DOMElement $node, $addToCount) {
         $currentScore = (int)$node->getAttribute('gravityNodes');
 
         $node->setAttribute('gravityNodes', $currentScore + $addToCount);
     }
 
     /**
-     * pulls out videos we like
+     * Pulls out videos we like
      *
-     * @return
+     * @param DOMElement $node
+     *
+     * @return string[]
      */
-    public function extractVideos($node) {
+    public function extractVideos(DOMElement $node) {
         $candidates = [];
         $goodMovies = [];
         $youtubeStr = 'youtube';
@@ -419,10 +501,6 @@ class ContentExtractor {
         $flickrStr = 'flickr';
         $veohStr = 'veoh';
         $dailymotionStr = 'dailymotion';
-
-        if (!($node instanceof \DOMNode)) {
-            return [];
-        }
 
         foreach ($node->parentNode->filter('embed, object, iframe') as $e) {
             $candidates[] = $e;
@@ -451,11 +529,13 @@ class ContentExtractor {
     }
 
     /**
-     * pulls out links we like
+     * Pulls out links we like
      *
-     * @return
+     * @param DOMElement $node
+     *
+     * @return string[]
      */
-    public function extractLinks(\DOMNode $node) {
+    public function extractLinks(DOMElement $node) {
         $goodLinks = [];
 
         $candidates = $node->parentNode->filter('a[href]');
@@ -472,6 +552,11 @@ class ContentExtractor {
         return $goodLinks;
     }
 
+    /**
+     * @param DOMElement $node
+     *
+     * @return bool
+     */
     public function isTableTagAndNoParagraphsExist(DOMElement $e) {
         $subParagraphs = $e->filter('p, strong');
 
@@ -503,17 +588,14 @@ class ContentExtractor {
     }
 
     /**
-     * remove any divs that looks like non-content, clusters of links, or paras with no gusto
+     * Remove any divs that looks like non-content, clusters of links, or paras with no gusto
      *
-     * @param targetNode
-     * @return
+     * @param DOMElement $targetNode
+     *
+     * @return DOMElement
      */
-    public function postExtractionCleanup($targetNode) {
+    public function postExtractionCleanup(DOMElement $targetNode) {
         Debug::trace($this->logPrefix, "Starting cleanup Node");
-
-        if (!($targetNode instanceof \DOMNode)) {
-            return null;
-        }
 
         $node = $this->addSiblings($targetNode);
 
@@ -533,7 +615,13 @@ class ContentExtractor {
         return $node;
     }
 
-    public function isNodeScoreThreshholdMet($node, $e) {
+    /**
+     * @param DOMElement $node
+     * @param DOMElement $e
+     *
+     * @return bool
+     */
+    public function isNodeScoreThreshholdMet(DOMElement $node, DOMElement $e) {
         $topNodeScore = $this->getScore($node);
         $currentNodeScore = $this->getScore($e);
         $thresholdScore = ($topNodeScore * 0.08);
@@ -544,52 +632,59 @@ class ContentExtractor {
             Debug::trace($this->logPrefix, "Removing node due to low threshold score");
 
             return false;
-        } else {
-            Debug::trace($this->logPrefix, "Not removing TD node");
-
-            return true;
         }
+
+        Debug::trace($this->logPrefix, "Not removing TD node");
+
+        return true;
     }
 
     /**
-     * adds any siblings that may have a decent score to this node
+     * Adds any siblings that may have a decent score to this node
      *
-     * @param currentSibling
-     * @return
+     * @param DOMElement $currentSibling
+     * @param int $baselineScoreForSiblingParagraphs
+     *
+     * @return DOMElement[]
      */
-    public function getSiblingContent($currentSibling, $baselineScoreForSiblingParagraphs) {
+    public function getSiblingContent(DOMElement $currentSibling, $baselineScoreForSiblingParagraphs) {
         if ($currentSibling->nodeType != XML_ELEMENT_NODE) {
             return [];
         } else if (($currentSibling->nodeName == 'p' || $currentSibling->nodeName == 'strong') && !empty($currentSibling->textContent)) {
             return [$currentSibling];
-        } else {
-            $potentialParagraphs = $currentSibling->filter('p, strong');
+        }
 
-            if ($potentialParagraphs->length == 0) {
-                return [];
-            } else {
-                $paragraphs = [];
+        $potentialParagraphs = $currentSibling->filter('p, strong');
 
-                foreach ($potentialParagraphs as $firstParagraph) {
-                    if (!empty($firstParagraph->textContent)) {
-                        $wordStats = $this->config->getStopWords()->getStopwordCount($firstParagraph->textContent);
-                        $paragraphScore = $wordStats->getStopWordCount();
-                        $siblingBaseLineScore = 0.30;
+        if ($potentialParagraphs->length == 0) {
+            return [];
+        }
 
-                        if (($baselineScoreForSiblingParagraphs * $siblingBaseLineScore) < $paragraphScore) {
-                            Debug::trace($this->logPrefix, "This node looks like a good sibling, adding it");
+        $paragraphs = [];
 
-                            $paragraphs[] = $firstParagraph->ownerDocument->createElement('p', $firstParagraph->textContent);
-                        }
-                    }
+        foreach ($potentialParagraphs as $firstParagraph) {
+            if (!empty($firstParagraph->textContent)) {
+                $wordStats = $this->config->getStopWords()->getStopwordCount($firstParagraph->textContent);
+                $paragraphScore = $wordStats->getStopWordCount();
+                $siblingBaseLineScore = 0.30;
+
+                if (($baselineScoreForSiblingParagraphs * $siblingBaseLineScore) < $paragraphScore) {
+                    Debug::trace($this->logPrefix, "This node looks like a good sibling, adding it");
+
+                    $paragraphs[] = $firstParagraph->ownerDocument->createElement('p', $firstParagraph->textContent);
                 }
-
-                return $paragraphs;
             }
         }
+
+        return $paragraphs;
     }
 
-    private function addSiblings($topNode) {
+    /**
+     * @param DOMElement $topNode
+     *
+     * @return DOMElement
+     */
+    private function addSiblings(DOMElement $topNode) {
         Debug::trace($this->logPrefix, "Starting to add siblings");
 
         $baselineScoreForSiblingParagraphs = $this->getBaselineScoreForSiblings($topNode);
@@ -611,10 +706,11 @@ class ContentExtractor {
      * of the paragraphs within the top node. For example if our total score of 10 paragraphs was 1000 but each had an average value of
      * 100 then 100 should be our base.
      *
-     * @param topNode
-     * @return
+     * @param DOMElement $topNode
+     *
+     * @return int
      */
-    private function getBaselineScoreForSiblings($topNode) {
+    private function getBaselineScoreForSiblings(DOMElement $topNode) {
         $base = 100000;
         $numberOfParagraphs = 0;
         $scoreOfParagraphs = 0;
@@ -639,6 +735,14 @@ class ContentExtractor {
         return $base;
     }
 
+    /**
+     * @todo Clean-up
+     *
+     * @param string $cleanedText
+     * @param int $limit
+     *
+     * @return string[]
+     */
     public function getPopularWords($cleanedText, $limit = 5)
     {
         $minFrequency = 1;
