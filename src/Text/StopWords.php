@@ -79,7 +79,7 @@ class StopWords
     }
 
     /**
-     * @param string $content
+     * @return string
      */
     public function getCurrentStopWords() {
         return $this->cached;

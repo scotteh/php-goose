@@ -9,11 +9,11 @@ namespace Goose;
  * @license http://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0
  */
 class Client {
-    /** @var Configuration */
+    /** @var mixed[] */
     protected $config = [];
 
     /**
-     * @param Configuration $config
+     * @param mixed[] $config
      */
     public function __construct($config = []) {
         $this->config = $config;

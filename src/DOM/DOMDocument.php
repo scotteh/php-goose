@@ -22,7 +22,7 @@ class DOMDocument extends \DOMDocument
     }
 
     /**
-     * @param string $selector
+     * @param string $xpath
      *
      * @return \DOMNodeList
      */
@@ -50,12 +50,12 @@ class DOMDocument extends \DOMDocument
     }
 
     /**
-     * @param string $selector
+     * @param string $xpath
      *
      * @return DOMElement[]
      */
-    public function filterXPathAsArray($selector) {
-        $results = $this->filterXPath($selector);
+    public function filterXPathAsArray($xpath) {
+        $results = $this->filterXPath($xpath);
 
         $items = [];
 

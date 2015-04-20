@@ -214,7 +214,7 @@ class StandardImageExtractor extends ImageExtractor {
 
             $locallyStoredImage = $this->getLocallyStoredImage($this->buildImagePath($article, $image->getAttribute('src')));
 
-            if ($locallyStoredImage) {
+            if (!empty($locallyStoredImage)) {
                 $width = $locallyStoredImage->getWidth();
                 $height = $locallyStoredImage->getHeight();
                 $fileExtension = $locallyStoredImage->getFileExtension();
@@ -333,7 +333,7 @@ class StandardImageExtractor extends ImageExtractor {
     /**
      * takes a list of image elements and filters out the ones with bad names
      *
-     * @param DOMNodeList $images
+     * @param \DOMNodeList $images
      *
      * @return DOMElement[]
      */
@@ -378,7 +378,7 @@ class StandardImageExtractor extends ImageExtractor {
      * @param Article $article
      * @param DOMElement $node
      *
-     * @return bool
+     * @return DOMElement[]
      */
     private function getImageCandidates(Article $article, DOMElement $node) {
         $images = $node->filter('img');
@@ -489,7 +489,7 @@ class StandardImageExtractor extends ImageExtractor {
         $mainImage->setImageExtractionType($type);
         $mainImage->setConfidenceScore(100);
         $locallyStoredImage = $this->getLocallyStoredImage($mainImage->getImageSrc());
-        if ($locallyStoredImage) {
+        if (!empty($locallyStoredImage)) {
             $mainImage->setBytes($locallyStoredImage->getBytes());
             $mainImage->setHeight($locallyStoredImage->getHeight());
             $mainImage->setWidth($locallyStoredImage->getWidth());
@@ -590,7 +590,7 @@ class StandardImageExtractor extends ImageExtractor {
         $mainImage->setImageExtractionType('known');
         $mainImage->setConfidenceScore(90);
         $locallyStoredImage = $this->getLocallyStoredImage($mainImage->getImageSrc());
-        if ($locallyStoredImage) {
+        if (!empty($locallyStoredImage)) {
             $mainImage->setBytes($locallyStoredImage->getBytes());
             $mainImage->setHeight($locallyStoredImage->getHeight());
             $mainImage->setWidth($locallyStoredImage->getWidth());

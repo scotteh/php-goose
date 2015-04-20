@@ -3,7 +3,6 @@
 namespace Goose\Images;
 
 use Goose\Configuration;
-
 use GuzzleHttp\Pool as GuzzlePool;
 use GuzzleHttp\Client as GuzzleClient;
 
@@ -108,7 +107,7 @@ class ImageUtils {
     }
 
     /**
-     * @param string[]|striong $imageSrcs
+     * @param string[]|string $imageSrcs
      * @param bool $returnAll
      * @param Configuration $config
      *

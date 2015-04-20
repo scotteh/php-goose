@@ -23,7 +23,7 @@ class DOMElement extends \DOMElement
     }
 
     /**
-     * @param string $selector
+     * @param string $xpath
      *
      * @return \DOMNodeList
      */
@@ -51,12 +51,12 @@ class DOMElement extends \DOMElement
     }
 
     /**
-     * @param string $selector
+     * @param string $xpath
      *
      * @return DOMElement[]
      */
-    public function filterXPathAsArray($selector) {
-        $results = $this->filterXPath($selector);
+    public function filterXPathAsArray($xpath) {
+        $results = $this->filterXPath($xpath);
 
         $items = [];
 
@@ -101,17 +101,17 @@ class DOMElement extends \DOMElement
     }
 
     /**
-     * @param DOMElement $e
+     * @param \DOMNode $e
      *
      * @codeCoverageIgnore
      */
-    private function debugNode($e) {
+    private function debugNode(\DOMNode $e) {
         $sb = '';
 
         $sb .= "' nodeName: '";
         $sb .= $e->nodeName;
 
-        if ($e->nodeType == XML_ELEMENT_NODE) {
+        if ($e instanceof DOMElement) {
             $sb .= "' GravityScore: '";
             $sb .= $e->getAttribute('gravityScore');
             $sb .= "' paraNodeCount: '";
