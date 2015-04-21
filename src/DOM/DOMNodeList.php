@@ -2,11 +2,8 @@
 
 namespace Goose\DOM;
 
-use DOMNode;
 use Countable;
-use IteratorAggregate;
 use ArrayAccess;
-use ArrayIterator;
 use RecursiveIterator;
 use RecursiveIteratorIterator;
 use Traversable;
@@ -89,7 +86,7 @@ class DOMNodeList implements Countable, ArrayAccess, RecursiveIterator {
      *
      * @return RecursiveIteratorIterator
      */
-    public function getRecursiveIterator(){
+    public function getRecursiveIterator() {
         return new RecursiveIteratorIterator($this, RecursiveIteratorIterator::SELF_FIRST);
     }
 
