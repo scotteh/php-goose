@@ -94,7 +94,7 @@ class Crawler {
                 $bestImage = $imageExtractor->getBestImage($article);
 
                 if ($bestImage instanceof Image) {
-                    $article->setTopImage($imageExtractor->getBestImage($article));
+                    $article->setTopImage($bestImage);
                 }
 
                 if ($this->config->getEnableAllImagesFetching()) {
