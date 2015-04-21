@@ -736,55 +736,41 @@ class ContentExtractor {
     }
 
     /**
-     * @todo Clean-up
-     *
      * @param Article $article
      *
      * @return string[]
      */
     public function getPopularWords(Article $article) {
-        $contents = [
-            $article->getTitle(),
-            $article->getMetaDescription(),
-        ];
-
-        if ($article->getTopNode()) {
-            $contents[] = $article->getCleanedArticleText();
-        }
-
-        $cleanedText = implode(' ', $contents);
-
         $limit = 5;
-        $minFrequency = 1;
-
-        $string = trim(preg_replace('/ss+/i', '', $cleanedText));
-        $string = preg_replace('/[^a-zA-Z -]/', '', $string); // only take alphabet characters, but keep the spaces and dashes too
-
-        preg_match_all('/\b.*?\b/i', $string, $matchWords);
-        $matchWords = $matchWords[0];
-
+        $minimumFrequency = 1;
         $stopWords = $this->config->getStopWords()->getCurrentStopWords();
 
-        foreach ($matchWords as $key => &$item) {
-            if ($item == '' || in_array(strtolower($item), $stopWords) || strlen($item) <= 3 ) {
-                unset($matchWords[$key]);
-            }
+        $text = $article->getTitle();
+        $text .= ' ' . $article->getMetaDescription();
+
+        if ($article->getTopNode()) {
+            $text .= ' ' . $article->getCleanedArticleText();
         }
 
-        $wordCount = str_word_count( implode(" ", $matchWords) , 1);
-        $frequency = array_count_values($wordCount);
-        arsort($frequency);
+        // Decode and split words by white-space
+        $text = html_entity_decode($text, ENT_COMPAT | ENT_HTML5, 'UTF-8');
+        $words = preg_split('@[\s]+@iu', $text, -1, PREG_SPLIT_NO_EMPTY);
 
-        $keywords = [];
+        // Determine stop words currently in $words
+        $ignoreWords = array_intersect($words, $stopWords);
+        // Remove ignored words from $words
+        $words = array_diff($words, $ignoreWords);
 
-        foreach ($frequency as $word => &$freq) {
-            if ($freq >= $minFrequency) {
-                $keywords[$word] = $freq;
-            }
+        // Count and sort $words
+        $words = array_count_values($words);
+        arsort($words);
 
-            if (count($keywords) >= $limit) break;
-        }
+        // Limit and filter $words
+        $words = array_slice($words, 0, $limit);
+        $words = array_filter($words, function($value) use ($minimumFrequency){
+            return !($value < $minimumFrequency);
+        });
 
-        return $keywords;
+        return $words;
     }
 }
