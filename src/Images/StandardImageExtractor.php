@@ -479,11 +479,17 @@ class StandardImageExtractor extends ImageExtractor {
             return null;
         }
 
-        if (!$meta->item(0)->hasAttribute($attr)) {
+        $node = $meta->item(0);
+
+        if (!($node instanceof DOMElement)) {
             return null;
         }
 
-        $imagePath = $this->buildImagePath($article, $meta->item(0)->getAttribute($attr));
+        if (!$node->hasAttribute($attr)) {
+            return null;
+        }
+
+        $imagePath = $this->buildImagePath($article, $node->getAttribute($attr));
         $mainImage = new Image();
         $mainImage->setImageSrc($imagePath);
         $mainImage->setImageExtractionType($type);

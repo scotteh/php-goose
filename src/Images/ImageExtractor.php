@@ -11,6 +11,8 @@ namespace Goose\Images;
 abstract class ImageExtractor {
     /**
      * @param \Goose\Article $article
+     *
+     * @return Image|null
      */
-    abstract public function getBestImage($article);
+    abstract public function getBestImage(\Goose\Article $article);
 }

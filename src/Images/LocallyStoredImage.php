@@ -63,7 +63,7 @@ class LocallyStoredImage {
      * @param string $linkhash
      */
     public function setLinkhash($linkhash) {
-        return $this->linkhash;
+        $this->linkhash = $linkhash;
     }
 
     /**

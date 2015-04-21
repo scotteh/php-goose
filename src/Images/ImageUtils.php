@@ -84,6 +84,8 @@ class ImageUtils {
 
     /**
      * @todo
+     * @ignore
+     * @codeCoverageIgnore
      */
     private static function readExistingFileInfo($imageSrc, $config) {
         return null;
@@ -91,9 +93,11 @@ class ImageUtils {
 
     /**
      * @todo
+     * @ignore
+     * @codeCoverageIgnore
      */
     private static function writeEntityContentsToDisk($entity, $imageSrc, $config) {
-        $file = tempnam(sys_get_temp_dir(), 'goose');
+        //$file = tempnam(sys_get_temp_dir(), 'goose');
         return null;
     }
 

@@ -389,7 +389,6 @@ class StandardDocumentCleaner extends DocumentCleaner implements DocumentCleaner
             } else {
                 if (!empty($replacementText)) {
                     $nodesToReturn[] = $this->getFlushedBuffer($replacementText);
-                    $replacementText = [];
                 }
                 $nodesToReturn[] = $kid;
             }

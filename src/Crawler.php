@@ -4,7 +4,9 @@ namespace Goose;
 
 use GuzzleHttp\Client as GuzzleClient;
 use Goose\Utils\URLHelper;
+use Goose\DOM\DOMElement;
 use Goose\DOM\DOMDocument;
+use Goose\Images\Image;
 use Goose\Images\StandardImageExtractor;
 use Goose\Extractors\ExtractorInterface;
 use Goose\Cleaners\StandardDocumentCleaner;
@@ -80,7 +82,7 @@ class Crawler {
 
         $topNode = $extractor->calculateBestNodeBasedOnClustering($article);
 
-        if ($topNode) {
+        if ($topNode instanceof DOMElement) {
             $article->setTopNode($topNode);
 
             $article->setMovies($extractor->extractVideos($article->getTopNode()));
@@ -89,7 +91,11 @@ class Crawler {
             if ($this->config->getEnableImageFetching()) {
                 $imageExtractor = $this->getImageExtractor();
 
-                $article->setTopImage($imageExtractor->getBestImage($article));
+                $bestImage = $imageExtractor->getBestImage($article);
+
+                if ($bestImage instanceof Image) {
+                    $article->setTopImage($imageExtractor->getBestImage($article));
+                }
 
                 if ($this->config->getEnableAllImagesFetching()) {
                     $article->setAllImages($imageExtractor->getAllImages($article));
