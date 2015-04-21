@@ -49,9 +49,9 @@ class ContentExtractor {
     public function getTitle(Article $article) {
         $nodes = $article->getDoc()->filter('html > head > title');
 
-        if (!$nodes->length) return '';
+        if (!$nodes->count()) return '';
 
-        $titleText = $nodes->item(0)->textContent;
+        $titleText = $nodes->first()->textContent;
 
         foreach (self::$SPLITTER_CHARS as $char) {
             if (strpos($titleText, $char) !== false) {
@@ -98,11 +98,11 @@ class ContentExtractor {
     private function getMetaContent(DOMDocument $doc, $property, $value, $attr = 'content') {
         $nodes = $this->getNodesByLowercasePropertyValue($doc, 'meta', $property, $value);
 
-        if (!$nodes->length) {
+        if (!$nodes->count()) {
             return '';
         }
 
-        $content = $nodes->item(0)->getAttribute($attr);
+        $content = $nodes->first()->getAttribute($attr);
         $content = trim($content);
 
         return $content;
@@ -120,8 +120,8 @@ class ContentExtractor {
 
         $el = $article->getDoc()->filter('html[lang]');
 
-        if ($el->length) {
-            $lang = $el->item(0)->getAttribute('lang');
+        if ($el->count()) {
+            $lang = $el->first()->getAttribute('lang');
         }
 
         if (empty($lang)) {
@@ -133,8 +133,8 @@ class ContentExtractor {
             foreach ($selectors as $selector) {
                 $el = $article->getDoc()->filter($selector);
 
-                if ($el->length) {
-                    $lang = $el->item(0)->getAttribute('content');
+                if ($el->count()) {
+                    $lang = $el->first()->getAttribute('content');
                     break;
                 }
             }
@@ -191,23 +191,23 @@ class ContentExtractor {
 
         $nodes = $this->getNodesByLowercasePropertyValue($article->getDoc(), 'link', 'rel', 'canonical');
 
-        if ($nodes->length) {
-            $href = $nodes->item(0)->getAttribute('href');
+        if ($nodes->count()) {
+            $href = $nodes->first()->getAttribute('href');
         }
 
         if (empty($href)) {
             $nodes = $this->getNodesByLowercasePropertyValue($article->getDoc(), 'meta', 'property', 'og:url');
 
-            if ($nodes->length) {
-                $href = $nodes->item(0)->getAttribute('content');
+            if ($nodes->count()) {
+                $href = $nodes->first()->getAttribute('content');
             }
         }
 
         if (empty($href)) {
             $nodes = $this->getNodesByLowercasePropertyValue($article->getDoc(), 'meta', 'name', 'twitter:url');
 
-            if ($nodes->length) {
-                $href = $nodes->item(0)->getAttribute('content');
+            if ($nodes->count()) {
+                $href = $nodes->first()->getAttribute('content');
             }
         }
 
@@ -368,7 +368,7 @@ class ContentExtractor {
         $minimumStopWordCount = 5;
         $maxStepsAwayFromNode = 3;
 
-        $siblings = $node->siblings();
+        $siblings = $node->previousSiblings();
 
         foreach ($siblings as $currentNode) {
             if ($currentNode->nodeName == 'p' || $currentNode->nodeName == 'strong') {
@@ -420,7 +420,7 @@ class ContentExtractor {
     private function isHighLinkDensity(DOMElement $e, $limit = 1.0) {
         $links = $e->filter('a, [onclick]');
 
-        if ($links->length == 0) {
+        if ($links->count() == 0) {
             return false;
         }
 
@@ -436,7 +436,7 @@ class ContentExtractor {
         $linkText = implode('', $sb);
         $linkWords = explode(' ', $linkText);
         $numberOfLinkWords = count($linkWords);
-        $numberOfLinks = $links->length;
+        $numberOfLinks = $links->count();
         $linkDivisor = $numberOfLinkWords / $numberOfWords;
         $score = $linkDivisor * $numberOfLinks;
 
@@ -568,11 +568,11 @@ class ContentExtractor {
 
         $subParagraphs2 = $e->filter('p');
 
-        if ($subParagraphs2->length == 0 && $e->nodeName != 'td') {
+        if ($subParagraphs2->count() == 0 && $e->nodeName != 'td') {
             if ($e->nodeName == 'ul' || $e->nodeName == 'ol') {
                 $linkTextLength = array_sum(array_map(function($value){
                     return mb_strlen($value->textContent);
-                }, $e->filterAsArray('a')));
+                }, $e->filter('a')->toArray()));
 
                 $elementTextLength = mb_strlen($e->textContent);
 
@@ -656,7 +656,7 @@ class ContentExtractor {
 
         $potentialParagraphs = $currentSibling->filter('p, strong');
 
-        if ($potentialParagraphs->length == 0) {
+        if ($potentialParagraphs->count() == 0) {
             return [];
         }
 
@@ -689,7 +689,7 @@ class ContentExtractor {
 
         $baselineScoreForSiblingParagraphs = $this->getBaselineScoreForSiblings($topNode);
 
-        foreach ($topNode->siblings() as $currentNode) {
+        foreach ($topNode->previousSiblings() as $currentNode) {
             $results = $this->getSiblingContent($currentNode, $baselineScoreForSiblingParagraphs);
 
             foreach ($results as $result) {

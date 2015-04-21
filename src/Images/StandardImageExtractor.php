@@ -475,11 +475,11 @@ class StandardImageExtractor extends ImageExtractor {
     private function checkForTag(Article $article, $selector, $attr, $type) {
         $meta = $article->getRawDoc()->filter($selector);
 
-        if (!$meta->length) {
+        if (!$meta->count()) {
             return null;
         }
 
-        $node = $meta->item(0);
+        $node = $meta->first();
 
         if (!($node instanceof DOMElement)) {
             return null;
@@ -582,15 +582,15 @@ class StandardImageExtractor extends ImageExtractor {
         foreach ($knownImgDomNames as $knownName) {
             $known = $article->getRawDoc()->filter('#' . $knownName);
 
-            if (!$known->length) {
+            if (!$known->count()) {
                 $known = $article->getRawDoc()->filter('.' . $knownName);
             }
 
-            if ($known->length) {
-                $mainImage = $known->item(0)->filter('img');
+            if ($known->count()) {
+                $mainImage = $known->first()->filter('img');
 
-                if ($mainImage->length) {
-                    $knownImage = $mainImage->item(0);
+                if ($mainImage->count()) {
+                    $knownImage = $mainImage->first();
                 }
             }
         }

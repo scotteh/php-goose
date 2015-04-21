@@ -100,7 +100,7 @@ class StandardDocumentCleaner extends DocumentCleaner implements DocumentCleaner
         foreach ($ems as $node) {
             $images = $node->filter('img');
 
-            if ($images->length == 0) {
+            if ($images->count() == 0) {
                 $node->parentNode->replaceChild(new \DOMText(trim($node->textContent) . ' '), $node);
             }
         }
@@ -278,7 +278,7 @@ class StandardDocumentCleaner extends DocumentCleaner implements DocumentCleaner
         foreach ($selected as $elem) {
             $items = $elem->filter(implode(', ', $tags));
 
-            if (!$items->length) {
+            if (!$items->count()) {
                 $this->replaceElementsWithPara($elem);
             } else {
                 $replacements = $this->getReplacementNodes($elem);

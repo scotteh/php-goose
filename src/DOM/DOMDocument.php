@@ -12,57 +12,5 @@ use Symfony\Component\CssSelector\CssSelector;
  */
 class DOMDocument extends \DOMDocument
 {
-    /**
-     * @param string $selector
-     *
-     * @return \DOMNodeList
-     */
-    public function filter($selector) {
-        return $this->filterXPath(CssSelector::toXPath($selector));
-    }
-
-    /**
-     * @param string $xpath
-     *
-     * @return \DOMNodeList
-     */
-    public function filterXPath($xpath) {
-        $domxpath = new \DOMXPath($this);
-
-        return $domxpath->query($xpath, $this);
-    }
-
-    /**
-     * @param string $selector
-     *
-     * @return DOMElement[]
-     */
-    public function filterAsArray($selector) {
-        $results = $this->filter($selector);
-
-        $items = [];
-
-        foreach ($results as $key => $item) {
-            $items[$key] = $item;
-        }
-
-        return $items;
-    }
-
-    /**
-     * @param string $xpath
-     *
-     * @return DOMElement[]
-     */
-    public function filterXPathAsArray($xpath) {
-        $results = $this->filterXPath($xpath);
-
-        $items = [];
-
-        foreach ($results as $key => $item) {
-            $items[$key] = $item;
-        }
-
-        return $items;
-    }
+    use DOMFilterTrait;
 }

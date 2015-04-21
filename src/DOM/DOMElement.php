@@ -13,91 +13,71 @@ use Symfony\Component\CssSelector\CssSelector;
  */
 class DOMElement extends \DOMElement
 {
+    use DOMFilterTrait;
+
     /**
-     * @param string $selector
+     * @see DOMFilterTrait::document()
      *
-     * @return \DOMNodeList
+     * @return DOMDocument
      */
-    public function filter($selector) {
-        return $this->filterXPath(CssSelector::toXPath($selector));
+    public function document() {
+        return $this->ownerDocument;
     }
 
     /**
-     * @param string $xpath
-     *
-     * @return \DOMNodeList
+     * @return DOMNodeList
      */
-    public function filterXPath($xpath) {
-        $domxpath = new \DOMXPath($this->ownerDocument);
+    public function previousSiblings() {
+        $nodes = new DOMNodeList();
 
-        return $domxpath->query($xpath, $this);
-    }
-
-    /**
-     * @param string $selector
-     *
-     * @return DOMElement[]
-     */
-    public function filterAsArray($selector) {
-        $results = $this->filter($selector);
-
-        $items = [];
-
-        foreach ($results as $key => $item) {
-            $items[$key] = $item;
-        }
-
-        return $items;
-    }
-
-    /**
-     * @param string $xpath
-     *
-     * @return DOMElement[]
-     */
-    public function filterXPathAsArray($xpath) {
-        $results = $this->filterXPath($xpath);
-
-        $items = [];
-
-        foreach ($results as $key => $item) {
-            $items[$key] = $item;
-        }
-
-        return $items;
-    }
-
-    /**
-     * @return DOMElement[]
-     */
-    public function siblings() {
         $currentSibling = $this->previousSibling;
-        $b = [];
 
         while ($currentSibling != null) {
             Debug::trace(null, "SIBLINGCHECK: " . $this->debugNode($currentSibling));
 
-            $b[] = $currentSibling;
+            $nodes[] = $currentSibling;
 
             $currentSibling = $currentSibling->previousSibling;
         }
 
-        return $b;
+        return $nodes->reverse();
+    }
+
+    /**
+     * @return DOMNodeList
+     */
+    public function nextSiblings() {
+        $nodes = new DOMNodeList();
+
+        $currentSibling = $this->nextSibling;
+
+        while ($currentSibling != null) {
+            Debug::trace(null, "SIBLINGCHECK: " . $this->debugNode($currentSibling));
+
+            $nodes[] = $currentSibling;
+
+            $currentSibling = $currentSibling->nextSibling;
+        }
+
+        return $nodes;
+    }
+
+    /**
+     * @return DOMNodeList
+     */
+    public function siblings() {
+        return $this->previousSiblings()->merge(
+            $this->nextSiblings()
+        );
     }
 
     /**
      * DOMNodeList is only array like. Removing items using foreach() has undesired results.
      *
-     * @return DOMElement[]
+     * @return DOMNodeList
      */
     public function children() {
-        $children = [];
-
-        foreach ($this->childNodes as $node) {
-            $children[] = $node;
-        }
-
-        return $children;
+        return new DOMNodeList($this->childNodes);
     }
 
     /**
