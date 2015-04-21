@@ -7,6 +7,7 @@ use Goose\Configuration;
 use Goose\Utils\Debug;
 use Goose\DOM\DOMDocument;
 use Goose\DOM\DOMElement;
+use Goose\DOM\DOMNodeList;
 
 /**
  * Content Extractor
@@ -81,7 +82,7 @@ class ContentExtractor {
      * @param string $property
      * @param string $value
      *
-     * @return \DOMNodeList
+     * @return DOMNodeList
      */
     private function getNodesByLowercasePropertyValue(DOMDocument $doc, $tag, $property, $value) {
         return $doc->filterXPath("descendant-or-self::".$tag."[translate(@".$property.", 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz')='".$value."']");

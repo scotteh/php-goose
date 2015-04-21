@@ -5,6 +5,7 @@ namespace Goose\Images;
 use Goose\Article;
 use Goose\Configuration;
 use Goose\DOM\DOMElement;
+use Goose\DOM\DOMNodeList;
 
 /**
  * Standard Image Extractor
@@ -333,11 +334,11 @@ class StandardImageExtractor extends ImageExtractor {
     /**
      * takes a list of image elements and filters out the ones with bad names
      *
-     * @param \DOMNodeList $images
+     * @param DOMNodeList $images
      *
      * @return DOMElement[]
      */
-    private function filterBadNames(\DOMNodeList $images) {
+    private function filterBadNames(DOMNodeList $images) {
         $goodImages = [];
 
         foreach ($images as $image) {

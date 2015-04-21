@@ -28,7 +28,6 @@ class DOMNodeList implements Countable, ArrayAccess, RecursiveIterator {
         foreach ($nodes as $node) {
             $this->nodes[] = $node;
         }
-        $length = count($this->nodes);
     }
 
     /*
@@ -100,7 +99,7 @@ class DOMNodeList implements Countable, ArrayAccess, RecursiveIterator {
      * @return RecursiveIterator
      */
     public function getChildren() {
-        $node = [];
+        $nodes = [];
 
         if ($this->valid()) {
             $nodes = $this->current()->childNodes;
