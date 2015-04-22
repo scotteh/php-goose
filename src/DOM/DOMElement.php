@@ -25,6 +25,23 @@ class DOMElement extends \DOMElement
     }
 
     /**
+     * @param string $selector
+     *
+     * @return bool
+     */
+    public function is($selector) {
+        $selector = implode(',', array_map(function($str) {
+            $str = ltrim($str, " \t\n\r\0\x0B*");
+
+            return '*' . $str;
+        }, explode(',', $selector)));
+
+        $nodes = $this->filter($selector);
+
+        return !empty($nodes);
+    }
+
+    /**
      * @return DOMNodeList
      */
     public function previousSiblings() {
