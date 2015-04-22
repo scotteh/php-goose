@@ -29,6 +29,18 @@ class ContentExtractor {
     /** @var string */
     private static $TOP_NODE_TAGS = 'p, td, pre';
 
+    /** @var string[] */
+    private static $VIDEO_PROVIDERS = [
+        'youtube\.com',
+        'youtu\.be',
+        'vimeo\.com',
+        'blip\.tv',
+        'dailymotion\.com',
+        'dai\.ly',
+        'flickr\.com',
+        'flic\.kr',
+    ];
+
     /** @var Configuration */
     private $config;
 
@@ -494,39 +506,30 @@ class ContentExtractor {
      * @return string[]
      */
     public function extractVideos(DOMElement $node) {
-        $candidates = [];
-        $goodMovies = [];
-        $youtubeStr = 'youtube';
-        $vimdeoStr = 'vimeo';
-        $bliptvStr = 'blip';
-        $flickrStr = 'flickr';
-        $veohStr = 'veoh';
-        $dailymotionStr = 'dailymotion';
+        $movies = [];
 
-        foreach ($node->parentNode->filter('embed, object, iframe') as $e) {
-            $candidates[] = $e;
-        }
+        $nodes = $node->parentNode->filter('embed, object, iframe');
 
-        Debug::trace($this->logPrefix, "extractVideos: Starting to extract videos. Found: " . count($candidates));
+        foreach ($nodes as $node) {
+            if ($node->hasAttribute('src')) {
+                $src = $node->getAttribute('src');
+            } else {
+                $src = $node->getAttribute('data');
+            }
 
-        foreach ($candidates as $el) {
-            $attr = $el->getAttribute('src');
+            $match = array_reduce(self::$VIDEO_PROVIDERS, function($match, $domain) use ($src) {
+                $srcHost = parse_url($src, PHP_URL_HOST);
+                $srcScheme = parse_url($src, PHP_URL_SCHEME);
 
-            if (mb_strpos($attr, $youtubeStr) !== false ||
-                mb_strpos($attr, $vimdeoStr) !== false ||
-                mb_strpos($attr, $bliptvStr) !== false ||
-                mb_strpos($attr, $flickrStr) !== false ||
-                mb_strpos($attr, $veohStr) !== false ||
-                mb_strpos($attr, $dailymotionStr) !== false) {
-                Debug::trace($this->logPrefix, "This page has a video!: " . $attr);
+                return $match || preg_match('@' . $domain . '$@i', $srcHost) && in_array($srcScheme, ['http', 'https']);
+            });
 
-                $goodMovies[] = $el->getAttribute('src');
+            if ($match) {
+                $movies[] = $src;
             }
         }
 
-        Debug::trace($this->logPrefix, "extractVideos: done looking videos");
-
-        return $goodMovies;
+        return $movies;
     }
 
     /**

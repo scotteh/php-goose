@@ -15,7 +15,7 @@ class ContentExtractorTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetTitle($expected, $article, $message)
     {
-        $obj = new ContentExtractor(null);
+        $obj = new ContentExtractor($this->config());
 
         $this->assertEquals(
             $expected,
@@ -44,7 +44,7 @@ class ContentExtractorTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetMetaLanguage($expected, $article, $message)
     {
-        $obj = new ContentExtractor(null);
+        $obj = new ContentExtractor($this->config());
 
         $this->assertEquals(
             $expected,
@@ -76,7 +76,7 @@ class ContentExtractorTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetMetaDescription($expected, $article, $message)
     {
-        $obj = new ContentExtractor(null);
+        $obj = new ContentExtractor($this->config());
 
         $this->assertEquals(
             $expected,
@@ -102,7 +102,7 @@ class ContentExtractorTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetMetaKeywords($expected, $article, $message)
     {
-        $obj = new ContentExtractor(null);
+        $obj = new ContentExtractor($this->config());
 
         $this->assertEquals(
             $expected,
@@ -123,7 +123,7 @@ class ContentExtractorTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetCanonicalLink($expected, $article, $message)
     {
-        $obj = new ContentExtractor(null);
+        $obj = new ContentExtractor($this->config());
 
         $this->assertEquals(
             $expected,
@@ -153,7 +153,7 @@ class ContentExtractorTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetDateFromURL($expected, $url, $message)
     {
-        $obj = new ContentExtractor(null);
+        $obj = new ContentExtractor($this->config());
 
         $this->assertEquals(
             $expected,
@@ -173,7 +173,7 @@ class ContentExtractorTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetDomain($expected, $url, $message)
     {
-        $obj = new ContentExtractor(null);
+        $obj = new ContentExtractor($this->config());
 
         $this->assertEquals(
             $expected,
@@ -194,7 +194,7 @@ class ContentExtractorTest extends \PHPUnit_Framework_TestCase
      */
     public function testExtractTags($expected, $url, $message)
     {
-        $obj = new ContentExtractor(null);
+        $obj = new ContentExtractor($this->config());
 
         $this->assertEquals(
             $expected,
@@ -232,7 +232,7 @@ class ContentExtractorTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetShortText($expected, $str, $message)
     {
-        $obj = new ContentExtractor(null);
+        $obj = new ContentExtractor($this->config());
 
         $this->assertEquals(
             $expected,
@@ -248,13 +248,69 @@ class ContentExtractorTest extends \PHPUnit_Framework_TestCase
         ];
     }
 
-    private function generate($html) {
+    /**
+     * @dataProvider extractVideosProvider
+     */
+    public function testExtractVideos($expected, $document, $message)
+    {
+        $obj = new ContentExtractor($this->config());
+
+        $this->assertEquals(
+            $expected,
+            $obj->extractVideos($document->filter('div#test')->first()),
+            $message
+        );
+    }
+
+    public function extractVideosProvider() {
+        return [
+            [
+                ['https://www.youtube.com/watch?v=oHg5SJYRHA0'],
+                $this->document('<html><body><div id="test"><iframe src="https://www.youtube.com/watch?v=oHg5SJYRHA0"></iframe></div></body></html>'),
+                'youtube #1 - iframe',
+            ],
+            [
+                ['https://www.youtube.com/watch?v=oHg5SJYRHA0'],
+                $this->document('<html><body><div id="test"><object width="720" height="480"><embed src="https://www.youtube.com/watch?v=oHg5SJYRHA0"></embed></object></div></body></html>'),
+                'youtube #1 - embed',
+            ],
+            [
+                ['https://www.youtube.com/watch?v=oHg5SJYRHA0'],
+                $this->document('<html><body><div id="test"><object width="720" height="480" data="https://www.youtube.com/watch?v=oHg5SJYRHA0"></object></div></body></html>'),
+                'youtube #1 - object',
+            ],
+        ];
+    }
+
+    public function html($doc) {
+        if ($doc instanceof DOMDocument) {
+            $el = $doc->documentElement;
+        } else if ($doc instanceof DOMElement) {
+            $el = $doc;
+            $doc = $doc->ownerDocument;
+        } else if ($doc instanceof Article) {
+            $doc = $doc->getDoc();
+            $el = $doc->documentElement;
+        }
+
+        return $doc->saveXML($el);
+    }
+
+    private function document($html) {
         $doc = new DOMDocument(1.0);
         $doc->registerNodeClass('DOMElement', 'Goose\\DOM\\DOMElement');
-        $doc->loadHTML($html);
 
+        // Silence 'Tag xyz invalid in Entity' for HTML5 tags.
+        libxml_use_internal_errors(true);
+        $doc->loadHTML($html, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+        libxml_use_internal_errors(false);
+
+        return $doc;
+    }
+
+    private function generate($html) {
         $article = new Article();
-        $article->setDoc($doc);
+        $article->setDoc($this->document($html));
 
         return $article;
     }
