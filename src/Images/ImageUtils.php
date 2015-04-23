@@ -127,15 +127,26 @@ class ImageUtils {
             $requests[] = $guzzle->createRequest('GET', $imageSrc, $options);
         }
 
-        $responses = GuzzlePool::batch($guzzle, $requests);
+        $batchResults = GuzzlePool::batch($guzzle, $requests);
 
         $results = [];
-        foreach ($responses as $response) {
-            if ($returnAll || $response->getStatusCode() == 200) {
-                $results[] = (object)[
-                    'url' => $response->getEffectiveUrl(),
-                    'file' => $response->getBody()->getContents(),
-                ];
+
+        foreach ($batchResults as $batchResult) {
+            /** @todo Handle failures gracefully */
+            if ($batchResult instanceof \GuzzleHttp\Exception\ClientException) {
+                if ($returnAll) {
+                    $results[] = (object)[
+                        'url' => $batchResult->getResponse()->getEffectiveUrl(),
+                        'file' => null,
+                    ];
+                }
+            } else {
+                if ($returnAll || $batchResult->getStatusCode() == 200) {
+                    $results[] = (object)[
+                        'url' => $batchResult->getEffectiveUrl(),
+                        'file' => $batchResult->getBody()->getContents(),
+                    ];
+                }
             }
         }
 

@@ -25,66 +25,83 @@ class DOMElement extends \DOMElement
     }
 
     /**
-     * @param string $selector
+     * @param int|null $nodeType 
      *
-     * @return bool
+     * @return \DOMNode|null
      */
-    public function is($selector) {
-        $selector = implode(',', array_map(function($str) {
-            $str = ltrim($str, " \t\n\r\0\x0B*");
+    public function previous($type = null) {
+        for ($sibling = $this; ($sibling = $sibling->previousSibling) !== null;) {
+            if (is_null($type) || $sibling->nodeType == $type) {
+                return $sibling;
+            }
+        }
 
-            return '*' . $str;
-        }, explode(',', $selector)));
-
-        $nodes = $this->filter($selector);
-
-        return !empty($nodes);
+        return null;
     }
 
     /**
+     * @see http://php.net/manual/en/dom.constants.php $type values - XML_*_NODE constants
+     *
+     * @param int|null $nodeType 
+     *
      * @return DOMNodeList
      */
-    public function previousSiblings() {
+    public function previousAll($type = null) {
         $nodes = new DOMNodeList();
 
-        $currentSibling = $this->previousSibling;
-
-        while ($currentSibling != null) {
-            Debug::trace(null, "SIBLINGCHECK: " . $this->debugNode($currentSibling));
-
-            $nodes[] = $currentSibling;
-
-            $currentSibling = $currentSibling->previousSibling;
+        for ($sibling = $this; ($sibling = $sibling->previousSibling) !== null;) {
+            if (is_null($type) || $sibling->nodeType == $type) {
+                $nodes[] = $sibling;
+            }
         }
 
         return $nodes->reverse();
     }
 
     /**
+     * @see http://php.net/manual/en/dom.constants.php $type values - XML_*_NODE constants
+     *
+     * @param int|null $nodeType 
+     *
+     * @return \DOMNode|null
+     */
+    public function next($type = null) {
+        for ($sibling = $this; ($sibling = $sibling->nextSibling) !== null;) {
+            if (is_null($type) || $sibling->nodeType == $type) {
+                return $sibling;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @see http://php.net/manual/en/dom.constants.php $type values - XML_*_NODE constants
+     *
+     * @param int|null $nodeType 
+     *
      * @return DOMNodeList
      */
-    public function nextSiblings() {
+    public function nextAll($type = null) {
         $nodes = new DOMNodeList();
 
-        $currentSibling = $this->nextSibling;
-
-        while ($currentSibling != null) {
-            Debug::trace(null, "SIBLINGCHECK: " . $this->debugNode($currentSibling));
-
-            $nodes[] = $currentSibling;
-
-            $currentSibling = $currentSibling->nextSibling;
+        for ($sibling = $this; ($sibling = $sibling->nextSibling) !== null;) {
+            if (is_null($type) || $sibling->nodeType == $type) {
+                $nodes[] = $sibling;
+            }
         }
 
         return $nodes;
     }
 
     /**
+     * @see http://php.net/manual/en/dom.constants.php $type values - XML_*_NODE constants
+     *
      * @return DOMNodeList
      */
     public function siblings() {
-        return $this->previousSiblings()->merge(
-            $this->nextSiblings()
+        return $this->previousAll()->merge(
+            $this->nextAll()
         );
     }
 
@@ -98,27 +115,20 @@ class DOMElement extends \DOMElement
     }
 
     /**
-     * @param \DOMNode $e
+     * @param string|null $selector
      *
-     * @codeCoverageIgnore
+     * @return self
      */
-    private function debugNode(\DOMNode $e) {
-        $sb = '';
-
-        $sb .= "' nodeName: '";
-        $sb .= $e->nodeName;
-
-        if ($e instanceof DOMElement) {
-            $sb .= "' GravityScore: '";
-            $sb .= $e->getAttribute('gravityScore');
-            $sb .= "' paraNodeCount: '";
-            $sb .= $e->getAttribute('gravityNodes');
-            $sb .= "' nodeId: '";
-            $sb .= $e->getAttribute('id');
-            $sb .= "' className: '";
-            $sb .= $e->getAttribute('class');
+    public function remove($selector = null) {
+        if (!is_null($selector)) {
+            /** @todo Make this relative to the current node */
+            $nodes = $this->filter($selector);
+        } else {
+            $nodes = new DOMNodeList($this);
         }
 
-        return $sb;
+        $nodes->remove();
+
+        return $this;
     }
 }

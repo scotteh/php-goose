@@ -5,6 +5,7 @@ namespace Goose\Images;
 use Goose\Article;
 use Goose\Configuration;
 use Goose\DOM\DOMElement;
+use Goose\DOM\DOMDocument;
 use Goose\DOM\DOMNodeList;
 
 /**
@@ -32,7 +33,10 @@ class StandardImageExtractor extends ImageExtractor {
     ];
 
     /** @var int */
-    private $MAX_BYTES_SIZE = 15728640;
+    private static $MAX_BYTES_SIZE = 15728640;
+
+    /** @var int */
+    private static $MIN_WIDTH = 50;
 
     /** @var Configuration */
     private $config;
@@ -173,6 +177,10 @@ class StandardImageExtractor extends ImageExtractor {
         } while ($siblingNode && $siblingNode->nodeType != XML_ELEMENT_NODE);
 
         if (is_null($siblingNode)) {
+            if ($node->parentNode instanceof DOMDocument) {
+                return null;
+            }
+
             return (object)[
                 'node' => $node->parentNode,
                 'parentDepth' => $parentDepth + 1,
@@ -202,46 +210,19 @@ class StandardImageExtractor extends ImageExtractor {
      * @return LocallyStoredImage[]
      */
     private function downloadImagesAndGetResults(Article $article, $images, $depthLevel) {
-        $imageResults = [];
-        $initialArea = 0.0;
-        $cnt = 1.0;
-        $MIN_WIDTH = 50;
-        $MIN_HEIGHT = 0;
+        $results = [];
+        $i = 1;
+        $initialArea = 0;
 
-        $i = 0; foreach ($images as $image) {
-            if (++$i == 30) {
-                break;
-            }
+        // Limit to the first 30 images
+        $images = array_slice($images, 0, 30);
 
+        foreach ($images as $image) {
             $locallyStoredImage = $this->getLocallyStoredImage($this->buildImagePath($article, $image->getAttribute('src')));
 
-            if (!empty($locallyStoredImage)) {
-                $width = $locallyStoredImage->getWidth();
-                $height = $locallyStoredImage->getHeight();
-                $fileExtension = $locallyStoredImage->getFileExtension();
-
-                if ($width <= $MIN_WIDTH) {
-                    continue;
-                }
-
-                if ($height <= $MIN_HEIGHT) {
-                    continue;
-                }
-
-                if ($fileExtension == 'NA') {
-                    continue;
-                }
-
-                if (($depthLevel < 1 && $width < 300) || $depthLevel >= 1) {
-                    continue;
-                }
-
-                if ($this->isBannerDimensions($width, $height)) {
-                    continue;
-                }
-
-                $sequenceScore = 1.0 / $cnt;
-                $area = $width * $height;
+            if (!empty($locallyStoredImage) && $this->isWorthyImage($locallyStoredImage, $depthLevel)) {
+                $sequenceScore = 1 / $i;
+                $area = $locallyStoredImage->getWidth() * $locallyStoredImage->getHeight();
 
                 if ($initialArea == 0) {
                     $initialArea = $area * 1.48;
@@ -251,14 +232,30 @@ class StandardImageExtractor extends ImageExtractor {
                     $totalScore = $sequenceScore * $areaDifference;
                 }
 
-                $cnt += 1;
+                $i++;
 
-                $imageResults[$totalScore] = $locallyStoredImage;
-                $cnt += 1;
+                $results[$totalScore] = $locallyStoredImage;
             }
         }
 
-        return $imageResults;
+        return $results;
+    }
+
+    /**
+     * @param LocallyStoredImage $locallyStoredImage
+     * @param int $depthLevel
+     *
+     * @return bool
+     */
+    private function isWorthyImage($locallyStoredImage, $depthLevel) {
+        if ($locallyStoredImage->getWidth() <= self::$MIN_WIDTH
+          || $locallyStoredImage->getFileExtension() == 'NA'
+          || ($depthLevel < 1 && $locallyStoredImage->getWidth() < 300) || $depthLevel >= 1
+          || $this->isBannerDimensions($locallyStoredImage->getWidth(), $locallyStoredImage->getHeight())) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -271,25 +268,19 @@ class StandardImageExtractor extends ImageExtractor {
     public function getAllImages(Article $article, $parentDepthLevel = 0, $siblingDepthLevel = 0) {
         $images = [];
 
-        $candidateImages = $this->getImageCandidates($article, $article->getTopNode());
+        $locallyStoredImages = $this->getImageCandidates($article, $article->getTopNode());
 
-        if (!empty($candidateImages)) {
-            $imageUrls = [];
-
-            foreach ($candidateImages as $cadidateImg) {
-                $imageUrls[] = $this->buildImagePath($article, $cadidateImg->getAttribute('src'));
-            }
-
-            $locallyStoredImages = $this->getLocallyStoredImages($imageUrls);
-
+        if (!empty($locallyStoredImages)) {
             foreach ($locallyStoredImages as $locallyStoredImage) {
-                $img = new Image();
-                $img->setImageSrc($locallyStoredImage->getImgSrc());
-                $img->setBytes($locallyStoredImage->getBytes());
-                $img->setHeight($locallyStoredImage->getHeight());
-                $img->setWidth($locallyStoredImage->getWidth());
+                $image = new Image();
+                $image->setImageSrc($locallyStoredImage->getImgSrc());
+                $image->setBytes($locallyStoredImage->getBytes());
+                $image->setHeight($locallyStoredImage->getHeight());
+                $image->setWidth($locallyStoredImage->getWidth());
+                $image->setImageExtractionType('all');
+                $image->setConfidenceScore(0);
 
-                $images[] = $img;
+                $images[] = $image;
             }
         } else {
             $depthObj = $this->getDepthLevel($article->getTopNode(), $parentDepthLevel, $siblingDepthLevel);
@@ -390,7 +381,7 @@ class StandardImageExtractor extends ImageExtractor {
     }
 
     /**
-     * loop through all the images and find the ones that have the best bytez to even make them a candidate
+     * loop through all the images and find the ones that have the best bytes to even make them a candidate
      *
      * @param Article $article
      * @param DOMElement[] $images
@@ -398,38 +389,33 @@ class StandardImageExtractor extends ImageExtractor {
      * @return DOMElement[]
      */
     private function findImagesThatPassByteSizeTest(Article $article, $images) {
-        $cnt = 0;
-        $imageUrls = [];
-        $imageNodes = [];
-        $goodImages = [];
+        $i = 0; /** @todo Re-factor how the LocallyStoredImage => Image relation works ? Note: PHP 5.6.x adds a 3rd argument to array_filter() to pass the key as well as value. */
 
-        foreach ($images as $image) {
-            if ($cnt > 30) {
-                // Abort! they have over 30 images near the top node.
-                break;
+        // Limit to the first 30 images
+        $images = array_slice($images, 0, 30);
+
+        // Generate a complete URL for each image
+        $imageUrls = array_map(function($image) use ($article) {
+            return $this->buildImagePath($article, $image->getAttribute('src'));;
+        }, $images);
+
+        $localImages = $this->getLocallyStoredImages($imageUrls, true);
+
+        $results = array_filter($localImages, function($localImage) use($images, $i) {
+            $image = $images[$i++];
+
+            $bytes = $localImage->getBytes();
+
+            if ($bytes < $this->config->getMinBytesForImages() && $bytes != 0 || $bytes > self::$MAX_BYTES_SIZE) {
+                $image->remove();
+
+                return false;
             }
 
-            $imageUrls[] = $this->buildImagePath($article, $image->getAttribute('src'));
-            $imageNodes[] = $image;
+            return true;
+        });
 
-            $cnt++;
-        }
-
-        $locallyStoredImages = $this->getLocallyStoredImages($imageUrls, true);
-
-        foreach ($locallyStoredImages as $i => $locallyStoredImage) {
-            $image = $imageNodes[$i];
-
-            $bytes = $locallyStoredImage->getBytes();
-
-            if (($bytes == 0 || $bytes > $this->config->getMinBytesForImages()) && $bytes < $this->MAX_BYTES_SIZE) {
-                $goodImages[] = $image;
-            } else {
-                $image->parentNode->removeChild($image);
-            }
-        }
-
-        return $goodImages;
+        return $results;
     }
 
     /**
@@ -451,7 +437,7 @@ class StandardImageExtractor extends ImageExtractor {
      * @return Image|null
      */
     private function checkForOpenGraphTag(Article $article) {
-        return $this->checkForTag($article, 'meta[property="og:image"]', 'content', 'opengraph');
+        return $this->checkForTag($article, 'meta[property="og:image"],meta[name="og:image"]', 'content', 'opengraph');
     }
 
     /**
@@ -462,7 +448,7 @@ class StandardImageExtractor extends ImageExtractor {
      * @return Image|null
      */
     private function checkForTwitterTag(Article $article) {
-        return $this->checkForTag($article, 'meta[property="twitter:image"]', 'content', 'twitter');
+        return $this->checkForTag($article, 'meta[property="twitter:image"],meta[name="twitter:image"],meta[property="twitter:image:src"],meta[name="twitter:image:src"]', 'content', 'twitter');
     }
 
     /**

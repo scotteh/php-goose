@@ -18,7 +18,7 @@ class DOMNodeList implements Countable, ArrayAccess, RecursiveIterator {
     /** @var array */
     private $nodes = [];
 
-    /*
+    /**
      * @param Traversable|array $nodes
      */
     public function __construct($nodes = []) {
@@ -27,7 +27,7 @@ class DOMNodeList implements Countable, ArrayAccess, RecursiveIterator {
         }
     }
 
-    /*
+    /**
      * @see Countable::count()
      *
      * @return int
@@ -36,7 +36,7 @@ class DOMNodeList implements Countable, ArrayAccess, RecursiveIterator {
         return count($this->nodes);
     }
 
-    /*
+    /**
      * @see ArrayAccess::offsetExists()
      *
      * @param mixed $offset
@@ -47,7 +47,7 @@ class DOMNodeList implements Countable, ArrayAccess, RecursiveIterator {
         return isset($this->nodes[$offset]);
     }
 
-    /*
+    /**
      * @see ArrayAccess::offsetGet()
      *
      * @param mixed $offset
@@ -58,7 +58,7 @@ class DOMNodeList implements Countable, ArrayAccess, RecursiveIterator {
         return isset($this->nodes[$offset]) ? $this->nodes[$offset] : null;
     }
 
-    /*
+    /**
      * @see ArrayAccess::offsetSet()
      *
      * @param mixed $offset
@@ -72,7 +72,7 @@ class DOMNodeList implements Countable, ArrayAccess, RecursiveIterator {
         }
     }
 
-    /*
+    /**
      * @see ArrayAccess::offsetUnset()
      *
      * @param mixed $offset
@@ -81,7 +81,7 @@ class DOMNodeList implements Countable, ArrayAccess, RecursiveIterator {
         unset($this->nodes[$offset]);
     }
 
-    /*
+    /**
      * @see RecursiveIterator::RecursiveIteratorIterator()
      *
      * @return RecursiveIteratorIterator
@@ -90,7 +90,7 @@ class DOMNodeList implements Countable, ArrayAccess, RecursiveIterator {
         return new RecursiveIteratorIterator($this, RecursiveIteratorIterator::SELF_FIRST);
     }
 
-    /*
+    /**
      * @see RecursiveIterator::getChildren()
      *
      * @return RecursiveIterator
@@ -105,7 +105,7 @@ class DOMNodeList implements Countable, ArrayAccess, RecursiveIterator {
         return new static($nodes);
     }
 
-    /*
+    /**
      * @see RecursiveIterator::hasChildren()
      *
      * @return bool
@@ -118,7 +118,7 @@ class DOMNodeList implements Countable, ArrayAccess, RecursiveIterator {
         return false;
     }
 
-    /*
+    /**
      * @see RecursiveIterator::current()
      * @see Iterator::current()
      *
@@ -128,7 +128,7 @@ class DOMNodeList implements Countable, ArrayAccess, RecursiveIterator {
         return current($this->nodes);
     }
 
-    /*
+    /**
      * @see RecursiveIterator::key()
      * @see Iterator::key()
      *
@@ -138,7 +138,7 @@ class DOMNodeList implements Countable, ArrayAccess, RecursiveIterator {
         return key($this->nodes);
     }
 
-    /*
+    /**
      * @see RecursiveIterator::next()
      * @see Iterator::next()
      *
@@ -148,7 +148,7 @@ class DOMNodeList implements Countable, ArrayAccess, RecursiveIterator {
         return next($this->nodes);
     }
 
-    /*
+    /**
      * @see RecursiveIterator::rewind()
      * @see Iterator::rewind()
      *
@@ -158,7 +158,7 @@ class DOMNodeList implements Countable, ArrayAccess, RecursiveIterator {
         return reset($this->nodes);
     }
 
-    /*
+    /**
      * @see RecursiveIterator::valid()
      * @see Iterator::valid()
      *
@@ -168,7 +168,7 @@ class DOMNodeList implements Countable, ArrayAccess, RecursiveIterator {
         return key($this->nodes) !== null;
     }
 
-    /*
+    /**
      * @return mixed
      *
      * @return DOMNodeList
@@ -179,21 +179,21 @@ class DOMNodeList implements Countable, ArrayAccess, RecursiveIterator {
         return $this;
     }
 
-    /*
+    /**
      * @return mixed
      */
     public function first() {
         return $this->rewind();
     }
 
-    /*
+    /**
      * @return mixed
      */
     public function last() {
         return end($this->nodes);
     }
 
-    /*
+    /**
      * @param mixed $key
      *
      * @return mixed
@@ -206,7 +206,7 @@ class DOMNodeList implements Countable, ArrayAccess, RecursiveIterator {
         return null;
     }
 
-    /*
+    /**
      * @param mixed $key
      * @param mixed $value
      */
@@ -214,14 +214,23 @@ class DOMNodeList implements Countable, ArrayAccess, RecursiveIterator {
         $this->nodes[$key] = $value;
     }
 
-    /*
+    /**
      * @return mixed
      */
     public function toArray() {
         return $this->nodes;
     }
 
-    /*
+    /**
+     *
+     */
+    public function remove() {
+        foreach ($this->nodes as $node) {
+            $node->parentNode->removeChild($node);
+        }
+    }
+
+    /**
      * @param DOMNodeList|array $elements
      *
      * @return DOMNodeList

@@ -381,7 +381,7 @@ class ContentExtractor {
         $minimumStopWordCount = 5;
         $maxStepsAwayFromNode = 3;
 
-        $siblings = $node->previousSiblings();
+        $siblings = $node->previousAll(XML_ELEMENT_NODE);
 
         foreach ($siblings as $currentNode) {
             if ($currentNode->nodeName == 'p' || $currentNode->nodeName == 'strong') {
@@ -693,7 +693,7 @@ class ContentExtractor {
 
         $baselineScoreForSiblingParagraphs = $this->getBaselineScoreForSiblings($topNode);
 
-        foreach ($topNode->previousSiblings() as $currentNode) {
+        foreach ($topNode->previousAll(XML_ELEMENT_NODE) as $currentNode) {
             $results = $this->getSiblingContent($currentNode, $baselineScoreForSiblingParagraphs);
 
             foreach ($results as $result) {
