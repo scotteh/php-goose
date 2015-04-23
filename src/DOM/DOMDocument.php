@@ -2,8 +2,6 @@
 
 namespace Goose\DOM;
 
-use Symfony\Component\CssSelector\CssSelector;
-
 /**
  * DOM Document
  *

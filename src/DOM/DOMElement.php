@@ -2,9 +2,6 @@
 
 namespace Goose\DOM;
 
-use Goose\Utils\Debug;
-use Symfony\Component\CssSelector\CssSelector;
-
 /**
  * DOM Element
  *
@@ -25,13 +22,15 @@ class DOMElement extends \DOMElement
     }
 
     /**
+     * @see http://php.net/manual/en/dom.constants.php $nodeType values - XML_*_NODE constants
+     *
      * @param int|null $nodeType 
      *
      * @return \DOMNode|null
      */
-    public function previous($type = null) {
+    public function previous($nodeType = null) {
         for ($sibling = $this; ($sibling = $sibling->previousSibling) !== null;) {
-            if (is_null($type) || $sibling->nodeType == $type) {
+            if (is_null($nodeType) || $sibling->nodeType == $nodeType) {
                 return $sibling;
             }
         }
@@ -40,17 +39,17 @@ class DOMElement extends \DOMElement
     }
 
     /**
-     * @see http://php.net/manual/en/dom.constants.php $type values - XML_*_NODE constants
+     * @see http://php.net/manual/en/dom.constants.php $nodeType values - XML_*_NODE constants
      *
      * @param int|null $nodeType 
      *
      * @return DOMNodeList
      */
-    public function previousAll($type = null) {
+    public function previousAll($nodeType = null) {
         $nodes = new DOMNodeList();
 
         for ($sibling = $this; ($sibling = $sibling->previousSibling) !== null;) {
-            if (is_null($type) || $sibling->nodeType == $type) {
+            if (is_null($nodeType) || $sibling->nodeType == $nodeType) {
                 $nodes[] = $sibling;
             }
         }
@@ -59,15 +58,15 @@ class DOMElement extends \DOMElement
     }
 
     /**
-     * @see http://php.net/manual/en/dom.constants.php $type values - XML_*_NODE constants
+     * @see http://php.net/manual/en/dom.constants.php $nodeType values - XML_*_NODE constants
      *
      * @param int|null $nodeType 
      *
      * @return \DOMNode|null
      */
-    public function next($type = null) {
+    public function next($nodeType = null) {
         for ($sibling = $this; ($sibling = $sibling->nextSibling) !== null;) {
-            if (is_null($type) || $sibling->nodeType == $type) {
+            if (is_null($nodeType) || $sibling->nodeType == $nodeType) {
                 return $sibling;
             }
         }
@@ -76,17 +75,17 @@ class DOMElement extends \DOMElement
     }
 
     /**
-     * @see http://php.net/manual/en/dom.constants.php $type values - XML_*_NODE constants
+     * @see http://php.net/manual/en/dom.constants.php $nodeType values - XML_*_NODE constants
      *
      * @param int|null $nodeType 
      *
      * @return DOMNodeList
      */
-    public function nextAll($type = null) {
+    public function nextAll($nodeType = null) {
         $nodes = new DOMNodeList();
 
         for ($sibling = $this; ($sibling = $sibling->nextSibling) !== null;) {
-            if (is_null($type) || $sibling->nodeType == $type) {
+            if (is_null($nodeType) || $sibling->nodeType == $nodeType) {
                 $nodes[] = $sibling;
             }
         }
@@ -124,7 +123,7 @@ class DOMElement extends \DOMElement
             /** @todo Make this relative to the current node */
             $nodes = $this->filter($selector);
         } else {
-            $nodes = new DOMNodeList($this);
+            $nodes = new DOMNodeList([$this]);
         }
 
         $nodes->remove();

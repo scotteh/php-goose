@@ -266,31 +266,31 @@ class StandardImageExtractor extends ImageExtractor {
      * @return Image[]
      */
     public function getAllImages(Article $article, $parentDepthLevel = 0, $siblingDepthLevel = 0) {
-        $images = [];
+        $results = [];
+        $imageUrls = [];
 
-        $locallyStoredImages = $this->getImageCandidates($article, $article->getTopNode());
+        $images = $article->getDoc()->filter('img');
 
-        if (!empty($locallyStoredImages)) {
-            foreach ($locallyStoredImages as $locallyStoredImage) {
-                $image = new Image();
-                $image->setImageSrc($locallyStoredImage->getImgSrc());
-                $image->setBytes($locallyStoredImage->getBytes());
-                $image->setHeight($locallyStoredImage->getHeight());
-                $image->setWidth($locallyStoredImage->getWidth());
-                $image->setImageExtractionType('all');
-                $image->setConfidenceScore(0);
-
-                $images[] = $image;
-            }
-        } else {
-            $depthObj = $this->getDepthLevel($article->getTopNode(), $parentDepthLevel, $siblingDepthLevel);
-
-            if ($depthObj) {
-                $images[] = $this->checkForLargeImages($article, $depthObj->node, $depthObj->parentDepth, $depthObj->siblingDepth);
-            }
+        // Generate a complete URL for each image
+        foreach ($images as $image) {
+            $imageUrls[] = $this->buildImagePath($article, $image->getAttribute('src'));
         }
 
-        return $images;
+        $localImages = $this->getLocallyStoredImages($imageUrls);
+
+        foreach ($localImages as $localImage) {
+            $image = new Image();
+            $image->setImageSrc($localImage->getImgSrc());
+            $image->setBytes($localImage->getBytes());
+            $image->setHeight($localImage->getHeight());
+            $image->setWidth($localImage->getWidth());
+            $image->setImageExtractionType('all');
+            $image->setConfidenceScore(0);
+
+            $results[] = $image;
+        }
+
+        return $results;
     }
 
     /**
@@ -396,7 +396,7 @@ class StandardImageExtractor extends ImageExtractor {
 
         // Generate a complete URL for each image
         $imageUrls = array_map(function($image) use ($article) {
-            return $this->buildImagePath($article, $image->getAttribute('src'));;
+            return $this->buildImagePath($article, $image->getAttribute('src'));
         }, $images);
 
         $localImages = $this->getLocallyStoredImages($imageUrls, true);
