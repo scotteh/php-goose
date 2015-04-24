@@ -258,14 +258,13 @@ class StandardImageExtractor extends ImageExtractor {
      */
     public function getAllImages(Article $article) {
         $results = [];
-        $imageUrls = [];
 
         $images = $article->getTopNode()->filter('img');
 
         // Generate a complete URL for each image
-        foreach ($images as $image) {
-            $imageUrls[] = $this->buildImagePath($article, $image->getAttribute('src'));
-        }
+        $imageUrls = array_map(function($image) use ($article) {
+            return $this->buildImagePath($article, $image->getAttribute('src'));
+        }, $images->toArray());
 
         $localImages = $this->getLocallyStoredImages($imageUrls);
 
