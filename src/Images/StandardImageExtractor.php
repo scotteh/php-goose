@@ -260,16 +260,14 @@ class StandardImageExtractor extends ImageExtractor {
 
     /**
      * @param Article $article
-     * @param int $parentDepthLevel
-     * @param int $siblingDepthLevel
      *
      * @return Image[]
      */
-    public function getAllImages(Article $article, $parentDepthLevel = 0, $siblingDepthLevel = 0) {
+    public function getAllImages(Article $article) {
         $results = [];
         $imageUrls = [];
 
-        $images = $article->getDoc()->filter('img');
+        $images = $article->getTopNode()->filter('img');
 
         // Generate a complete URL for each image
         foreach ($images as $image) {
