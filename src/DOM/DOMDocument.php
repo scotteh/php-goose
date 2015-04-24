@@ -11,10 +11,9 @@ namespace Goose\DOM;
 class DOMDocument extends \DOMDocument
 {
     use DOMNodeTrait;
-    use DOMFilterTrait;
 
     /**
-     * @see DOMFilterTrait::document()
+     * @see DOMNodeTrait::document()
      *
      * @return DOMDocument
      */

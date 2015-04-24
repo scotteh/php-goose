@@ -59,103 +59,81 @@ class StandardDocumentCleaner extends DocumentCleaner implements DocumentCleaner
     public function clean(Article $article) {
         $this->document($article->getDoc());
 
-        $this->removeComments();
-        $this->cleanTextTags();
-        $this->removeDropCaps();
-        $this->removeScriptsAndStyles();
-        $this->removeUselessTags();
-        $this->cleanBadTags();
-        $this->removeNodesViaFilter("[%s='caption']");
-        $this->removeNodesViaFilter("[%s*=' google ']");
-        $this->removeNodesViaFilter("[%s*='more']:not([%s^=entry-])", 2);
-        $this->removeNodesViaFilter("[%s*='facebook']:not([%s*='-facebook'])", 2);
-        $this->removeNodesViaFilter("[%s*='facebook-broadcasting']");
-        $this->removeNodesViaFilter("[%s*='twitter']:not([%s*='-twitter'])", 2);
-        $this->cleanUpSpanTagsInParagraphs();
-        $this->convertWantedTagsToParagraphs(['div', 'span', 'article']);
-        //$this->convertDivsToParagraphs('div');
-        //$this->convertDivsToParagraphs('span');
+        $this->removeXPath('//comment()');
+        $this->replace('em, strong, b, i, strike, del, ins', function($node) {
+            return !$node->filter('img')->count();
+        });
+        $this->replace('span[class~=dropcap], span[class~=drop_cap]');
+        $this->remove('script, style');
+        $this->remove('header, footer, input, form, button, aside, meta');
+        $this->removeBadTags();
+        $this->remove("[id='caption'],[class='caption']");
+        $this->remove("[id*=' google '],[class*=' google ']");
+        $this->remove("[id*='more']:not([id^=entry-]),[class*='more']:not([class^=entry-])");
+        $this->remove("[id*='facebook']:not([id*='-facebook']),[class*='facebook']:not([class*='-facebook'])");
+        $this->remove("[id*='facebook-broadcasting'],[class*='facebook-broadcasting']");
+        $this->remove("[id*='twitter']:not([id*='-twitter']),[class*='twitter']:not([class*='-twitter'])");
+        $this->replace('span', function($node) {
+            if (is_null($node->parent())) {
+                return false;
+            }
+
+            return $node->parent()->nodeName == 'p';
+        });
+        $this->convertToParagraph('div, span, article');
     }
 
     /**
-     * Remove comments
+     * Remove via CSS selectors
+     *
+     * @param string $expression
+     * @param \Closure $callback
      *
      * @return null
      */
-    private function removeComments() {
-        $nodes = $this->document()->filterXpath('//comment()');
+    private function remove($selector, \Closure $callback = null) {
+        $nodes = $this->document()->filter($selector);
 
         foreach ($nodes as $node) {
-            $node->remove();
-        }
-    }
-
-    /**
-     * Replaces various tags with \DOMText nodes.
-     *
-     * @return null
-     */
-    private function cleanTextTags() {
-        $nodes = $this->document()->filter('em, strong, b, i, strike, del, ins');
-
-        foreach ($nodes as $node) {
-            if ($node->filter('img')->count() == 0) {
-                $node->replace(new \DOMText(trim((string)$node->textContent)));
+            if (is_null($callback) || $callback($node)) {
+                $node->remove();
             }
         }
     }
 
     /**
-     * Takes care of the situation where you have a span tag nested in a paragraph tag
+     * Remove using via XPath expressions
+     *
+     * @param string $selector
+     * @param \Closure $callback
      *
      * @return null
      */
-    private function cleanUpSpanTagsInParagraphs() {
-        $nodes = $this->document()->filter('span');
+    private function removeXPath($expression, \Closure $callback = null) {
+        $nodes = $this->document()->filterXpath($expression);
 
         foreach ($nodes as $node) {
-            if ($node->parent()->nodeName == 'p') {
-                $node->replace(new \DOMText(trim((string)$node->textContent)));
+            if (is_null($callback) || $callback($node)) {
+                $node->remove();
             }
         }
     }
 
     /**
-     * Remove those css drop caps where they put the first letter in big text in the 1st paragraph
+     * Replace node with its textual contents via CSS selectors
+     *
+     * @param string $selector
+     * @param \Closure $callback
      *
      * @return null
      */
-    private function removeDropCaps() {
-        $nodes = $this->document()->filter('span[class~=dropcap], span[class~=drop_cap]');
+    private function replace($selector, \Closure $callback = null) {
+        $nodes = $this->document()->filter($selector);
 
         foreach ($nodes as $node) {
-            $node->replace(new \DOMText(trim((string)$node->textContent)));
-        }
-    }
-
-    /**
-     * Remove unwanted script/style elements
-     *
-     * @return null
-     */
-    private function removeScriptsAndStyles() {
-        $nodes = $this->document()->filter('script, style');
-
-        foreach ($nodes as $node) {
-            $node->remove();
-        }
-    }
-
-    /**
-     * Remove unwanted elements based on tagName
-     *
-     * @return null
-     */
-    private function removeUselessTags() {
-        $nodes = $this->document()->filter('header, footer, input, form, button, aside, meta');
-
-        foreach ($nodes as $node) {
-            $node->remove();
+            if (is_null($callback) || $callback($node)) {
+                $node->replace(new \DOMText(trim((string)$node->textContent)));
+            }
         }
     }
 
@@ -164,7 +142,7 @@ class StandardDocumentCleaner extends DocumentCleaner implements DocumentCleaner
      *
      * @return null
      */
-    private function cleanBadTags() {
+    private function removeBadTags() {
         $lists = [
             "[%s^='%s']" => $this->startsWithNodes,
             "[%s*='%s']" => $this->searchNodes,
@@ -198,37 +176,6 @@ class StandardDocumentCleaner extends DocumentCleaner implements DocumentCleaner
     }
 
     /**
-     * Remove nodes by CSS selector.
-     *
-     * @param string $pattern CSS selector - uses printf formatting to substitute attribute names
-     * @param int $length Number of attribute name substitutions required
-     *
-     * @return null
-     */
-    private function removeNodesViaFilter($pattern, $length = 1) {
-        $attrs = [
-            'id',
-            'class',
-        ];
-
-        foreach ($attrs as $attr) {
-            $args = [
-                $pattern
-            ];
-
-            for ($i = 0; $i < $length; $i++) {
-                $args[] = $attr;
-            }
-
-            $selector = call_user_func_array('sprintf', $args);
-
-            foreach ($this->document()->filter($selector) as $node) {
-                $node->remove();
-            }
-        }
-    }
-
-    /**
      * Replace supplied element with <p> new element.
      *
      * @param Goose\DOM\DOMElement $node
@@ -257,36 +204,8 @@ class StandardDocumentCleaner extends DocumentCleaner implements DocumentCleaner
      *
      * @return null
      */
-    private function convertWantedTagsToParagraphs($wantedTags) {
-        $nodes = $this->document()->filter(implode(', ', $wantedTags));
-
-        foreach ($nodes as $node) {
-            $tagNodes = $node->filter('a, blockquote, dl, div, img, ol, p, pre, table, ul');
-
-            if (!$tagNodes->count()) {
-                $this->replaceElementsWithPara($node);
-            } else {
-                $replacements = $this->getReplacementNodes($node);
-
-                $node->children()->remove();
-                $node->append($replacements);
-            }
-        }
-    }
-
-    /**
-     * @deprecated No longer used by internal code. 
-     * @see self::convertWantedTagsToParagraphs()
-     *
-     * @param string $domType tagName of elements to select
-     *
-     * @return null
-     *
-     * @ignore
-     * @codeCoverageIgnore
-     */
-    private function convertDivsToParagraphs($domType) {
-        $nodes = $this->document()->filter($domType);
+    private function convertToParagraph($selector) {
+        $nodes = $this->document()->filter($selector);
 
         foreach ($nodes as $node) {
             $tagNodes = $node->filter('a, blockquote, dl, div, img, ol, p, pre, table, ul');
@@ -324,7 +243,7 @@ class StandardDocumentCleaner extends DocumentCleaner implements DocumentCleaner
      *
      * @param Goose\DOM\DOMElement $div
      *
-     * @return DOMNodeList[] $nodesToReturn Replacement elements
+     * @return DOMNodeList $nodesToReturn Replacement elements
      */
     private function getReplacementNodes($div) {
         $replacementText = [];

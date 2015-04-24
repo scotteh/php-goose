@@ -11,5 +11,4 @@ namespace Goose\DOM;
 class DOMElement extends \DOMElement
 {
     use DOMNodeTrait;
-    use DOMFilterTrait;
 }

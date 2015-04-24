@@ -2,6 +2,8 @@
 
 namespace Goose\DOM;
 
+use Symfony\Component\CssSelector\CssSelector;
+
 /**
  * DOM Node Trait
  *
@@ -10,6 +12,78 @@ namespace Goose\DOM;
  */
 trait DOMNodeTrait
 {
+    /**
+     * @see \DOMNode::$previousSibling
+     *
+     * @var \DOMNode
+     */
+    public $previousSibling;
+
+    /**
+     * @see \DOMNode::$nextSibling
+     *
+     * @var \DOMNode
+     */
+    public $nextSibling;
+
+    /**
+     * @see \DOMNode::$childNodes
+     *
+     * @var \DOMNodeList
+     */
+    public $childNodes;
+
+    /**
+     * @see \DOMNode::$parentNode
+     *
+     * @var \DOMNode
+     */
+    public $parentNode;
+
+    /**
+     * @see \DOMNode::$ownerDocument
+     *
+     * @var \DOMDocument
+     */
+    public $ownerDocument;
+
+    /**
+     * @see \DOMNode::appendChild()
+     */
+    abstract public function appendChild(\DOMNode $newNode);
+
+    /**
+     * @see \DOMNode::replaceChild()
+     */
+    abstract public function replaceChild(\DOMNode $newNode, \DOMNode $oldNode);
+
+    /**
+     * @return DOMDocument
+     */
+    public function document() {
+        return $this->ownerDocument;
+    }
+
+    /**
+     * @param string $selector
+     *
+     * @return DOMNodeList
+     */
+    public function filter($selector) {
+        return new DOMNodeList($this->filterXPath(CssSelector::toXPath($selector)));
+    }
+
+    /**
+     * @param string $xpath
+     *
+     * @return DOMNodeList
+     */
+    public function filterXPath($xpath) {
+        $domxpath = new \DOMXPath($this->document());
+
+        return new DOMNodeList($domxpath->query($xpath, $this));
+    }
+
     /**
      * @see http://php.net/manual/en/dom.constants.php $nodeType values - XML_*_NODE constants
      *
