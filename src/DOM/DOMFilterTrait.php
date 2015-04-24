@@ -10,7 +10,8 @@ use Symfony\Component\CssSelector\CssSelector;
  * @package Goose\DOM
  * @license http://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0
  */
-trait DOMFilterTrait {
+trait DOMFilterTrait
+{
     /**
      * @param string $selector
      *
@@ -35,6 +36,6 @@ trait DOMFilterTrait {
      * @return DOMDocument
      */
     public function document() {
-        return $this;
+        return $this->ownerDocument;
     }
 }

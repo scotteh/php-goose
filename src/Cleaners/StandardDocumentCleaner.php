@@ -3,6 +3,7 @@
 namespace Goose\Cleaners;
 
 use Goose\Article;
+use Goose\DOM\DOMNodeList;
 
 /**
  * Standard Document Cleaner
@@ -82,10 +83,10 @@ class StandardDocumentCleaner extends DocumentCleaner implements DocumentCleaner
      * @return null
      */
     private function removeComments() {
-        $comments = $this->document()->filterXpath('//comment()');
+        $nodes = $this->document()->filterXpath('//comment()');
 
-        foreach ($comments as $comment) {
-            $comment->parentNode->removeChild($comment);
+        foreach ($nodes as $node) {
+            $node->remove();
         }
     }
 
@@ -95,13 +96,11 @@ class StandardDocumentCleaner extends DocumentCleaner implements DocumentCleaner
      * @return null
      */
     private function cleanTextTags() {
-        $ems = $this->document()->filter('em, strong, b, i, strike, del, ins');
+        $nodes = $this->document()->filter('em, strong, b, i, strike, del, ins');
 
-        foreach ($ems as $node) {
-            $images = $node->filter('img');
-
-            if ($images->count() == 0) {
-                $node->parentNode->replaceChild(new \DOMText(trim($node->textContent) . ' '), $node);
+        foreach ($nodes as $node) {
+            if ($node->filter('img')->count() == 0) {
+                $node->replace(new \DOMText(trim((string)$node->textContent)));
             }
         }
     }
@@ -112,11 +111,11 @@ class StandardDocumentCleaner extends DocumentCleaner implements DocumentCleaner
      * @return null
      */
     private function cleanUpSpanTagsInParagraphs() {
-        $spans = $this->document()->filter('span');
+        $nodes = $this->document()->filter('span');
 
-        foreach ($spans as $item) {
-            if ($item->parentNode->nodeName == 'p') {
-                $item->parentNode->replaceChild(new \DOMText($item->textContent), $item);
+        foreach ($nodes as $node) {
+            if ($node->parent()->nodeName == 'p') {
+                $node->replace(new \DOMText(trim((string)$node->textContent)));
             }
         }
     }
@@ -127,10 +126,10 @@ class StandardDocumentCleaner extends DocumentCleaner implements DocumentCleaner
      * @return null
      */
     private function removeDropCaps() {
-        $items = $this->document()->filter('span[class~=dropcap], span[class~=drop_cap]');
+        $nodes = $this->document()->filter('span[class~=dropcap], span[class~=drop_cap]');
 
-        foreach ($items as $item) {
-            $item->parentNode->replaceChild(new \DOMText($item->textContent), $item);
+        foreach ($nodes as $node) {
+            $node->replace(new \DOMText(trim((string)$node->textContent)));
         }
     }
 
@@ -140,16 +139,10 @@ class StandardDocumentCleaner extends DocumentCleaner implements DocumentCleaner
      * @return null
      */
     private function removeScriptsAndStyles() {
-        $scripts = $this->document()->filter('script');
+        $nodes = $this->document()->filter('script, style');
 
-        foreach ($scripts as $item) {
-            $item->parentNode->removeChild($item);
-        }
-
-        $styles = $this->document()->filter('style');
-
-        foreach ($styles as $style) {
-            $style->parentNode->removeChild($style);
+        foreach ($nodes as $node) {
+            $node->remove();
         }
     }
 
@@ -159,16 +152,10 @@ class StandardDocumentCleaner extends DocumentCleaner implements DocumentCleaner
      * @return null
      */
     private function removeUselessTags() {
-        $tags = [
-            'header', 'footer', 'input', 'form', 'button', 'aside', 'meta'
-        ];
+        $nodes = $this->document()->filter('header, footer, input, form, button, aside, meta');
 
-        foreach ($tags as &$tag) {
-            $nodes = $this->document()->filter($tag);
-
-            foreach ($nodes as $node) {
-                $node->parentNode->removeChild($node);
-            }
+        foreach ($nodes as $node) {
+            $node->remove();
         }
     }
 
@@ -203,7 +190,7 @@ class StandardDocumentCleaner extends DocumentCleaner implements DocumentCleaner
                     $selector = sprintf($expr, $attr, $value) . $exceptions;
 
                     foreach ($this->document()->filter($selector) as $node) {
-                        $node->parentNode->removeChild($node);
+                        $node->remove();
                     }
                 }
             }
@@ -236,7 +223,7 @@ class StandardDocumentCleaner extends DocumentCleaner implements DocumentCleaner
             $selector = call_user_func_array('sprintf', $args);
 
             foreach ($this->document()->filter($selector) as $node) {
-                $node->parentNode->removeChild($node);
+                $node->remove();
             }
         }
     }
@@ -244,23 +231,23 @@ class StandardDocumentCleaner extends DocumentCleaner implements DocumentCleaner
     /**
      * Replace supplied element with <p> new element.
      *
-     * @param Goose\DOM\DOMElement $div
+     * @param Goose\DOM\DOMElement $node
      *
      * @return null
      */
-    private function replaceElementsWithPara($div) {
+    private function replaceElementsWithPara($node) {
         $el = $this->document()->createElement('p');
 
-        foreach ($div->childNodes as $child) {
+        foreach ($node->children() as $child) {
             $child = $child->cloneNode(true);
             $el->appendChild($child);
         }
 
-        foreach ($div->attributes as $attr) {
+        foreach ($node->attributes as $attr) {
             $el->setAttribute($attr->localName, $attr->nodeValue);
         }
 
-        $div->parentNode->replaceChild($el, $div);
+        $node->replace($el);
     }
 
     /**
@@ -271,25 +258,18 @@ class StandardDocumentCleaner extends DocumentCleaner implements DocumentCleaner
      * @return null
      */
     private function convertWantedTagsToParagraphs($wantedTags) {
-        $tags = ['a', 'blockquote', 'dl', 'div', 'img', 'ol', 'p', 'pre', 'table', 'ul'];
+        $nodes = $this->document()->filter(implode(', ', $wantedTags));
 
-        $selected = $this->document()->filter(implode(', ', $wantedTags));
+        foreach ($nodes as $node) {
+            $tagNodes = $node->filter('a, blockquote, dl, div, img, ol, p, pre, table, ul');
 
-        foreach ($selected as $elem) {
-            $items = $elem->filter(implode(', ', $tags));
-
-            if (!$items->count()) {
-                $this->replaceElementsWithPara($elem);
+            if (!$tagNodes->count()) {
+                $this->replaceElementsWithPara($node);
             } else {
-                $replacements = $this->getReplacementNodes($elem);
+                $replacements = $this->getReplacementNodes($node);
 
-                foreach ($elem->children() as $child) {
-                    $elem->removeChild($child);
-                }
-
-                foreach ($replacements as $replace) {
-                    $elem->appendChild($replace);
-                }
+                $node->children()->remove();
+                $node->append($replacements);
             }
         }
     }
@@ -302,24 +282,22 @@ class StandardDocumentCleaner extends DocumentCleaner implements DocumentCleaner
      *
      * @return null
      *
+     * @ignore
      * @codeCoverageIgnore
      */
     private function convertDivsToParagraphs($domType) {
-        $divs = $this->document()->filter($domType);
+        $nodes = $this->document()->filter($domType);
 
-        foreach ($divs as $div) {
-            if (!preg_match('@<(a|blockquote|dl|div|img|ol|p|pre|table|ul)@', $this->document()->saveXML($div))) {
-                $this->replaceElementsWithPara($div);
+        foreach ($nodes as $node) {
+            $tagNodes = $node->filter('a, blockquote, dl, div, img, ol, p, pre, table, ul');
+
+            if (!$tagNodes->count()) {
+                $this->replaceElementsWithPara($node);
             } else {
-                $replacements = $this->getReplacementNodes($div);
+                $replacements = $this->getReplacementNodes($node);
 
-                foreach ($div->children() as $child) {
-                    $div->removeChild($child);
-                }
-
-                foreach ($replacements as $replace) {
-                    $div->appendChild($replace);
-                }
+                $node->children()->remove();
+                $node->append($replacements);
             }
         }
     }
@@ -346,7 +324,7 @@ class StandardDocumentCleaner extends DocumentCleaner implements DocumentCleaner
      *
      * @param Goose\DOM\DOMElement $div
      *
-     * @return array $nodesToReturn Replacement elements
+     * @return DOMNodeList[] $nodesToReturn Replacement elements
      */
     private function getReplacementNodes($div) {
         $replacementText = [];
@@ -412,6 +390,6 @@ class StandardDocumentCleaner extends DocumentCleaner implements DocumentCleaner
             }
         }
 
-        return $nodesToReturn;
+        return new DOMNodeList($nodesToReturn);
     }
 }

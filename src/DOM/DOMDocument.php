@@ -10,5 +10,37 @@ namespace Goose\DOM;
  */
 class DOMDocument extends \DOMDocument
 {
+    use DOMNodeTrait;
     use DOMFilterTrait;
+
+    /**
+     * @see DOMFilterTrait::document()
+     *
+     * @return DOMDocument
+     */
+    public function document() {
+        return $this;
+    }
+
+    /**
+     * @see DOMNodeTrait::parent()
+     *
+     * @return DOMElement
+     */
+    public function parent() {
+        return null;
+    }
+
+    /**
+     * @see DOMNodeTrait::replace()
+     *
+     * @param \DOMNode $newNode
+     *
+     * @return self
+     */
+    public function replace($newNode) {
+        $this->replaceChild($newNode, $this);
+
+        return $this;
+    }
 }

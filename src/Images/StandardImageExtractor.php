@@ -38,6 +38,9 @@ class StandardImageExtractor extends ImageExtractor {
     /** @var int */
     private static $MIN_WIDTH = 50;
 
+    /** @var int */
+    private static $MAX_PARENT_DEPTH = 2;
+
     /** @var Configuration */
     private $config;
 
@@ -164,25 +167,15 @@ class StandardImageExtractor extends ImageExtractor {
             return null;
         }
 
-        $MAX_PARENT_DEPTH = 2;
-
-        if ($parentDepth > $MAX_PARENT_DEPTH) {
+        if ($parentDepth > self::$MAX_PARENT_DEPTH) {
             return null;
         }
 
-        $siblingNode = clone $node;
-
-        do {
-            $siblingNode = $siblingNode->previousSibling;
-        } while ($siblingNode && $siblingNode->nodeType != XML_ELEMENT_NODE);
+        $siblingNode = $node->previous(XML_ELEMENT_NODE);
 
         if (is_null($siblingNode)) {
-            if ($node->parentNode instanceof DOMDocument) {
-                return null;
-            }
-
             return (object)[
-                'node' => $node->parentNode,
+                'node' => $node->parent(),
                 'parentDepth' => $parentDepth + 1,
                 'siblingDepth' => 0,
             ];
