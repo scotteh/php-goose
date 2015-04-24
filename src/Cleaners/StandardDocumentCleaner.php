@@ -86,7 +86,7 @@ class StandardDocumentCleaner extends DocumentCleaner implements DocumentCleaner
     /**
      * Remove via CSS selectors
      *
-     * @param string $expression
+     * @param string $selector
      * @param \Closure $callback
      *
      * @return null
@@ -104,7 +104,7 @@ class StandardDocumentCleaner extends DocumentCleaner implements DocumentCleaner
     /**
      * Remove using via XPath expressions
      *
-     * @param string $selector
+     * @param string $expression
      * @param \Closure $callback
      *
      * @return null
@@ -200,7 +200,7 @@ class StandardDocumentCleaner extends DocumentCleaner implements DocumentCleaner
     /**
      * Convert wanted elements to <p> elements.
      *
-     * @param string[] $wantedTags tagNames of base elements to select
+     * @param string $selector
      *
      * @return null
      */
