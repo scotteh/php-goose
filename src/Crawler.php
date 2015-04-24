@@ -175,6 +175,7 @@ class Crawler {
         }
 
         $doc = new DOMDocument(1.0);
+        $doc->registerNodeClass('DOMText', 'Goose\\DOM\\DOMText');
         $doc->registerNodeClass('DOMElement', 'Goose\\DOM\\DOMElement');
         $doc->registerNodeClass('DOMComment', 'Goose\\DOM\\DOMComment');
         $doc->loadHTML($rawHTML);

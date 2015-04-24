@@ -298,7 +298,9 @@ class ContentExtractorTest extends \PHPUnit_Framework_TestCase
 
     private function document($html) {
         $doc = new DOMDocument(1.0);
+        $doc->registerNodeClass('DOMText', 'Goose\\DOM\\DOMText');
         $doc->registerNodeClass('DOMElement', 'Goose\\DOM\\DOMElement');
+        $doc->registerNodeClass('DOMComment', 'Goose\\DOM\\DOMComment');
 
         // Silence 'Tag xyz invalid in Entity' for HTML5 tags.
         libxml_use_internal_errors(true);

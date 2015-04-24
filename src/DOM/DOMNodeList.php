@@ -223,12 +223,14 @@ class DOMNodeList implements Countable, ArrayAccess, RecursiveIterator
     }
 
     /**
-     *
+     * @return self
      */
     public function remove() {
         foreach ($this->nodes as $node) {
             $node->parentNode->removeChild($node);
         }
+
+        return $this;
     }
 
     /**

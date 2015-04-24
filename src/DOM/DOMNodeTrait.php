@@ -4,6 +4,10 @@ namespace Goose\DOM;
 
 use Symfony\Component\CssSelector\CssSelector;
 
+define('DOM_NODE_TEXT_DEFAULT', 0);
+define('DOM_NODE_TEXT_TRIM', 1);
+define('DOM_NODE_TEXT_NORMALISED', 2);
+
 /**
  * DOM Node Trait
  *
@@ -39,6 +43,13 @@ trait DOMNodeTrait
      * @var \DOMNode
      */
     public $parentNode;
+
+    /**
+     * @see \DOMNode::$textContent
+     *
+     * @var string
+     */
+    public $textContent;
 
     /**
      * @see \DOMNode::$ownerDocument
@@ -159,11 +170,13 @@ trait DOMNodeTrait
     /**
      * @see http://php.net/manual/en/dom.constants.php $type values - XML_*_NODE constants
      *
+     * @param int|null $nodeType 
+     *
      * @return DOMNodeList
      */
-    public function siblings() {
-        return $this->previousAll()->merge(
-            $this->nextAll()
+    public function siblings($nodeType = null) {
+        return $this->previousAll($nodeType)->merge(
+            $this->nextAll($nodeType)
         );
     }
 
@@ -233,5 +246,24 @@ trait DOMNodeTrait
         }
 
         return $this;
+    }
+
+    /**
+     * @param int $flag
+     *
+     * @return string
+     */
+    public function text($flag = 0) {
+        $text = $this->textContent;
+
+        if ($flag & DOM_NODE_TEXT_NORMALISED) {
+            $text = preg_replace('@[\n\r\s\t]+@', " ", $text);
+        }
+
+        if ($flag & (DOM_NODE_TEXT_TRIM | DOM_NODE_TEXT_NORMALISED)) {
+            $text = trim($text);
+        }
+
+        return $text;
     }
 }

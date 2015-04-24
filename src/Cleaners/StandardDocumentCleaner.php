@@ -110,7 +110,7 @@ class StandardDocumentCleaner extends DocumentCleaner implements DocumentCleaner
      * @return null
      */
     private function removeXPath($expression, \Closure $callback = null) {
-        $nodes = $this->document()->filterXpath($expression);
+        $nodes = $this->document()->filterXPath($expression);
 
         foreach ($nodes as $node) {
             if (is_null($callback) || $callback($node)) {
@@ -230,7 +230,7 @@ class StandardDocumentCleaner extends DocumentCleaner implements DocumentCleaner
      */
     private function getFlushedBuffer($replacementText) {
         $fragment = $this->document()->createDocumentFragment();
-        $fragment->appendXML(str_replace('&', '&amp;', implode('', $replacementText)));
+        $fragment->appendXML(str_replace('&', '&amp;', implode(' ', $replacementText)));
 
         $el = $this->document()->createElement('p');
         $el->appendChild($fragment);
@@ -241,64 +241,58 @@ class StandardDocumentCleaner extends DocumentCleaner implements DocumentCleaner
     /**
      * Generate <p> element replacements for supplied elements child nodes as required.
      *
-     * @param Goose\DOM\DOMElement $div
+     * @param Goose\DOM\DOMElement $node
      *
      * @return DOMNodeList $nodesToReturn Replacement elements
      */
-    private function getReplacementNodes($div) {
+    private function getReplacementNodes($node) {
         $replacementText = [];
-        $nodesToReturn = [];
-        $nodesToRemove = [];
+        $nodesToReturn = new DOMNodeList;
+        $nodesToRemove = new DOMNodeList;
 
-        foreach ($div->childNodes as $kid) {
-            if ($kid->nodeName == 'p' && !empty($replacementText)) {
+        foreach ($node->childNodes as $child) {
+            if ($child->nodeName == 'p' && !empty($replacementText)) {
                 $nodesToReturn[] = $this->getFlushedBuffer($replacementText);
                 $replacementText = [];
-                $nodesToReturn[] = $kid;
-            } else if ($kid->nodeType == XML_TEXT_NODE) {
-                $replaceText = preg_replace('@[\n\r\s\t]+@', " ", $kid->textContent);
+                $nodesToReturn[] = $child;
+            } else if ($child->nodeType == XML_TEXT_NODE) {
+                $replaceText = $child->text(DOM_NODE_TEXT_NORMALISED);
 
-                if (mb_strlen(trim($replaceText)) > 0) {
-                    $prevSibNode = $kid->previousSibling;
+                if (!empty($replaceText)) {
+                    // Get all previous sibling <a> nodes, the current text node, and all next sibling <a> nodes.
+                    $siblings = $child->previousAll('a')->merge([$child])->merge($child->nextAll('a'));
 
-                    while ($prevSibNode && $prevSibNode->nodeName == 'a' && $prevSibNode->getAttribute('grv-usedalready') != 'yes') {
-                        $replacementText[] = ' ' . $this->document()->saveXML($prevSibNode) . ' ';
-                        $nodesToRemove[] = $prevSibNode;
-                        $prevSibNode->setAttribute('grv-usedalready', 'yes');
+                    foreach ($siblings as $sibling) {
+                        // Place current nodes textual contents in-between previous and next nodes.
+                        if ($sibling->isSameNode($child)) {
+                            $replacementText[] = $replaceText;
 
-                        $prevSibNode = $prevSibNode->previousSibling;
-                    }
+                        // Grab the contents of any unprocessed <a> siblings and flag them for removal.
+                        } else if ($sibling->getAttribute('grv-usedalready') != 'yes') {
+                            $sibling->setAttribute('grv-usedalready', 'yes');
 
-                    $replacementText[] = $replaceText;
+                            $replacementText[] = $this->document()->saveXML($sibling);
+                            $nodesToRemove[] = $sibling;
+                        }
 
-                    $nextSibNode = $kid->nextSibling;
-
-                    while ($nextSibNode && $nextSibNode->nodeName == 'a' && $nextSibNode->getAttribute('grv-usedalready') != 'yes') {
-                        $replacementText[] = ' ' . $this->document()->saveXML($nextSibNode) . ' ';
-                        $nodesToRemove[] = $nextSibNode;
-                        $nextSibNode->setAttribute('grv-usedalready', 'yes');
-
-                        $nextSibNode = $nextSibNode->nextSibling;
                     }
                 }
 
-                $nodesToRemove[] = $kid;
+                $nodesToRemove[] = $child;
             } else {
                 if (!empty($replacementText)) {
                     $nodesToReturn[] = $this->getFlushedBuffer($replacementText);
                 }
-                $nodesToReturn[] = $kid;
+
+                $nodesToReturn[] = $child;
             }
         }
 
         if (!empty($replacementText)) {
             $nodesToReturn[] = $this->getFlushedBuffer($replacementText);
-            $replacementText = [];
         }
 
-        foreach ($nodesToRemove as $el) {
-            $div->removeChild($el);
-        }
+        $nodesToRemove->remove();
 
         // Remove potential duplicate <a> tags.
         foreach ($nodesToRemove as $remove) {
@@ -309,6 +303,6 @@ class StandardDocumentCleaner extends DocumentCleaner implements DocumentCleaner
             }
         }
 
-        return new DOMNodeList($nodesToReturn);
+        return $nodesToReturn;
     }
 }
