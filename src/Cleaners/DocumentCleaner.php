@@ -5,7 +5,6 @@ namespace Goose\Cleaners;
 use Goose\Article;
 use Goose\Configuration;
 use Goose\DOM\DOMDocument;
-use Goose\Utils\Debug;
 
 /**
  * Document Cleaner

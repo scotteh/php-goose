@@ -4,7 +4,6 @@ namespace Goose\Extractors;
 
 use Goose\Article;
 use Goose\Configuration;
-use Goose\Utils\Debug;
 use Goose\DOM\DOMDocument;
 use Goose\DOM\DOMElement;
 use Goose\DOM\DOMNodeList;
@@ -40,9 +39,6 @@ class ContentExtractor {
 
     /** @var Configuration */
     private $config;
-
-    /** @var string */
-    private $logPrefix = 'ContentExtractor: ';
 
     /**
      * @param Configuration $config
@@ -425,8 +421,6 @@ class ContentExtractor {
         foreach ($siblings as $currentNode) {
             if ($currentNode->nodeName == 'p' || $currentNode->nodeName == 'strong') {
                 if ($stepsAway >= $maxStepsAwayFromNode) {
-                    Debug::trace($this->logPrefix, "Next paragraph is too far away, not boosting");
-
                     return false;
                 }
 
@@ -434,8 +428,6 @@ class ContentExtractor {
                 $wordStats = $this->config->getStopWords()->getStopwordCount($paraText);
 
                 if ($wordStats->getStopWordCount() > $minimumStopWordCount) {
-                    Debug::trace($this->logPrefix, "We're gonna boost this node, seems contenty");
-
                     return true;
                 }
 
@@ -491,8 +483,6 @@ class ContentExtractor {
         $numberOfLinks = $links->count();
         $linkDivisor = $numberOfLinkWords / $numberOfWords;
         $score = $linkDivisor * $numberOfLinks;
-
-        Debug::trace($this->logPrefix, "Calulated link density score as: " . $score . " for node: " . $this->getShortText($e->textContent, 50));
 
         if ($score >= $limit) {
             return true;
@@ -642,14 +632,10 @@ class ContentExtractor {
      * @return DOMElement
      */
     public function postExtractionCleanup(DOMElement $targetNode) {
-        Debug::trace($this->logPrefix, "Starting cleanup Node");
-
         $node = $this->addSiblings($targetNode);
 
         foreach ($node->childNodes as $e) {
             if ($e->nodeType == XML_ELEMENT_NODE && $e->nodeName != 'p' && $e->nodeName != 'strong') {
-
-                Debug::trace($this->logPrefix, "CLEANUP  NODE: " . $e->getAttribute('id') . " class: " . $e->getAttribute('class'));
 
                 if ($this->isHighLinkDensity($e)
                     || $this->isTableTagAndNoParagraphsExist($e)
@@ -673,15 +659,9 @@ class ContentExtractor {
         $currentNodeScore = $this->getScore($e);
         $thresholdScore = ($topNodeScore * 0.08);
 
-        Debug::trace($this->logPrefix, "topNodeScore: " . $topNodeScore . " currentNodeScore: " . $currentNodeScore . " threshold: " . $thresholdScore);
-
         if ($currentNodeScore < $thresholdScore && $e->nodeName != 'td') {
-            Debug::trace($this->logPrefix, "Removing node due to low threshold score");
-
             return false;
         }
-
-        Debug::trace($this->logPrefix, "Not removing TD node");
 
         return true;
     }
@@ -716,8 +696,6 @@ class ContentExtractor {
                 $siblingBaseLineScore = 0.30;
 
                 if (($baselineScoreForSiblingParagraphs * $siblingBaseLineScore) < $paragraphScore) {
-                    Debug::trace($this->logPrefix, "This node looks like a good sibling, adding it");
-
                     $paragraphs[] = $firstParagraph->ownerDocument->createElement('p', $firstParagraph->textContent);
                 }
             }
@@ -732,8 +710,6 @@ class ContentExtractor {
      * @return DOMElement
      */
     private function addSiblings(DOMElement $topNode) {
-        Debug::trace($this->logPrefix, "Starting to add siblings");
-
         $baselineScoreForSiblingParagraphs = $this->getBaselineScoreForSiblings($topNode);
 
         foreach ($topNode->previousAll(XML_ELEMENT_NODE) as $currentNode) {
@@ -776,7 +752,6 @@ class ContentExtractor {
 
         if ($numberOfParagraphs > 0) {
             $base = $scoreOfParagraphs / $numberOfParagraphs;
-            Debug::trace($this->logPrefix, "The base score for siblings to beat is: " . $base . " NumOfParas: " . $numberOfParagraphs . " scoreOfAll: " . $scoreOfParagraphs);
         }
 
         return $base;

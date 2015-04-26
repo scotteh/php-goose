@@ -4,7 +4,6 @@ namespace Goose\OutputFormatters;
 
 use Goose\Configuration;
 use Goose\DOM\DOMElement;
-use Goose\Utils\Debug;
 
 /**
  * Output Formatter
