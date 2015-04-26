@@ -201,30 +201,22 @@ class ContentExtractor {
         $nodes = $this->getNodesByLowercasePropertyValue($article->getDoc(), 'link', 'rel', 'canonical');
 
         if ($nodes->count()) {
-            $href = $nodes->first()->getAttribute('href');
+            return trim($nodes->first()->getAttribute('href'));
         }
 
-        if (empty($href)) {
-            $nodes = $this->getNodesByLowercasePropertyValue($article->getDoc(), 'meta', 'property', 'og:url');
+        $nodes = $this->getNodesByLowercasePropertyValue($article->getDoc(), 'meta', 'property', 'og:url');
 
-            if ($nodes->count()) {
-                $href = $nodes->first()->getAttribute('content');
-            }
+        if ($nodes->count()) {
+            return trim($nodes->first()->getAttribute('content'));
         }
 
-        if (empty($href)) {
-            $nodes = $this->getNodesByLowercasePropertyValue($article->getDoc(), 'meta', 'name', 'twitter:url');
+        $nodes = $this->getNodesByLowercasePropertyValue($article->getDoc(), 'meta', 'name', 'twitter:url');
 
-            if ($nodes->count()) {
-                $href = $nodes->first()->getAttribute('content');
-            }
+        if ($nodes->count()) {
+            return trim($nodes->first()->getAttribute('content'));
         }
 
-        if (!empty($href)) {
-            return trim($href);
-        } else {
-            return $article->getFinalUrl();
-        }
+        return $article->getFinalUrl();
     }
 
     /**
@@ -605,7 +597,7 @@ class ContentExtractor {
     }
 
     /**
-     * @param DOMElement $node
+     * @param DOMElement $topNode
      *
      * @return bool
      */
