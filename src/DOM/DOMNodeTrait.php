@@ -266,4 +266,15 @@ trait DOMNodeTrait
 
         return $text;
     }
+
+    /**
+     * @param string $selector
+     *
+     * @return bool
+     */
+    public function is($selector) {
+        $nodes = $this->filterXPath(CssSelector::toXPath($selector, 'self::'));
+
+        return $nodes->count() != 0;
+    }
 }

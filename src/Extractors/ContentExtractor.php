@@ -37,6 +37,9 @@ class ContentExtractor {
         'flic\.kr',
     ];
 
+    /** @var souble */
+    private static $SIBLING_BASE_LINE_SCORE = 0.30;
+
     /** @var Configuration */
     private $config;
 
@@ -675,33 +678,27 @@ class ContentExtractor {
      * @return DOMElement[]
      */
     public function getSiblingContent(DOMElement $currentSibling, $baselineScoreForSiblingParagraphs) {
-        if ($currentSibling->nodeType != XML_ELEMENT_NODE) {
-            return [];
-        } else if (($currentSibling->nodeName == 'p' || $currentSibling->nodeName == 'strong') && !empty($currentSibling->textContent)) {
+        if ($currentSibling->is('p, strong') && !empty($currentSibling->text(DOM_NODE_TEXT_TRIM))) {
             return [$currentSibling];
         }
 
-        $potentialParagraphs = $currentSibling->filter('p, strong');
+        $results = [];
 
-        if ($potentialParagraphs->count() == 0) {
-            return [];
-        }
+        $nodes = $currentSibling->filter('p, strong');
 
-        $paragraphs = [];
+        foreach ($nodes as $node) {
+            $text = $node->text(DOM_NODE_TEXT_TRIM);
 
-        foreach ($potentialParagraphs as $firstParagraph) {
-            if (!empty($firstParagraph->textContent)) {
-                $wordStats = $this->config->getStopWords()->getStopwordCount($firstParagraph->textContent);
-                $paragraphScore = $wordStats->getStopWordCount();
-                $siblingBaseLineScore = 0.30;
+            if (!empty($text)) {
+                $wordStats = $this->config->getStopWords()->getStopwordCount($text);
 
-                if (($baselineScoreForSiblingParagraphs * $siblingBaseLineScore) < $paragraphScore) {
-                    $paragraphs[] = $firstParagraph->ownerDocument->createElement('p', $firstParagraph->textContent);
+                if (($baselineScoreForSiblingParagraphs * self::$SIBLING_BASE_LINE_SCORE) < $wordStats->getStopWordCount()) {
+                    $results[] = $node->document()->createElement('p', $text);
                 }
             }
         }
 
-        return $paragraphs;
+        return $results;
     }
 
     /**
