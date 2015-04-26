@@ -414,7 +414,7 @@ class ContentExtractor {
         $siblings = $node->previousAll(XML_ELEMENT_NODE);
 
         foreach ($siblings as $sibling) {
-            if ($sibling->is('p', 'strong')) {
+            if ($sibling->is('p, strong')) {
                 if ($stepsAway >= $maxStepsAwayFromNode) {
                     return false;
                 }
