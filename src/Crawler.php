@@ -102,7 +102,8 @@ class Crawler {
                 }
             }
 
-            $article->setTopNode($extractor->postExtractionCleanup($article->getTopNode()));
+            $extractor->postExtractionCleanup($article->getTopNode());
+
             $article->setCleanedArticleText($outputFormatter->getFormattedText($article->getTopNode()));
             $article->setHtmlArticle($outputFormatter->cleanupHtml($article->getTopNode()));
         }

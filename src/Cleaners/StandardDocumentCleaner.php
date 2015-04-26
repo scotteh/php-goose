@@ -3,6 +3,7 @@
 namespace Goose\Cleaners;
 
 use Goose\Article;
+use Goose\DOM\DOMText;
 use Goose\DOM\DOMNodeList;
 
 /**
@@ -78,7 +79,7 @@ class StandardDocumentCleaner extends DocumentCleaner implements DocumentCleaner
                 return false;
             }
 
-            return $node->parent()->nodeName == 'p';
+            return $node->parent()->is('p');
         });
         $this->convertToParagraph('div, span, article');
     }
@@ -132,7 +133,7 @@ class StandardDocumentCleaner extends DocumentCleaner implements DocumentCleaner
 
         foreach ($nodes as $node) {
             if (is_null($callback) || $callback($node)) {
-                $node->replace(new \DOMText(trim((string)$node->textContent)));
+                $node->replace(new DOMText((string)$node->text()));
             }
         }
     }
@@ -250,8 +251,8 @@ class StandardDocumentCleaner extends DocumentCleaner implements DocumentCleaner
         $nodesToReturn = new DOMNodeList;
         $nodesToRemove = new DOMNodeList;
 
-        foreach ($node->childNodes as $child) {
-            if ($child->nodeName == 'p' && !empty($replacementText)) {
+        foreach ($node->children() as $child) {
+            if ($child->is('p') && !empty($replacementText)) {
                 $nodesToReturn[] = $this->getFlushedBuffer($replacementText);
                 $replacementText = [];
                 $nodesToReturn[] = $child;

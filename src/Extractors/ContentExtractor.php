@@ -60,7 +60,7 @@ class ContentExtractor {
 
         if (!$nodes->count()) return '';
 
-        $titleText = $nodes->first()->textContent;
+        $titleText = $nodes->first()->text(DOM_NODE_TEXT_NORMALISED);
 
         foreach (self::$SPLITTER_CHARS as $char) {
             if (strpos($titleText, $char) !== false) {
@@ -259,7 +259,7 @@ class ContentExtractor {
         $tags = [];
 
         foreach ($nodes as $node) {
-            $tags[] = $node->textContent;
+            $tags[] = $node->text(DOM_NODE_TEXT_NORMALISED);
         }
 
         return $tags;
@@ -421,14 +421,13 @@ class ContentExtractor {
 
         $siblings = $node->previousAll(XML_ELEMENT_NODE);
 
-        foreach ($siblings as $currentNode) {
-            if ($currentNode->nodeName == 'p' || $currentNode->nodeName == 'strong') {
+        foreach ($siblings as $sibling) {
+            if ($sibling->is('p', 'strong')) {
                 if ($stepsAway >= $maxStepsAwayFromNode) {
                     return false;
                 }
 
-                $paraText = $currentNode->textContent;
-                $wordStats = $this->config->getStopWords()->getStopwordCount($paraText);
+                $wordStats = $this->config->getStopWords()->getStopwordCount($sibling->text());
 
                 if ($wordStats->getStopWordCount() > $minimumStopWordCount) {
                     return true;
@@ -471,20 +470,18 @@ class ContentExtractor {
             return false;
         }
 
-        $text = trim($e->textContent);
-        $words = explode(' ', $text);
-        $numberOfWords = count($words);
+        $words = preg_split('@[\s]+@iu', $e->text(), -1, PREG_SPLIT_NO_EMPTY);
 
         $sb = [];
         foreach ($links as $link) {
-            $sb[] = $link->textContent;
+            $sb[] = $link->text(DOM_NODE_TEXT_NORMALISED);
         }
 
         $linkText = implode('', $sb);
         $linkWords = explode(' ', $linkText);
         $numberOfLinkWords = count($linkWords);
         $numberOfLinks = $links->count();
-        $linkDivisor = $numberOfLinkWords / $numberOfWords;
+        $linkDivisor = $numberOfLinkWords / count($words);
         $score = $linkDivisor * $numberOfLinks;
 
         if ($score >= $limit) {
@@ -544,7 +541,7 @@ class ContentExtractor {
     public function extractVideos(DOMElement $node) {
         $movies = [];
 
-        $nodes = $node->parentNode->filter('embed, object, iframe');
+        $nodes = $node->parent()->filter('embed, object, iframe');
 
         foreach ($nodes as $node) {
             if ($node->hasAttribute('src')) {
@@ -578,13 +575,13 @@ class ContentExtractor {
     public function extractLinks(DOMElement $node) {
         $goodLinks = [];
 
-        $candidates = $node->parentNode->filter('a[href]');
+        $candidates = $node->parent()->filter('a[href]');
 
         foreach ($candidates as $el) {
             if ($el->getAttribute('href') != '#' && trim($el->getAttribute('href')) != '') {
                 $goodLinks[] = [
                     'url' => $el->getAttribute('href'),
-                    'text' => $el->textContent,
+                    'text' => $el->text(DOM_NODE_TEXT_NORMALISED),
                 ];
             }
         }
@@ -597,24 +594,24 @@ class ContentExtractor {
      *
      * @return bool
      */
-    public function isTableTagAndNoParagraphsExist(DOMElement $e) {
-        $subParagraphs = $e->filter('p, strong');
+    public function isTableTagAndNoParagraphsExist(DOMElement $node) {
+        $subParagraphs = $node->filter('p, strong');
 
         foreach ($subParagraphs as $p) {
-            if (mb_strlen($p->textContent) < 25) {
-                $p->parentNode->removeChild($p);
+            if (mb_strlen($p->text(DOM_NODE_TEXT_NORMALISED)) < 25) {
+                $p->remove();
             }
         }
 
-        $subParagraphs2 = $e->filter('p');
+        $subParagraphs2 = $node->filter('p');
 
-        if ($subParagraphs2->count() == 0 && $e->nodeName != 'td') {
-            if ($e->nodeName == 'ul' || $e->nodeName == 'ol') {
+        if ($subParagraphs2->count() == 0 && $node->is(':not(td)')) {
+            if ($node->is('ul, ol')) {
                 $linkTextLength = array_sum(array_map(function($value){
-                    return mb_strlen($value->textContent);
-                }, $e->filter('a')->toArray()));
+                    return mb_strlen($value->text(DOM_NODE_TEXT_NORMALISED));
+                }, $node->filter('a')->toArray()));
 
-                $elementTextLength = mb_strlen($e->textContent);
+                $elementTextLength = mb_strlen($node->text(DOM_NODE_TEXT_NORMALISED));
 
                 if ($elementTextLength > 0 && ($linkTextLength / $elementTextLength) < 0.5) {
                     return false;
@@ -630,25 +627,20 @@ class ContentExtractor {
     /**
      * Remove any divs that looks like non-content, clusters of links, or paras with no gusto
      *
-     * @param DOMElement $targetNode
-     *
-     * @return DOMElement
+     * @param DOMElement $topNode
      */
-    public function postExtractionCleanup(DOMElement $targetNode) {
-        $node = $this->addSiblings($targetNode);
+    public function postExtractionCleanup(DOMElement $topNode) {
+        $this->addSiblings($topNode);
 
-        foreach ($node->childNodes as $e) {
-            if ($e->nodeType == XML_ELEMENT_NODE && $e->nodeName != 'p' && $e->nodeName != 'strong') {
-
-                if ($this->isHighLinkDensity($e)
-                    || $this->isTableTagAndNoParagraphsExist($e)
-                    || !$this->isNodeScoreThreshholdMet($node, $e)) {
-                    $e->parentNode->removeChild($e);
+        foreach ($topNode->children() as $node) {
+            if ($node->is(':not(p):not(strong)')) {
+                if ($this->isHighLinkDensity($node)
+                    || $this->isTableTagAndNoParagraphsExist($node)
+                    || !$this->isNodeScoreThreshholdMet($topNode, $node)) {
+                    $node->remove();
                 }
             }
         }
-
-        return $node;
     }
 
     /**
@@ -662,7 +654,7 @@ class ContentExtractor {
         $currentNodeScore = $this->getScore($e);
         $thresholdScore = ($topNodeScore * 0.08);
 
-        if ($currentNodeScore < $thresholdScore && $e->nodeName != 'td') {
+        if ($currentNodeScore < $thresholdScore && $e->is(':not(td)')) {
             return false;
         }
 
@@ -703,8 +695,6 @@ class ContentExtractor {
 
     /**
      * @param DOMElement $topNode
-     *
-     * @return DOMElement
      */
     private function addSiblings(DOMElement $topNode) {
         $baselineScoreForSiblingParagraphs = $this->getBaselineScoreForSiblings($topNode);
@@ -716,8 +706,6 @@ class ContentExtractor {
                 $topNode->insertBefore($result, $topNode->firstChild);
             }
         }
-
-        return $topNode;
     }
 
     /**
@@ -737,7 +725,7 @@ class ContentExtractor {
         $nodesToCheck = $topNode->filter('p, strong');
 
         foreach ($nodesToCheck as $node) {
-            $nodeText = $node->textContent;
+            $nodeText = $node->text();
             $wordStats = $this->config->getStopWords()->getStopwordCount($nodeText);
             $highLinkDensity = $this->isHighLinkDensity($node);
 

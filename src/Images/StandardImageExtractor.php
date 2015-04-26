@@ -326,7 +326,7 @@ class StandardImageExtractor extends ImageExtractor {
             if ($this->isOkImageFileName($image)) {
                 $goodImages[] = $image;
             } else {
-                $image->parentNode->removeChild($image);
+                $image->remove();
             }
         }
 

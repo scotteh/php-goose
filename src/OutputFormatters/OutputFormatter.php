@@ -3,6 +3,7 @@
 namespace Goose\OutputFormatters;
 
 use Goose\Configuration;
+use Goose\DOM\DOMText;
 use Goose\DOM\DOMElement;
 
 /**
@@ -51,8 +52,8 @@ class OutputFormatter {
         }
 
         $list = [];
-        foreach ($topNode->childNodes as $child) {
-            $list[] = trim($child->textContent);
+        foreach ($topNode->children() as $child) {
+            $list[] = $child->text(DOM_NODE_TEXT_TRIM);
         }
 
         return implode("\n\n", $list);
@@ -102,8 +103,8 @@ class OutputFormatter {
             foreach ($links as $item) {
                 $images = $item->filter('img');
 
-                if (!count($images)) {
-                    $item->parentNode->replaceChild(new \DOMText($item->textContent), $item);
+                if ($images->count() == 0) {
+                    $item->replace(new DOMText($item->text(DOM_NODE_TEXT_NORMALISED)));
                 }
             }
         }
@@ -123,7 +124,7 @@ class OutputFormatter {
                 $score = (int)$item->getAttribute('gravityScore');
 
                 if ($score < 1) {
-                    $item->parentNode->removeChild($item);
+                    $item->remove();
                 }
             }
         }
@@ -140,7 +141,7 @@ class OutputFormatter {
             $items = $topNode->filter('b, strong, i');
 
             foreach ($items as $item) {
-                $item->parentNode->replaceChild(new \DOMText($this->getTagCleanedText($item)), $item);
+                $item->replace(new DOMText($this->getTagCleanedText($item)));
             }
         }
     }
@@ -153,7 +154,7 @@ class OutputFormatter {
      * @return string
      */
     private function getTagCleanedText(DOMElement $item) {
-        return $item->textContent;
+        return $item->text(DOM_NODE_TEXT_NORMALISED);
     }
 
     /**
@@ -166,10 +167,10 @@ class OutputFormatter {
             $paragraphs = $topNode->filter('p');
 
             foreach ($paragraphs as $el) {
-                $stopWords = $this->config->getStopWords()->getStopwordCount($el->textContent);
+                $stopWords = $this->config->getStopWords()->getStopwordCount($el->text());
 
-                if (mb_strlen($el->textContent) < 8 && $stopWords->getStopWordCount() < 3 && count($el->filter('object')) == 0 && count($el->filter('embed')) == 0) {
-                    $el->parentNode->removeChild($el);
+                if (mb_strlen($el->text(DOM_NODE_TEXT_NORMALISED)) < 8 && $stopWords->getStopWordCount() < 3 && $el->filter('object')->count() == 0 && $el->filter('embed')->count() == 0) {
+                    $el->remove();
                 }
             }
 
