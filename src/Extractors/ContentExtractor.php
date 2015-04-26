@@ -590,28 +590,37 @@ class ContentExtractor {
     }
 
     /**
-     * @param DOMElement $e
+     * @param DOMElement $topNode
      *
      * @return bool
      */
-    public function isTableTagAndNoParagraphsExist(DOMElement $node) {
-        $subParagraphs = $node->filter('p, strong');
+    private function removeSmallParagraphs(DOMElement $topNode) {
+        $nodes = $topNode->filter('p, strong');
 
-        foreach ($subParagraphs as $p) {
-            if (mb_strlen($p->text(DOM_NODE_TEXT_NORMALISED)) < 25) {
-                $p->remove();
+        foreach ($nodes as $node) {
+            if (mb_strlen($node->text(DOM_NODE_TEXT_NORMALISED)) < 25) {
+                $node->remove();
             }
         }
+    }
 
-        $subParagraphs2 = $node->filter('p');
+    /**
+     * @param DOMElement $node
+     *
+     * @return bool
+     */
+    public function isTableTagAndNoParagraphsExist(DOMElement $topNode) {
+        $this->removeSmallParagraphs($topNode);
 
-        if ($subParagraphs2->count() == 0 && $node->is(':not(td)')) {
-            if ($node->is('ul, ol')) {
+        $nodes = $topNode->filter('p');
+
+        if ($nodes->count() == 0 && $topNode->is(':not(td)')) {
+            if ($topNode->is('ul, ol')) {
                 $linkTextLength = array_sum(array_map(function($value){
                     return mb_strlen($value->text(DOM_NODE_TEXT_NORMALISED));
-                }, $node->filter('a')->toArray()));
+                }, $topNode->filter('a')->toArray()));
 
-                $elementTextLength = mb_strlen($node->text(DOM_NODE_TEXT_NORMALISED));
+                $elementTextLength = mb_strlen($topNode->text(DOM_NODE_TEXT_NORMALISED));
 
                 if ($elementTextLength > 0 && ($linkTextLength / $elementTextLength) < 0.5) {
                     return false;
