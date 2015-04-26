@@ -26,9 +26,6 @@ class ContentExtractor {
     /** @var string */
     private static $A_REL_TAG_SELECTOR = "a[rel='tag'], a[href*='/tag/']";
 
-    /** @var string */
-    private static $TOP_NODE_TAGS = 'p, td, pre';
-
     /** @var string[] */
     private static $VIDEO_PROVIDERS = [
         'youtube\.com',
@@ -270,93 +267,74 @@ class ContentExtractor {
     }
 
     /**
-     * We're going to start looking for where the clusters of paragraphs are. We'll score a cluster based on the number of stopwords
-     * and the number of consecutive paragraphs together, which should form the cluster of text that this node is around
-     * also store on how high up the paragraphs are, comments are usually at the bottom and should get a lower score
-     *
-     * @todo Re-factor this long method
-     *
      * @param Article $article
      *
-     * @return DOMElement|null
+     * @return array
      */
-    public function calculateBestNodeBasedOnClustering(Article $article) {
-        $doc = $article->getDoc();
-        $topNode = null;
-        $nodesToCheck = $doc->filter(self::$TOP_NODE_TAGS);
-        $startingBoost = 1.0;
-        $cnt = 0;
-        $i = 0;
-        $parentNodes = [];
-        $nodesWithText = [];
+    private function getBestNodeCandidatesByContents(Article $article) {
+        $results = [];
 
-        foreach ($nodesToCheck as $node) {
-            $nodeText = $node->textContent;
-            $wordStats = $this->config->getStopWords()->getStopwordCount($nodeText);
+        $nodes = $article->getDoc()->filter('p, td, pre');
+
+        foreach ($nodes as $node) {
+            $wordStats = $this->config->getStopWords()->getStopwordCount($node->text());
             $highLinkDensity = $this->isHighLinkDensity($node);
 
             if ($wordStats->getStopWordCount() > 2 && !$highLinkDensity) {
-                $nodesWithText[] = $node;
+                $results[] = $node;
             }
         }
 
-        $numberOfNodes = count($nodesWithText);
-        $negativeScoring = 0;
-        $bottomNodesForNegativeScore = $numberOfNodes * 0.25;
+        return $results;
+    }
 
-        foreach ($nodesWithText as $node) {
-            $boostScore = 0.0;
+    /**
+     * @param DOMElement $node
+     * @param int $i
+     * @param int $totalNodes
+     *
+     * @return double
+     */
+    private function getBestNodeCandidateScore(DOMElement $node, $i, $totalNodes) {
+        $boostScore = (1.0 / ($i + 1)) * 50;
+        $bottomNodesForNegativeScore = $totalNodes * 0.25;
 
-            if ($node->nodeType == XML_ELEMENT_NODE && $this->isOkToBoost($node)) {
-                if ($cnt >= 0) {
-                    $boostScore = (1.0 / $startingBoost) * 50;
-                    $startingBoost += 1;
+        if ($totalNodes > 15) {
+            if ($totalNodes - $i <= $bottomNodesForNegativeScore) {
+                $booster = $bottomNodesForNegativeScore - ($totalNodes - $i);
+                $boostScore = pow($booster, 2) * -1;
+                $negscore = abs($boostScore);
+                if ($negscore > 40) {
+                    $boostScore = 5;
                 }
-
-                if ($numberOfNodes > 15) {
-                    if ($numberOfNodes - $i <= $bottomNodesForNegativeScore) {
-                        $booster = $bottomNodesForNegativeScore - ($numberOfNodes - $i);
-                        $boostScore = pow($booster, 2) * -1;
-                        $negscore = abs($boostScore) + $negativeScoring;
-                        if ($negscore > 40) {
-                            $boostScore = 5;
-                        }
-                    }
-                }
-
-                $nodeText = $node->textContent;
-                $wordStats = $this->config->getStopWords()->getStopwordCount($nodeText);
-                $upscore = $wordStats->getStopWordCount() + $boostScore;
-
-                $this->updateScore($node->parentNode, $upscore);
-                $this->updateScore($node->parentNode->parentNode, $upscore / 2);
-                $this->updateNodeCount($node->parentNode, 1);
-                $this->updateNodeCount($node->parentNode->parentNode, 1);
-
-                if (!in_array($node->parentNode, $parentNodes)) {
-                    $parentNodes[] = $node->parentNode;
-                }
-
-                if (!in_array($node->parentNode->parentNode, $parentNodes)) {
-                    $parentNodes[] = $node->parentNode->parentNode;
-                }
-
-                $cnt++;
-                $i++;
             }
         }
 
+        $wordStats = $this->config->getStopWords()->getStopwordCount($node->text());
+        $upscore = $wordStats->getStopWordCount() + $boostScore;
+
+        return $upscore;
+    }
+
+    /**
+     * @param array $nodes
+     *
+     * @return DOMElement|null
+     */
+    private function getBestNodeByScore($nodes) {
+        $topNode = null;
         $topNodeScore = 0;
-        foreach ($parentNodes as $e) {
-            $score = $this->getScore($e);
+
+        foreach ($nodes as $node) {
+            $score = $this->getScore($node);
 
             if ($score > $topNodeScore) {
-                $topNode = $e;
+                $topNode = $node;
                 $topNodeScore = $score;
             }
 
             if ($topNode === false) {
-                $topNode = $e;
+                $topNode = $node;
             }
         }
 
@@ -365,6 +343,67 @@ class ContentExtractor {
         }
 
         return $topNode;
+    }
+
+    /**
+     * @param DOMElement $node
+     * @param double $upscore
+     */
+    private function calculateBestNodeCandidateScores(DOMElement $node, $upscore) {
+        if ($node->parent() instanceof DOMElement) {
+            $this->updateScore($node->parent(), $upscore);
+            $this->updateNodeCount($node->parent(), 1);
+
+            $this->updateScore($node->parent()->parent(), $upscore / 2);
+            $this->updateNodeCount($node->parent()->parent(), 1);
+        }
+    }
+
+    /**
+     * @param DOMElement $node
+     * @param array $nodeCandidates
+     */
+    private function updateBestNodeCandidates(DOMElement $node, $nodeCandidates) {
+        if (!in_array($node->parent(), $nodeCandidates)) {
+            $nodeCandidates[] = $node->parent();
+        }
+
+        if ($node->parent() instanceof DOMElement) {
+            if (!in_array($node->parent()->parent(), $nodeCandidates)) {
+                $nodeCandidates[] = $node->parent()->parent();
+            }
+        }
+
+        return $nodeCandidates;
+    }
+
+    /**
+     * We're going to start looking for where the clusters of paragraphs are. We'll score a cluster based on the number of stopwords
+     * and the number of consecutive paragraphs together, which should form the cluster of text that this node is around
+     * also store on how high up the paragraphs are, comments are usually at the bottom and should get a lower score
+     *
+     * @param Article $article
+     *
+     * @return DOMElement|null
+     */
+    public function getBestNode(Article $article) {
+        $nodes = $this->getBestNodeCandidatesByContents($article);
+
+        $nodeCandidates = [];
+
+        $i = 0;
+        foreach ($nodes as $node) {
+            if ($this->isOkToBoost($node)) {
+                $upscore = $this->getBestNodeCandidateScore($node, $i, count($nodes));
+
+                $this->calculateBestNodeCandidateScores($node, $upscore);
+                $nodeCandidates = $this->updateBestNodeCandidates($node, $nodeCandidates);
+
+                $i++;
+            }
+        }
+
+        return $this->getBestNodeByScore($nodeCandidates);
     }
 
     /**
@@ -481,9 +520,11 @@ class ContentExtractor {
      * @param int $addToScore
      */
     private function updateScore(DOMElement $node, $addToScore) {
-        $currentScore = (int)$node->getAttribute('gravityScore');
+        if ($node instanceof DOMElement) {
+            $currentScore = (int)$node->getAttribute('gravityScore');
 
-        $node->setAttribute('gravityScore', $currentScore + $addToScore);
+            $node->setAttribute('gravityScore', $currentScore + $addToScore);
+        }
     }
 
     /**
@@ -493,9 +534,11 @@ class ContentExtractor {
      * @param int $addToCount
      */
     private function updateNodeCount(DOMElement $node, $addToCount) {
-        $currentScore = (int)$node->getAttribute('gravityNodes');
+        if ($node instanceof DOMElement) {
+            $currentScore = (int)$node->getAttribute('gravityNodes');
 
-        $node->setAttribute('gravityNodes', $currentScore + $addToCount);
+            $node->setAttribute('gravityNodes', $currentScore + $addToCount);
+        }
     }
 
     /**

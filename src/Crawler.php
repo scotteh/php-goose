@@ -80,7 +80,7 @@ class Crawler {
 
         $documentCleaner->clean($article);
 
-        $topNode = $extractor->calculateBestNodeBasedOnClustering($article);
+        $topNode = $extractor->getBestNode($article);
 
         if ($topNode instanceof DOMElement) {
             $article->setTopNode($topNode);
