@@ -196,8 +196,6 @@ class ContentExtractor {
      * @return string
      */
     public function getCanonicalLink(Article $article) {
-        $href = '';
-
         $nodes = $this->getNodesByLowercasePropertyValue($article->getDoc(), 'link', 'rel', 'canonical');
 
         if ($nodes->count()) {
