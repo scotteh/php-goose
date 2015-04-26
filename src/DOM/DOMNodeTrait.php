@@ -81,7 +81,7 @@ trait DOMNodeTrait
      *
      * @return DOMNodeList
      */
-    public function filter($selector, $prefix = 'descendant-or-self::') {
+    public function filter($selector, $prefix = 'descendant::') {
         return new DOMNodeList($this->filterXPath(CssSelector::toXPath($selector, $prefix)));
     }
 
@@ -208,7 +208,7 @@ trait DOMNodeTrait
      */
     public function remove($selector = null) {
         if (!is_null($selector)) {
-            $nodes = $this->filter($selector, 'descendant::');
+            $nodes = $this->filter($selector);
         } else {
             $nodes = new DOMNodeList([$this]);
         }
@@ -284,7 +284,7 @@ trait DOMNodeTrait
      * @return bool
      */
     public function has($selector) {
-        $nodes = $this->filter($selector, 'descendant::');
+        $nodes = $this->filter($selector);
 
         return $nodes->count() != 0;
     }
