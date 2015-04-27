@@ -342,16 +342,16 @@ class Article {
     /**
      * Sometimes useful to try and know when the publish date of an article was
      *
-     * @var string
+     * @var datetime
      */
     protected $publishDate;
 
-    /** @param string $publishDate */
+    /** @param datetime $publishDate */
     public function setPublishDate($publishDate) {
         $this->publishDate = $publishDate;
     }
 
-    /** @return string */
+    /** @return datetime */
     public function getPublishDate() {
         return $this->publishDate;
     }
