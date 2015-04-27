@@ -158,31 +158,8 @@ class Crawler {
      * @return DOMDocument
      */
     private function getDocument($rawHTML) {
-        $internalErrors = libxml_use_internal_errors(true);
-        $disableEntities = libxml_disable_entity_loader(true);
-
-        $fn = function($matches) {
-            return (
-                isset($matches[1])
-                ? '</script> -->'
-                : '<!-- <script>'
-            );
-        };
-
-        $rawHTML = preg_replace_callback('@<([/])?script[^>]*>@i', $fn, $rawHTML);
-
-        if (mb_detect_encoding($rawHTML, mb_detect_order(), true) === 'UTF-8') {
-            $rawHTML = mb_convert_encoding($rawHTML, 'HTML-ENTITIES', 'UTF-8');
-        }
-
-        $doc = new DOMDocument(1.0);
-        $doc->registerNodeClass('DOMText', 'Goose\\DOM\\DOMText');
-        $doc->registerNodeClass('DOMElement', 'Goose\\DOM\\DOMElement');
-        $doc->registerNodeClass('DOMComment', 'Goose\\DOM\\DOMComment');
-        $doc->loadHTML($rawHTML);
-
-        libxml_use_internal_errors($internalErrors);
-        libxml_disable_entity_loader($disableEntities);
+        $doc = new DOMDocument();
+        $doc->html($rawHTML);
 
         return $doc;
     }
