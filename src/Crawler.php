@@ -46,9 +46,9 @@ class Crawler {
 
         $doc = $this->getDocument($rawHTML);
 
-        $extractor = $this->getExtractor();
         $documentCleaner = $this->getDocumentCleaner();
         $outputFormatter = $this->getOutputFormatter();
+        $contentExtractor = $this->getContentExtractor();
         $publishDateExtractor = $this->config->getPublishDateExtractor();
         $additionalDataExtractor = $this->config->getAdditionalDataExtractor();
 
@@ -59,16 +59,16 @@ class Crawler {
         $article->setDoc($doc);
         $article->setRawDoc(clone $doc);
 
-        $language = $extractor->getMetaLanguage($article);
+        $language = $contentExtractor->getMetaLanguage($article);
 
         $this->config->setLanguage($language);
 
         $article->setLanguage($language);
-        $article->setTitle($extractor->getTitle($article));
-        $article->setMetaDescription($extractor->getMetaDescription($article));
-        $article->setMetaKeywords($extractor->getMetaKeywords($article));
-        $article->setCanonicalLink($extractor->getCanonicalLink($article));
-        $article->setTags($extractor->extractTags($article));
+        $article->setTitle($contentExtractor->getTitle($article));
+        $article->setMetaDescription($contentExtractor->getMetaDescription($article));
+        $article->setMetaKeywords($contentExtractor->getMetaKeywords($article));
+        $article->setCanonicalLink($contentExtractor->getCanonicalLink($article));
+        $article->setTags($contentExtractor->extractTags($article));
 
         if ($publishDateExtractor instanceof ExtractorInterface) {
             $article->setPublishDate($publishDateExtractor->extract($article));
@@ -80,13 +80,13 @@ class Crawler {
 
         $documentCleaner->clean($article);
 
-        $topNode = $extractor->getBestNode($article);
+        $topNode = $contentExtractor->getBestNode($article);
 
         if ($topNode instanceof DOMElement) {
             $article->setTopNode($topNode);
 
-            $article->setMovies($extractor->extractVideos($article->getTopNode()));
-            $article->setLinks($extractor->extractLinks($article->getTopNode()));
+            $article->setMovies($contentExtractor->extractVideos($article->getTopNode()));
+            $article->setLinks($contentExtractor->extractLinks($article->getTopNode()));
 
             if ($this->config->getEnableImageFetching()) {
                 $imageExtractor = $this->getImageExtractor();
@@ -102,13 +102,13 @@ class Crawler {
                 }
             }
 
-            $extractor->postExtractionCleanup($article->getTopNode());
+            $contentExtractor->postExtractionCleanup($article->getTopNode());
 
             $article->setCleanedArticleText($outputFormatter->getFormattedText($article->getTopNode()));
             $article->setHtmlArticle($outputFormatter->cleanupHtml($article->getTopNode()));
         }
 
-        $article->setPopularWords($extractor->getPopularWords($article));
+        $article->setPopularWords($contentExtractor->getPopularWords($article));
 
         return $article;
     }
@@ -190,7 +190,7 @@ class Crawler {
     /**
      * @return ContentExtractor
      */
-    private function getExtractor() {
+    private function getContentExtractor() {
         return $this->config->getContentExtractor();
     }
 }

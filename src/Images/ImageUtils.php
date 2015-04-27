@@ -83,25 +83,6 @@ class ImageUtils {
     }
 
     /**
-     * @todo
-     * @ignore
-     * @codeCoverageIgnore
-     */
-    private static function readExistingFileInfo($imageSrc, $config) {
-        return null;
-    }
-
-    /**
-     * @todo
-     * @ignore
-     * @codeCoverageIgnore
-     */
-    private static function writeEntityContentsToDisk($entity, $imageSrc, $config) {
-        //$file = tempnam(sys_get_temp_dir(), 'goose');
-        return null;
-    }
-
-    /**
      * @param string[] $imageSrcs
      * @param bool $returnAll
      * @param Configuration $config

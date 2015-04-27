@@ -218,18 +218,6 @@ class ContentExtractor {
     }
 
     /**
-     * @todo
-     *
-     * @param string $url
-     *
-     * @return string
-     */
-    public function getDateFromURL($url) {
-        // TODO
-        return '';
-    }
-
-    /**
      * @param string $url
      *
      * @return string
@@ -581,8 +569,6 @@ class ContentExtractor {
 
     /**
      * @param DOMElement $topNode
-     *
-     * @return bool
      */
     private function removeSmallParagraphs(DOMElement $topNode) {
         $nodes = $topNode->filter('p, strong');

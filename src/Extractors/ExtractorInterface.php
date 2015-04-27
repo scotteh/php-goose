@@ -19,6 +19,8 @@ interface ExtractorInterface {
 
     /**
      * @param Article $article
+     *
+     * @return mixed
      */
     public function extract(Article $article);
 }

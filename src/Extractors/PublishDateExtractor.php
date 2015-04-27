@@ -15,6 +15,16 @@ class PublishDateExtractor extends Extractor implements ExtractorInterface {
      * @param Article $article
      */
     public function extract(Article $article) {
+        // Determine date based on URL
+        if (preg_match('@(?:[\d]{4})(?<delimiter>[/-])(?:[\d]{2})\k<delimiter>(?:[\d]{2})@U', $url, $matches)) {
+            $dt = \DateTime::createFromFormat('Y' . $matches['delimiter'] . 'm' . $matches['delimiter'] . 'd', $matches[0]);
+            $dt->setTime(0, 0, 0);
+
+            return $dt;
+        }
+
+        /** @todo Add more date detection methods */
+
         return null;
     }
 }
