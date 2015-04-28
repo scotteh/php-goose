@@ -6,7 +6,7 @@ use Goose\Article;
 use Goose\Configuration;
 
 /**
- * Extractor Interface
+ * Image Extractor Interface
  *
  * @package Goose\Images
  * @license http://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0
@@ -19,8 +19,6 @@ interface ImageExtractorInterface {
 
     /**
      * @param Article $article
-     *
-     * @return Image|null
      */
-    public function getBestImage(Article $article);
+    public function extract(Article $article);
 }

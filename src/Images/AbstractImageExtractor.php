@@ -24,8 +24,6 @@ abstract class AbstractImageExtractor {
 
     /**
      * @param Article $article
-     *
-     * @return Image|null
      */
-    abstract public function getBestImage(Article $article);
+    abstract public function extract(Article $article);
 }

@@ -170,16 +170,16 @@ class Article {
     /**
      * Top Image object that we think represents this article
      *
-     * @var Image
+     * @var Image|null
      */
     protected $topImage;
 
-    /** @param Image $topImage */
-    public function setTopImage(Image $topImage) {
+    /** @param Image|null $topImage */
+    public function setTopImage(Image $topImage = null) {
         $this->topImage = $topImage;
     }
 
-    /** @return Image */
+    /** @return Image|null */
     public function getTopImage() {
         return $this->topImage;
     }

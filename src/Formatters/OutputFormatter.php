@@ -25,10 +25,12 @@ class OutputFormatter extends AbstractFormatter implements FormatterInterface {
     public function format(Article $article) {
         $this->article($article);
 
-        $this->postExtractionCleanup();
+        if ($this->article()->getTopNode() instanceof DOMElement) {
+            $this->postExtractionCleanup();
 
-        $article->setCleanedArticleText($this->getFormattedText());
-        $article->setHtmlArticle($this->cleanupHtml());
+            $article->setCleanedArticleText($this->getFormattedText());
+            $article->setHtmlArticle($this->cleanupHtml());
+        }
     }
 
     /**

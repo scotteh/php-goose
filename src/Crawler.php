@@ -46,8 +46,10 @@ class Crawler {
             $rawHTML = $this->getHTML($parseCandidate->url);
         }
 
+        // Generate document
         $doc = $this->getDocument($rawHTML);
 
+        // Set core mutators
         $article->setFinalUrl($parseCandidate->url);
         $article->setDomain($parseCandidate->parts->host);
         $article->setLinkhash($parseCandidate->linkhash);
@@ -55,33 +57,18 @@ class Crawler {
         $article->setDoc($doc);
         $article->setRawDoc(clone $doc);
 
+        // Pre-extraction document cleaning
         $this->getDocumentCleaner()->clean($article);
 
+        // Extract content
         $this->getContentExtractor()->extract($article);
-
-        if ($article->getTopNode() instanceof DOMElement) {
-            if ($this->config->getEnableImageFetching()) {
-                $imageExtractor = $this->getImageExtractor();
-
-                $bestImage = $imageExtractor->getBestImage($article);
-
-                if ($bestImage instanceof Image) {
-                    $article->setTopImage($bestImage);
-                }
-
-                if ($this->config->getEnableAllImagesFetching()) {
-                    $article->setAllImages($imageExtractor->getAllImages($article));
-                }
-            }
-        }   
-
+        $this->getImageExtractor()->extract($article);
         $this->getMetaExtractor()->extract($article);
         $this->getPublishDateExtractor()->extract($article);
         //$this->getAdditionalDataExtractor()->extract($article);
 
-        if ($article->getTopNode() instanceof DOMElement) {
-            $this->getOutputFormatter()->format($article);
-        }
+        // Post-extraction content formatting
+        $this->getOutputFormatter()->format($article);
 
         return $article;
     }

@@ -7,6 +7,7 @@ use Goose\Configuration;
 use Goose\DOM\DOMElement;
 use Goose\DOM\DOMDocument;
 use Goose\DOM\DOMNodeList;
+use Goose\Traits\ArticleMutatorTrait;
 
 /**
  * Image Extractor
@@ -15,6 +16,8 @@ use Goose\DOM\DOMNodeList;
  * @license http://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0
  */
 class ImageExtractor extends AbstractImageExtractor implements ImageExtractorInterface {
+    use ArticleMutatorTrait;
+
     /** @var string[] */
     private $badFileNames = [
         '\.html', '\.gif', '\.ico', 'button', 'twitter\.jpg', 'facebook\.jpg',
@@ -41,28 +44,44 @@ class ImageExtractor extends AbstractImageExtractor implements ImageExtractorInt
     /** @var int */
     private static $MAX_PARENT_DEPTH = 2;
 
+    /** @var string[] */
+    private static $CUSTOM_SITE_MAPPING = [];
+
+    public function extract(Article $article) {
+        $this->article($article);
+
+        if ($this->config->getEnableImageFetching()) {
+            $article->setTopImage($this->getBestImage());
+
+            if ($this->config->getEnableAllImagesFetching()
+              && $article->getTopNode() instanceof DOMElement) {
+                $article->setAllImages($this->getAllImages());
+            }
+        }
+    }
+
     /**
-     * @param Article $article
-     *
      * @return Image|null
      */
-    public function getBestImage(Article $article) {
-        $image = $this->checkForKnownElements($article);
+    private function getBestImage() {
+        $image = $this->checkForKnownElements();
 
         if ($image) {
             return $image;
         }
 
-        $image = $this->checkForMetaTag($article);
+        $image = $this->checkForMetaTag();
 
         if ($image) {
             return $image;
         }
 
-        $image = $this->checkForLargeImages($article, $article->getTopNode(), 0, 0);
+        if ($this->article()->getTopNode() instanceof DOMElement) {
+            $image = $this->checkForLargeImages($this->article()->getTopNode(), 0, 0);
 
-        if ($image) {
-            return $image;
+            if ($image) {
+                return $image;
+            }
         }
 
         return null;
@@ -72,24 +91,22 @@ class ImageExtractor extends AbstractImageExtractor implements ImageExtractorInt
      * Prefer Twitter images (as they tend to have the right size for us), then Open Graph images
      * (which seem to be smaller), and finally linked images.
      *
-     * @param Article $article
-     *
      * @return Image|null
      */
-    private function checkForMetaTag(Article $article) {
-        $image = $this->checkForTwitterTag($article);
+    private function checkForMetaTag() {
+        $image = $this->checkForTwitterTag();
 
         if ($image) {
             return $image;
         }
 
-        $image = $this->checkForOpenGraphTag($article);
+        $image = $this->checkForOpenGraphTag();
 
         if ($image) {
             return $image;
         }
 
-        $image = $this->checkForLinkTag($article);
+        $image = $this->checkForLinkTag();
 
         if ($image) {
             return $image;
@@ -107,17 +124,16 @@ class ImageExtractor extends AbstractImageExtractor implements ImageExtractorInt
      * 4. any images left over let's do a full GET request, download em to disk and check their dimensions
      * 5. Score images based on different factors like height/width and possibly things like color density
      *
-     * @param Article $article
      * @param DOMElement $node
      * @param int $parentDepthLevel
      * @param int $siblingDepthLevel
      *
      * @return Image|null
      */
-    private function checkForLargeImages(Article $article, DOMElement $node, $parentDepthLevel, $siblingDepthLevel) {
-        $goodImages = $this->getImageCandidates($article, $node);
+    private function checkForLargeImages(DOMElement $node, $parentDepthLevel, $siblingDepthLevel) {
+        $goodImages = $this->getImageCandidates($node);
 
-        $scoredImages = $this->downloadImagesAndGetResults($article, $goodImages, $parentDepthLevel);
+        $scoredImages = $this->downloadImagesAndGetResults($goodImages, $parentDepthLevel);
 
         ksort($scoredImages);
 
@@ -138,7 +154,7 @@ class ImageExtractor extends AbstractImageExtractor implements ImageExtractorInt
             $depthObj = $this->getDepthLevel($node, $parentDepthLevel, $siblingDepthLevel);
 
             if ($depthObj) {
-                return $this->checkForLargeImages($article, $depthObj->node, $depthObj->parentDepth, $depthObj->siblingDepth);
+                return $this->checkForLargeImages($depthObj->node, $depthObj->parentDepth, $depthObj->siblingDepth);
             }
         }
 
@@ -186,13 +202,12 @@ class ImageExtractor extends AbstractImageExtractor implements ImageExtractorInt
      * we'll also make sure to try and weed out banner type ad blocks that have big widths and small heights or vice versa
      * so if the image is 3rd found in the dom it's sequence score would be 1 / 3 = .33 * diff in area from the first image
      *
-     * @param Article $article
      * @param DOMElement[] $images
      * @param int $depthLevel
      *
      * @return LocallyStoredImage[]
      */
-    private function downloadImagesAndGetResults(Article $article, $images, $depthLevel) {
+    private function downloadImagesAndGetResults($images, $depthLevel) {
         $results = [];
         $i = 1;
         $initialArea = 0;
@@ -201,7 +216,7 @@ class ImageExtractor extends AbstractImageExtractor implements ImageExtractorInt
         $images = array_slice($images, 0, 30);
 
         foreach ($images as $image) {
-            $locallyStoredImage = $this->getLocallyStoredImage($this->buildImagePath($article, $image->getAttribute('src')));
+            $locallyStoredImage = $this->getLocallyStoredImage($this->buildImagePath($image->getAttribute('src')));
 
             if (!empty($locallyStoredImage) && $this->isWorthyImage($locallyStoredImage, $depthLevel)) {
                 $sequenceScore = 1 / $i;
@@ -242,18 +257,16 @@ class ImageExtractor extends AbstractImageExtractor implements ImageExtractorInt
     }
 
     /**
-     * @param Article $article
-     *
      * @return Image[]
      */
-    public function getAllImages(Article $article) {
+    private function getAllImages() {
         $results = [];
 
-        $images = $article->getTopNode()->filter('img');
+        $images = $this->article()->getTopNode()->filter('img');
 
         // Generate a complete URL for each image
-        $imageUrls = array_map(function($image) use ($article) {
-            return $this->buildImagePath($article, $image->getAttribute('src'));
+        $imageUrls = array_map(function($image) {
+            return $this->buildImagePath($image->getAttribute('src'));
         }, $images->toArray());
 
         $localImages = $this->getLocallyStoredImages($imageUrls);
@@ -347,15 +360,14 @@ class ImageExtractor extends AbstractImageExtractor implements ImageExtractorInt
     }
 
     /**
-     * @param Article $article
      * @param DOMElement $node
      *
      * @return DOMElement[]
      */
-    private function getImageCandidates(Article $article, DOMElement $node) {
+    private function getImageCandidates(DOMElement $node) {
         $images = $node->filter('img');
         $filteredImages = $this->filterBadNames($images);
-        $goodImages = $this->findImagesThatPassByteSizeTest($article, $filteredImages);
+        $goodImages = $this->findImagesThatPassByteSizeTest($filteredImages);
 
         return $goodImages;
     }
@@ -363,20 +375,19 @@ class ImageExtractor extends AbstractImageExtractor implements ImageExtractorInt
     /**
      * loop through all the images and find the ones that have the best bytes to even make them a candidate
      *
-     * @param Article $article
      * @param DOMElement[] $images
      *
      * @return DOMElement[]
      */
-    private function findImagesThatPassByteSizeTest(Article $article, $images) {
+    private function findImagesThatPassByteSizeTest($images) {
         $i = 0; /** @todo Re-factor how the LocallyStoredImage => Image relation works ? Note: PHP 5.6.x adds a 3rd argument to array_filter() to pass the key as well as value. */
 
         // Limit to the first 30 images
         $images = array_slice($images, 0, 30);
 
         // Generate a complete URL for each image
-        $imageUrls = array_map(function($image) use ($article) {
-            return $this->buildImagePath($article, $image->getAttribute('src'));
+        $imageUrls = array_map(function($image) {
+            return $this->buildImagePath($image->getAttribute('src'));
         }, $images);
 
         $localImages = $this->getLocallyStoredImages($imageUrls, true);
@@ -401,46 +412,39 @@ class ImageExtractor extends AbstractImageExtractor implements ImageExtractorInt
     /**
      * checks to see if we were able to find feature image tags on this page
      *
-     * @param Article $article
-     *
      * @return Image|null
      */
-    private function checkForLinkTag(Article $article) {
-        return $this->checkForTag($article, 'link[rel="image_src"]', 'href', 'linktag');
+    private function checkForLinkTag() {
+        return $this->checkForTag('link[rel="image_src"]', 'href', 'linktag');
     }
 
     /**
      * checks to see if we were able to find open graph tags on this page
      *
-     * @param Article $article
-     *
      * @return Image|null
      */
-    private function checkForOpenGraphTag(Article $article) {
-        return $this->checkForTag($article, 'meta[property="og:image"],meta[name="og:image"]', 'content', 'opengraph');
+    private function checkForOpenGraphTag() {
+        return $this->checkForTag('meta[property="og:image"],meta[name="og:image"]', 'content', 'opengraph');
     }
 
     /**
      * checks to see if we were able to find twitter tags on this page
      *
-     * @param Article $article
-     *
      * @return Image|null
      */
-    private function checkForTwitterTag(Article $article) {
-        return $this->checkForTag($article, 'meta[property="twitter:image"],meta[name="twitter:image"],meta[property="twitter:image:src"],meta[name="twitter:image:src"]', 'content', 'twitter');
+    private function checkForTwitterTag() {
+        return $this->checkForTag('meta[property="twitter:image"],meta[name="twitter:image"],meta[property="twitter:image:src"],meta[name="twitter:image:src"]', 'content', 'twitter');
     }
 
     /**
-     * @param Article $article
      * @param string $selector
      * @param string $attr
      * @param string $type
      *
      * @return Image|null
      */
-    private function checkForTag(Article $article, $selector, $attr, $type) {
-        $meta = $article->getRawDoc()->filter($selector);
+    private function checkForTag($selector, $attr, $type) {
+        $meta = $this->article()->getRawDoc()->filter($selector);
 
         if (!$meta->count()) {
             return null;
@@ -456,7 +460,7 @@ class ImageExtractor extends AbstractImageExtractor implements ImageExtractorInt
             return null;
         }
 
-        $imagePath = $this->buildImagePath($article, $node->getAttribute($attr));
+        $imagePath = $this->buildImagePath($node->getAttribute($attr));
         $mainImage = new Image();
         $mainImage->setImageSrc($imagePath);
         $mainImage->setImageExtractionType($type);
@@ -493,7 +497,7 @@ class ImageExtractor extends AbstractImageExtractor implements ImageExtractorInt
      *
      * @return LocallyStoredImage|null
      */
-    public function getLocallyStoredImage($imageSrc, $returnAll = false) {
+    private function getLocallyStoredImage($imageSrc, $returnAll = false) {
         $locallyStoredImages = ImageUtils::storeImagesToLocalFile([$imageSrc], $returnAll, $this->config);
 
         return array_shift($locallyStoredImages);
@@ -505,36 +509,33 @@ class ImageExtractor extends AbstractImageExtractor implements ImageExtractorInt
      *
      * @return LocallyStoredImage[]
      */
-    public function getLocallyStoredImages($imageSrcs, $returnAll = false) {
+    private function getLocallyStoredImages($imageSrcs, $returnAll = false) {
         return ImageUtils::storeImagesToLocalFile($imageSrcs, $returnAll, $this->config);
     }
 
     /**
-     * @param Article $article
-     *
      * @return string
      */
-    public function getCleanDomain($article) {
-        return implode('.', array_slice(explode('.', $article->getDomain()), -2, 2));
+    private function getCleanDomain() {
+        return implode('.', array_slice(explode('.', $this->article()->getDomain()), -2, 2));
     }
 
     /**
-     * in here we check for known image contains from sites we've checked out like yahoo, techcrunch, etc... that have
+     * In here we check for known image contains from sites we've checked out like yahoo, techcrunch, etc... that have
      * known  places to look for good images.
-     * //todo enable this to use a series of settings files so people can define what the image ids/classes are on specific sites
      *
-     * @param Article $article
+     * @todo enable this to use a series of settings files so people can define what the image ids/classes are on specific sites
      *
      * @return Image|null
      */
-    public function checkForKnownElements(Article $article) {
-        if (!$article->getRawDoc()) {
+    private function checkForKnownElements() {
+        if (!$this->article()->getRawDoc()) {
             return null;
         }
 
         $knownImgDomNames = self::$KNOWN_IMG_DOM_NAMES;
 
-        $domain = $this->getCleanDomain($article);
+        $domain = $this->getCleanDomain();
 
         $customSiteMapping = $this->customSiteMapping();
 
@@ -547,10 +548,10 @@ class ImageExtractor extends AbstractImageExtractor implements ImageExtractorInt
         $knownImage = null;
 
         foreach ($knownImgDomNames as $knownName) {
-            $known = $article->getRawDoc()->filter('#' . $knownName);
+            $known = $this->article()->getRawDoc()->filter('#' . $knownName);
 
             if (!$known->count()) {
-                $known = $article->getRawDoc()->filter('.' . $knownName);
+                $known = $this->article()->getRawDoc()->filter('.' . $knownName);
             }
 
             if ($known->count()) {
@@ -569,7 +570,7 @@ class ImageExtractor extends AbstractImageExtractor implements ImageExtractorInt
         $knownImgSrc = $knownImage->getAttribute('src');
 
         $mainImage = new Image();
-        $mainImage->setImageSrc($this->buildImagePath($article, $knownImgSrc));
+        $mainImage->setImageSrc($this->buildImagePath($knownImgSrc));
         $mainImage->setImageExtractionType('known');
         $mainImage->setConfidenceScore(90);
 
@@ -588,20 +589,16 @@ class ImageExtractor extends AbstractImageExtractor implements ImageExtractorInt
      * This method will take an image path and build out the absolute path to that image
      * using the initial url we crawled so we can find a link to the image if they use relative urls like ../myimage.jpg
      *
-     * @param Article $article
      * @param string $imageSrc
      *
      * @return string
      */
-    private function buildImagePath(Article $article, $imageSrc) {
-        $articleUrlParts = parse_url($article->getFinalUrl());
+    private function buildImagePath($imageSrc) {
+        $articleUrlParts = parse_url($this->article()->getFinalUrl());
         $imageUrlParts = parse_url($imageSrc);
 
         return http_build_url($articleUrlParts, $imageUrlParts, HTTP_URL_JOIN_PATH);
     }
-
-    /** @var string[] */
-    private static $CUSTOM_SITE_MAPPING = [];
 
     /**
      * @param string[]
