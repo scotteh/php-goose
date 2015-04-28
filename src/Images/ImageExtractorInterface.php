@@ -1,6 +1,6 @@
 <?php
 
-namespace Goose\Extractors;
+namespace Goose\Images;
 
 use Goose\Article;
 use Goose\Configuration;
@@ -8,10 +8,10 @@ use Goose\Configuration;
 /**
  * Extractor Interface
  *
- * @package Goose\Extractors
+ * @package Goose\Images
  * @license http://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0
  */
-interface ExtractorInterface {
+interface ImageExtractorInterface {
     /**
      * @param Configuration $config
      */
@@ -19,6 +19,8 @@ interface ExtractorInterface {
 
     /**
      * @param Article $article
+     *
+     * @return Image|null
      */
-    public function extract(Article $article);
+    public function getBestImage(Article $article);
 }

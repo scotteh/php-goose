@@ -1,24 +1,28 @@
 <?php
 
-namespace Goose\Extractors;
+namespace Goose\Cleaners;
 
 use Goose\Article;
 use Goose\Configuration;
 
 /**
- * Extractor Interface
+ * Cleaner Interface
  *
- * @package Goose\Extractors
+ * @package Goose\Cleaners
  * @license http://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0
  */
-interface ExtractorInterface {
+interface CleanerInterface {
     /**
      * @param Configuration $config
      */
     public function __construct(Configuration $config);
 
     /**
+     * Clean the contents of the supplied article document
+     *
      * @param Article $article
+     *
+     * @return \Goose\DOM\DOMDocument $doc
      */
-    public function extract(Article $article);
+    public function clean(Article $article);
 }

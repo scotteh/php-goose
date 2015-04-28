@@ -1,28 +1,24 @@
 <?php
 
-namespace Goose\Cleaners;
+namespace Goose\Formatters;
 
 use Goose\Article;
 use Goose\Configuration;
 
 /**
- * Document Cleaner Interface
+ * Formatter Interface
  *
- * @package Goose\Cleaners
+ * @package Goose\Formatters
  * @license http://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0
  */
-interface DocumentCleanerInterface {
+interface FormatterInterface {
     /**
      * @param Configuration $config
      */
     public function __construct(Configuration $config);
 
     /**
-     * Clean the contents of the supplied article document
-     *
      * @param Article $article
-     *
-     * @return \Goose\DOM\DOMDocument $doc
      */
-    public function clean(Article $article);
+    public function format(Article $article);
 }

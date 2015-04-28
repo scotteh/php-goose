@@ -2,7 +2,7 @@
 
 namespace Goose;
 
-use Goose\Extractors\StandardContentExtractor;
+use Goose\Extractors\ContentExtractor;
 use Goose\Extractors\PublishDateExtractor;
 use Goose\Extractors\AdditionalDataExtractor;
 use Goose\Text\StopWords;
@@ -18,7 +18,7 @@ class Configuration {
      * @param mixed[] $options
      */
     public function __construct($options = []) {
-        $this->contentExtractor = new StandardContentExtractor($this);
+        $this->contentExtractor = new ContentExtractor($this);
         $this->publishDateExtractor = new PublishDateExtractor($this);
         $this->additionalDataExtractor = new AdditionalDataExtractor($this);
 

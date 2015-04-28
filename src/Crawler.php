@@ -7,10 +7,12 @@ use Goose\Utils\URLHelper;
 use Goose\DOM\DOMElement;
 use Goose\DOM\DOMDocument;
 use Goose\Images\Image;
-use Goose\Images\StandardImageExtractor;
+use Goose\Images\ImageExtractor;
+use Goose\Extractors\MetaExtractor;
+use Goose\Extractors\PublishDateExtractor;
 use Goose\Extractors\ExtractorInterface;
-use Goose\Cleaners\StandardDocumentCleaner;
-use Goose\OutputFormatters\StandardOutputFormatter;
+use Goose\Cleaners\DocumentCleaner;
+use Goose\Formatters\OutputFormatter;
 
 /**
  * Crawler
@@ -46,12 +48,6 @@ class Crawler {
 
         $doc = $this->getDocument($rawHTML);
 
-        $documentCleaner = $this->getDocumentCleaner();
-        $outputFormatter = $this->getOutputFormatter();
-        $contentExtractor = $this->getContentExtractor();
-        $publishDateExtractor = $this->config->getPublishDateExtractor();
-        $additionalDataExtractor = $this->config->getAdditionalDataExtractor();
-
         $article->setFinalUrl($parseCandidate->url);
         $article->setDomain($parseCandidate->parts->host);
         $article->setLinkhash($parseCandidate->linkhash);
@@ -59,35 +55,11 @@ class Crawler {
         $article->setDoc($doc);
         $article->setRawDoc(clone $doc);
 
-        $language = $contentExtractor->getMetaLanguage($article);
+        $this->getDocumentCleaner()->clean($article);
 
-        $this->config->setLanguage($language);
+        $this->getContentExtractor()->extract($article);
 
-        $article->setLanguage($language);
-        $article->setTitle($contentExtractor->getTitle($article));
-        $article->setMetaDescription($contentExtractor->getMetaDescription($article));
-        $article->setMetaKeywords($contentExtractor->getMetaKeywords($article));
-        $article->setCanonicalLink($contentExtractor->getCanonicalLink($article));
-        $article->setTags($contentExtractor->extractTags($article));
-
-        if ($publishDateExtractor instanceof ExtractorInterface) {
-            $article->setPublishDate($publishDateExtractor->extract($article));
-        }
-
-        if ($additionalDataExtractor instanceof ExtractorInterface) {
-            $article->setAdditionalData($additionalDataExtractor->extract($article));
-        }
-
-        $documentCleaner->clean($article);
-
-        $topNode = $contentExtractor->getBestNode($article);
-
-        if ($topNode instanceof DOMElement) {
-            $article->setTopNode($topNode);
-
-            $article->setMovies($contentExtractor->extractVideos($article->getTopNode()));
-            $article->setLinks($contentExtractor->extractLinks($article->getTopNode()));
-
+        if ($article->getTopNode() instanceof DOMElement) {
             if ($this->config->getEnableImageFetching()) {
                 $imageExtractor = $this->getImageExtractor();
 
@@ -101,14 +73,15 @@ class Crawler {
                     $article->setAllImages($imageExtractor->getAllImages($article));
                 }
             }
+        }   
 
-            $contentExtractor->postExtractionCleanup($article->getTopNode());
+        $this->getMetaExtractor()->extract($article);
+        $this->getPublishDateExtractor()->extract($article);
+        //$this->getAdditionalDataExtractor()->extract($article);
 
-            $article->setCleanedArticleText($outputFormatter->getFormattedText($article->getTopNode()));
-            $article->setHtmlArticle($outputFormatter->cleanupHtml($article->getTopNode()));
+        if ($article->getTopNode() instanceof DOMElement) {
+            $this->getOutputFormatter()->format($article);
         }
-
-        $article->setPopularWords($contentExtractor->getPopularWords($article));
 
         return $article;
     }
@@ -135,21 +108,21 @@ class Crawler {
      * @return ImageExtractor
      */
     private function getImageExtractor() {
-        return new StandardImageExtractor($this->config);
+        return new ImageExtractor($this->config);
     }
 
     /**
      * @return OutputFormatter
      */
     private function getOutputFormatter() {
-        return new StandardOutputFormatter($this->config);
+        return new OutputFormatter($this->config);
     }
 
     /**
      * @return DocumentCleaner
      */
     private function getDocumentCleaner() {
-        return new StandardDocumentCleaner($this->config);
+        return new DocumentCleaner($this->config);
     }
 
     /**
@@ -169,6 +142,20 @@ class Crawler {
      */
     private function getContentExtractor() {
         return $this->config->getContentExtractor();
+    }
+
+    /**
+     * @return MetaExtractor
+     */
+    private function getMetaExtractor() {
+        return new MetaExtractor($this->config);
+    }
+
+    /**
+     * @return PublishDateExtractor
+     */
+    private function getPublishDateExtractor() {
+        return new PublishDateExtractor($this->config);
     }
 }
 

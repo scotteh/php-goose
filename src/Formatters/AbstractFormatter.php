@@ -1,18 +1,19 @@
 <?php
 
-namespace Goose\Extractors;
+namespace Goose\Formatters;
 
+use Goose\Article;
 use Goose\Configuration;
 
 /**
- * Extractor
+ * Abstract Formatter
  *
- * @package Goose\Extractors
+ * @package Goose\Formatters
  * @license http://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0
  */
-class Extractor {
+abstract class AbstractFormatter {
     /** @var Configuration */
-    private $config;
+    protected $config;
 
     /**
      * @param Configuration $config

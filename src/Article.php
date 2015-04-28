@@ -236,20 +236,20 @@ class Article {
     }
 
     /**
-     * List of any movies we found on the page like youtube, vimeo
+     * List of any videos we found on the page like youtube, vimeo
      *
      * @var string[]
      */
-    protected $movies = [];
+    protected $videos = [];
 
-    /** @param string[] $movies */
-    public function setMovies($movies) {
-        $this->movies = $movies;
+    /** @param string[] $videos */
+    public function setVideos($videos) {
+        $this->videos = $videos;
     }
 
     /** @return string[] */
-    public function getMovies() {
-        return $this->movies;
+    public function getVideos() {
+        return $this->videos;
     }
 
     /**
