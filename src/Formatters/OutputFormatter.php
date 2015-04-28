@@ -184,8 +184,6 @@ class OutputFormatter extends AbstractFormatter implements FormatterInterface {
 
     /**
      * Remove any divs that looks like non-content, clusters of links, or paras with no gusto
-     *
-     * @param DOMElement $topNode
      */
     public function postExtractionCleanup() {
         $this->addSiblings($this->article()->getTopNode());

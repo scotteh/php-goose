@@ -232,8 +232,6 @@ class MetaExtractor extends AbstractExtractor implements ExtractorInterface {
     /**
      * Pulls out videos we like
      *
-     * @param DOMElement $node
-     *
      * @return string[]
      */
     private function getVideos() {

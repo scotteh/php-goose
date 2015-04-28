@@ -17,7 +17,7 @@ trait ArticleMutatorTrait {
     /**
      * @param Article $article
      *
-     * @return Article|null
+     * @return Article
      */
     protected function article(Article $article = null) {
         if ($article === null) {

@@ -31,6 +31,10 @@ class PublishDateExtractor extends AbstractExtractor implements ExtractorInterfa
             $dt = \DateTime::createFromFormat('Y' . $matches['delimiter'] . 'm' . $matches['delimiter'] . 'd', $matches[0]);
             $dt->setTime(0, 0, 0);
 
+            if ($dt === false) {
+                return null;
+            }
+
             return $dt;
         }
 

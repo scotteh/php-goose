@@ -153,16 +153,16 @@ class Article {
     /**
      * Top Element we think is a candidate for the main body of the article
      *
-     * @var DOMElement
+     * @var DOMElement|null
      */
     protected $topNode;
 
-    /** @param DOMElement $topNode */
+    /** @param DOMElement|null $topNode */
     public function setTopNode(DOMElement $topNode) {
         $this->topNode = $topNode;
     }
 
-    /** @return DOMElement */
+    /** @return DOMElement|null */
     public function getTopNode() {
         return $this->topNode;
     }
@@ -342,16 +342,16 @@ class Article {
     /**
      * Sometimes useful to try and know when the publish date of an article was
      *
-     * @var \DateTime
+     * @var \DateTime|null
      */
     protected $publishDate;
 
-    /** @param \DateTime $publishDate */
+    /** @param \DateTime|null $publishDate */
     public function setPublishDate($publishDate) {
         $this->publishDate = $publishDate;
     }
 
-    /** @return \DateTime */
+    /** @return \DateTime|null */
     public function getPublishDate() {
         return $this->publishDate;
     }

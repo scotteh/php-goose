@@ -21,8 +21,6 @@ interface CleanerInterface {
      * Clean the contents of the supplied article document
      *
      * @param Article $article
-     *
-     * @return \Goose\DOM\DOMDocument $doc
      */
     public function clean(Article $article);
 }
