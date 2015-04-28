@@ -49,9 +49,13 @@ class MetaExtractor extends AbstractExtractor implements ExtractorInterface {
         $article->setMetaKeywords($this->getMetaKeywords());
         $article->setCanonicalLink($this->getCanonicalLink());
         $article->setTags($this->getTags());
-        $article->setVideos($this->getVideos());
-        $article->setLinks($this->getLinks());
-        $article->setPopularWords($this->getPopularWords());
+
+        if ($this->article()->getTopNode() instanceof DOMElement) {
+            $article->setVideos($this->getVideos());
+            $article->setLinks($this->getLinks());
+            $article->setPopularWords($this->getPopularWords());
+        }
+
         $article->setLanguage($this->getMetaLanguage());
 
         $this->config->setLanguage($article->getLanguage());
@@ -65,28 +69,25 @@ class MetaExtractor extends AbstractExtractor implements ExtractorInterface {
 
         if (!$nodes->count()) return '';
 
-        $titleText = $nodes->first()->text(DOM_NODE_TEXT_NORMALISED);
+        $title = $nodes->first()->text(DOM_NODE_TEXT_NORMALISED);
 
         foreach (self::$SPLITTER_CHARS as $char) {
-            if (strpos($titleText, $char) !== false) {
-                $length = 0;
-
-                $parts = explode($char, $titleText);
-
-                foreach ($parts as $part) {
-                    if (mb_strlen($part) > $length) {
-                        $length = mb_strlen($part);
-                        $titleText = $part;
+            if (strpos($title, $char) !== false) {
+                $title = array_reduce(explode($char, $title), function($carry, $item) {
+                    if (mb_strlen($item) > mb_strlen($carry)) {
+                        return $item;
                     }
-                }
 
-                if ($length > 0) {
+                    return $carry;
+                });
+
+                if (!empty($title)) {
                     break;
                 }
             }
         }
 
-        return trim($titleText);
+        return trim($title);
     }
 
     /**

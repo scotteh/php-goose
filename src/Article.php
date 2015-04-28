@@ -158,7 +158,7 @@ class Article {
     protected $topNode;
 
     /** @param DOMElement|null $topNode */
-    public function setTopNode(DOMElement $topNode) {
+    public function setTopNode(DOMElement $topNode = null) {
         $this->topNode = $topNode;
     }
 
@@ -347,7 +347,7 @@ class Article {
     protected $publishDate;
 
     /** @param \DateTime|null $publishDate */
-    public function setPublishDate($publishDate) {
+    public function setPublishDate(\DateTime $publishDate = null) {
         $this->publishDate = $publishDate;
     }
 

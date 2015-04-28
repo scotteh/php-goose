@@ -6,16 +6,16 @@ use Goose\Article;
 use Goose\Configuration;
 use Goose\DOM\DOMElement;
 use Goose\DOM\DOMDocument;
-use Goose\Cleaners\StandardDocumentCleaner;
+use Goose\Cleaners\DocumentCleaner;
 
-class StandardDocumentCleanerTest extends \PHPUnit_Framework_TestCase
+class DocumentCleanerTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @dataProvider removeCommentsProvider
      */
     public function testRemoveComments($expected, $article, $message)
     {
-        $obj = new StandardDocumentCleaner($this->config());
+        $obj = new DocumentCleaner($this->config());
 
         $obj->clean($article);
 
@@ -46,7 +46,7 @@ class StandardDocumentCleanerTest extends \PHPUnit_Framework_TestCase
      */
     public function testCleanTextTags($expected, $article, $message)
     {
-        $obj = new StandardDocumentCleaner($this->config());
+        $obj = new DocumentCleaner($this->config());
 
         $obj->clean($article);
 
@@ -77,7 +77,7 @@ class StandardDocumentCleanerTest extends \PHPUnit_Framework_TestCase
      */
     public function testCleanUpSpanTagsInParagraphs($expected, $article, $message)
     {
-        $obj = new StandardDocumentCleaner($this->config());
+        $obj = new DocumentCleaner($this->config());
 
         $obj->clean($article);
 
@@ -108,7 +108,7 @@ class StandardDocumentCleanerTest extends \PHPUnit_Framework_TestCase
      */
     public function testRemoveScriptsAndStyles($expected, $article, $message)
     {
-        $obj = new StandardDocumentCleaner($this->config());
+        $obj = new DocumentCleaner($this->config());
 
         $obj->clean($article);
 
@@ -149,7 +149,7 @@ class StandardDocumentCleanerTest extends \PHPUnit_Framework_TestCase
      */
     public function testRemoveDropCaps($expected, $article, $message)
     {
-        $obj = new StandardDocumentCleaner($this->config());
+        $obj = new DocumentCleaner($this->config());
 
         $obj->clean($article);
 
@@ -185,7 +185,7 @@ class StandardDocumentCleanerTest extends \PHPUnit_Framework_TestCase
      */
     public function testRemoveUselessTags($expected, $article, $message)
     {
-        $obj = new StandardDocumentCleaner($this->config());
+        $obj = new DocumentCleaner($this->config());
 
         $obj->clean($article);
 
@@ -226,7 +226,7 @@ class StandardDocumentCleanerTest extends \PHPUnit_Framework_TestCase
      */
     public function testCleanBadTags($expected, $article, $message)
     {
-        $obj = new StandardDocumentCleaner($this->config());
+        $obj = new DocumentCleaner($this->config());
 
         $obj->clean($article);
 
@@ -302,7 +302,7 @@ class StandardDocumentCleanerTest extends \PHPUnit_Framework_TestCase
      */
     public function testRemoveNodesViaFilter($expected, $article, $message)
     {
-        $obj = new StandardDocumentCleaner($this->config());
+        $obj = new DocumentCleaner($this->config());
 
         $obj->clean($article);
 
@@ -343,7 +343,7 @@ class StandardDocumentCleanerTest extends \PHPUnit_Framework_TestCase
      */
     public function testConvertWantedTagsToParagraphs($expected, $article, $message)
     {
-        $obj = new StandardDocumentCleaner($this->config());
+        $obj = new DocumentCleaner($this->config());
 
         $obj->clean($article);
 
@@ -400,7 +400,7 @@ class StandardDocumentCleanerTest extends \PHPUnit_Framework_TestCase
      * /
     public function testConvertDivsToParagraphs($expected, $article, $message)
     {
-        $obj = new StandardDocumentCleaner($this->config());
+        $obj = new DocumentCleaner($this->config());
 
         $this->assertEquals(
             $this->html($expected),
