@@ -38,7 +38,7 @@ class OutputFormatter extends AbstractFormatter implements FormatterInterface {
      *
      * @return string Formatted string with all HTML removed
      */
-    public function getFormattedText() {
+    private function getFormattedText() {
         $this->removeNodesWithNegativeScores($this->article()->getTopNode());
         $this->convertLinksToText($this->article()->getTopNode());
         $this->replaceTagsWithText($this->article()->getTopNode());
@@ -187,7 +187,7 @@ class OutputFormatter extends AbstractFormatter implements FormatterInterface {
     /**
      * Remove any divs that looks like non-content, clusters of links, or paras with no gusto
      */
-    public function postExtractionCleanup() {
+    private function postExtractionCleanup() {
         $this->addSiblings($this->article()->getTopNode());
 
         foreach ($this->article()->getTopNode()->children() as $node) {
