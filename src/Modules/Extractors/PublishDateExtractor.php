@@ -1,17 +1,19 @@
 <?php
 
-namespace Goose\Extractors;
+namespace Goose\Modules\Extractors;
 
 use Goose\Article;
 use Goose\Traits\ArticleMutatorTrait;
+use Goose\Modules\AbstractModule;
+use Goose\Modules\ModuleInterface;
 
 /**
  * Publish Date Extractor
  *
- * @package Goose\Extractors
+ * @package Goose\Modules\Extractors
  * @license http://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0
  */
-class PublishDateExtractor extends AbstractExtractor implements ExtractorInterface {
+class PublishDateExtractor extends AbstractModule implements ModuleInterface {
     use ArticleMutatorTrait;
 
     /**
@@ -19,7 +21,7 @@ class PublishDateExtractor extends AbstractExtractor implements ExtractorInterfa
      *
      * @return DateTime
      */
-    public function extract(Article $article) {
+    public function run(Article $article) {
         $this->article($article);
 
         $article->setPublishDate($this->getDateFromURL());

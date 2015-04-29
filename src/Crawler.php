@@ -32,6 +32,13 @@ class Crawler {
     }
 
     /**
+     * @return Configuration
+     */
+    public function config() {
+        return $this->config;
+    }
+
+    /**
      * @param string $url
      * @param string|null $rawHTML
      *
@@ -58,17 +65,13 @@ class Crawler {
         $article->setRawDoc(clone $doc);
 
         // Pre-extraction document cleaning
-        $this->getDocumentCleaner()->clean($article);
+        $this->modules('cleaners', $article);
 
         // Extract content
-        $this->getContentExtractor()->extract($article);
-        $this->getImageExtractor()->extract($article);
-        $this->getMetaExtractor()->extract($article);
-        $this->getPublishDateExtractor()->extract($article);
-        //$this->getAdditionalDataExtractor()->extract($article);
+        $this->modules('extractors', $article);
 
         // Post-extraction content formatting
-        $this->getOutputFormatter()->format($article);
+        $this->modules('formatters', $article);
 
         return $article;
     }
@@ -79,37 +82,12 @@ class Crawler {
      * @return string
      */
     private function getHTML($url) {
-        $config = $this->config->getGuzzle();
-
-        if (!is_array($config)) {
-            $config = [];
-        }
+        $options = $this->config()->get('browser');
 
         $guzzle = new GuzzleClient();
-        $response = $guzzle->get($url, $config);
+        $response = $guzzle->get($url, $options);
 
         return $response->getBody();
-    }
-
-    /**
-     * @return ImageExtractor
-     */
-    private function getImageExtractor() {
-        return new ImageExtractor($this->config);
-    }
-
-    /**
-     * @return OutputFormatter
-     */
-    private function getOutputFormatter() {
-        return new OutputFormatter($this->config);
-    }
-
-    /**
-     * @return DocumentCleaner
-     */
-    private function getDocumentCleaner() {
-        return new DocumentCleaner($this->config);
     }
 
     /**
@@ -125,24 +103,16 @@ class Crawler {
     }
 
     /**
-     * @return ContentExtractor
+     * @param string $category
+     * @param Article $article
      */
-    private function getContentExtractor() {
-        return $this->config->getContentExtractor();
-    }
+    public function modules($category, $article) {
+        $modules = $this->config->getModules($category);
 
-    /**
-     * @return MetaExtractor
-     */
-    private function getMetaExtractor() {
-        return new MetaExtractor($this->config);
-    }
-
-    /**
-     * @return PublishDateExtractor
-     */
-    private function getPublishDateExtractor() {
-        return new PublishDateExtractor($this->config);
+        foreach ($modules as $module) {
+            $obj = new $module($this->config());
+            $obj->run($article);
+        }
     }
 }
 

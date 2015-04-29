@@ -97,11 +97,7 @@ class ImageUtils {
         foreach ($imageSrcs as $imageSrc) {
             $file = tempnam(sys_get_temp_dir(), 'goose');
 
-            $options = $config->getGuzzle();
-
-            if (!is_array($options)) {
-                $options = [];
-            }
+            $options = $config->get('browser');
 
             $options['save_to'] = $file;
 

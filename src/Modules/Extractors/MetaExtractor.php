@@ -1,21 +1,22 @@
 <?php
 
-namespace Goose\Extractors;
+namespace Goose\Modules\Extractors;
 
 use Goose\Article;
-use Goose\Configuration;
 use Goose\DOM\DOMDocument;
 use Goose\DOM\DOMElement;
 use Goose\DOM\DOMNodeList;
 use Goose\Traits\ArticleMutatorTrait;
+use Goose\Modules\AbstractModule;
+use Goose\Modules\ModuleInterface;
 
 /**
  * Content Extractor
  *
- * @package Goose\Extractors
+ * @package Goose\Modules\Extractors
  * @license http://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0
  */
-class MetaExtractor extends AbstractExtractor implements ExtractorInterface {
+class MetaExtractor extends AbstractModule implements ModuleInterface {
     use ArticleMutatorTrait;
 
     /** @var string[] */
@@ -41,7 +42,7 @@ class MetaExtractor extends AbstractExtractor implements ExtractorInterface {
     /**
      * @param Article $article
      */
-    public function extract(Article $article) {
+    public function run(Article $article) {
         $this->article($article);
 
         $article->setTitle($this->getTitle());
@@ -58,7 +59,7 @@ class MetaExtractor extends AbstractExtractor implements ExtractorInterface {
 
         $article->setLanguage($this->getMetaLanguage());
 
-        $this->config->setLanguage($article->getLanguage());
+        $this->config()->set('language', $article->getLanguage());
     }
 
     /**
@@ -290,7 +291,7 @@ class MetaExtractor extends AbstractExtractor implements ExtractorInterface {
     private function getPopularWords() {
         $limit = 5;
         $minimumFrequency = 1;
-        $stopWords = $this->config->getStopWords()->getCurrentStopWords();
+        $stopWords = $this->config()->getStopWords()->getCurrentStopWords();
 
         $text = $this->article()->getTitle();
         $text .= ' ' . $this->article()->getMetaDescription();

@@ -1,17 +1,16 @@
 <?php
 
-namespace Goose\Formatters;
+namespace Goose\Modules;
 
-use Goose\Article;
 use Goose\Configuration;
 
 /**
  * Abstract Formatter
  *
- * @package Goose\Formatters
+ * @package Goose\Modules
  * @license http://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0
  */
-abstract class AbstractFormatter {
+abstract class AbstractModule {
     /** @var Configuration */
     protected $config;
 
@@ -20,5 +19,12 @@ abstract class AbstractFormatter {
      */
     public function __construct(Configuration $config) {
         $this->config = $config;
+    }
+
+    /**
+     * @return Configuration
+     */
+    public function config() {
+        return $this->config;
     }
 }

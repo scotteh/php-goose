@@ -1,21 +1,25 @@
 <?php
 
-namespace Goose\Images;
+namespace Goose\Modules\Images;
 
 use Goose\Article;
 use Goose\Configuration;
 use Goose\DOM\DOMElement;
 use Goose\DOM\DOMDocument;
 use Goose\DOM\DOMNodeList;
+use Goose\Images\Image;
+use Goose\Images\ImageUtils;
 use Goose\Traits\ArticleMutatorTrait;
+use Goose\Modules\AbstractModule;
+use Goose\Modules\ModuleInterface;
 
 /**
  * Image Extractor
  *
- * @package Goose\Images
+ * @package Goose\Modules\Images
  * @license http://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0
  */
-class ImageExtractor extends AbstractImageExtractor implements ImageExtractorInterface {
+class ImageExtractor extends AbstractModule implements ModuleInterface {
     use ArticleMutatorTrait;
 
     /** @var string[] */
@@ -47,13 +51,13 @@ class ImageExtractor extends AbstractImageExtractor implements ImageExtractorInt
     /** @var string[] */
     private static $CUSTOM_SITE_MAPPING = [];
 
-    public function extract(Article $article) {
+    public function run(Article $article) {
         $this->article($article);
 
-        if ($this->config->getEnableImageFetching()) {
+        if ($this->config()->get('image_fetch_best')) {
             $article->setTopImage($this->getBestImage());
 
-            if ($this->config->getEnableAllImagesFetching()
+            if ($this->config()->get('image_fetch_all')
               && $article->getTopNode() instanceof DOMElement) {
                 $article->setAllImages($this->getAllImages());
             }
@@ -397,7 +401,7 @@ class ImageExtractor extends AbstractImageExtractor implements ImageExtractorInt
 
             $bytes = $localImage->getBytes();
 
-            if ($bytes < $this->config->getMinBytesForImages() && $bytes != 0 || $bytes > self::$MAX_BYTES_SIZE) {
+            if ($bytes < $this->config()->get('image_min_bytes') && $bytes != 0 || $bytes > self::$MAX_BYTES_SIZE) {
                 $image->remove();
 
                 return false;
@@ -483,8 +487,8 @@ class ImageExtractor extends AbstractImageExtractor implements ImageExtractorInt
      * @return Image|null
      */
     private function ensureMinimumImageSize(Image $mainImage) {
-        if ($mainImage->getWidth() >= $this->config->getMinWidth()
-          && $mainImage->getHeight() >= $this->config->getMinHeight()) {
+        if ($mainImage->getWidth() >= $this->config()->get('image_min_width')
+          && $mainImage->getHeight() >= $this->config()->get('image_min_height')) {
             return $mainImage;
         }
 
@@ -498,7 +502,7 @@ class ImageExtractor extends AbstractImageExtractor implements ImageExtractorInt
      * @return LocallyStoredImage|null
      */
     private function getLocallyStoredImage($imageSrc, $returnAll = false) {
-        $locallyStoredImages = ImageUtils::storeImagesToLocalFile([$imageSrc], $returnAll, $this->config);
+        $locallyStoredImages = ImageUtils::storeImagesToLocalFile([$imageSrc], $returnAll, $this->config());
 
         return array_shift($locallyStoredImages);
     }
@@ -510,7 +514,7 @@ class ImageExtractor extends AbstractImageExtractor implements ImageExtractorInt
      * @return LocallyStoredImage[]
      */
     private function getLocallyStoredImages($imageSrcs, $returnAll = false) {
-        return ImageUtils::storeImagesToLocalFile($imageSrcs, $returnAll, $this->config);
+        return ImageUtils::storeImagesToLocalFile($imageSrcs, $returnAll, $this->config());
     }
 
     /**
@@ -605,7 +609,7 @@ class ImageExtractor extends AbstractImageExtractor implements ImageExtractorInt
      */
     private function customSiteMapping() {
         if (empty(self::$CUSTOM_SITE_MAPPING)) {
-            $file = __DIR__ . '/../../resources/images/known-image-css.txt';
+            $file = __DIR__ . '/../../../resources/images/known-image-css.txt';
 
             $lines = explode("\n", str_replace(["\r\n", "\r"], "\n", file_get_contents($file)));
 

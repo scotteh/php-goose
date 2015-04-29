@@ -1,19 +1,21 @@
 <?php
 
-namespace Goose\Cleaners;
+namespace Goose\Modules\Cleaners;
 
 use Goose\Article;
 use Goose\DOM\DOMText;
 use Goose\DOM\DOMNodeList;
 use Goose\Traits\DocumentMutatorTrait;
+use Goose\Modules\AbstractModule;
+use Goose\Modules\ModuleInterface;
 
 /**
  * Document Cleaner
  *
- * @package Goose\Cleaners
+ * @package Goose\Modules\Cleaners
  * @license http://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0
  */
-class DocumentCleaner extends AbstractCleaner implements CleanerInterface {
+class DocumentCleaner extends AbstractModule implements ModuleInterface {
     use DocumentMutatorTrait;
 
     /** @var array Element id/class/name to be removed that start with */
@@ -60,7 +62,7 @@ class DocumentCleaner extends AbstractCleaner implements CleanerInterface {
      *
      * @return null
      */
-    public function clean(Article $article) {
+    public function run(Article $article) {
         $this->document($article->getDoc());
 
         $this->removeXPath('//comment()');

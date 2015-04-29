@@ -1,17 +1,17 @@
 <?php
 
-namespace Goose\Formatters;
+namespace Goose\Modules;
 
 use Goose\Article;
 use Goose\Configuration;
 
 /**
- * Formatter Interface
+ * Module Interface
  *
- * @package Goose\Formatters
+ * @package Goose\Modules
  * @license http://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0
  */
-interface FormatterInterface {
+interface ModuleInterface {
     /**
      * @param Configuration $config
      */
@@ -20,5 +20,5 @@ interface FormatterInterface {
     /**
      * @param Article $article
      */
-    public function format(Article $article);
+    public function run(Article $article);
 }

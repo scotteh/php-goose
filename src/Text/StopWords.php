@@ -15,7 +15,7 @@ class StopWords
     /** @var Configuration */
     private $config;
 
-    /** @var array */
+    /** @var string[] */
     private $cached = [];
 
     /** @var string[] */
@@ -30,16 +30,15 @@ class StopWords
      * @param Configuration $config
      * @param string $language
      */
-    public function __construct(Configuration $config, $language) {
+    public function __construct(Configuration $config) {
         $this->config = $config;
+    }
 
-        if (!in_array($language, $this->languages)) {
-            $language = 'en';
-        }
-
-        $file = sprintf(__DIR__ . '/../../resources/text/stopwords-%s.txt', $language);
-
-        $this->cached = explode("\n", str_replace(["\r\n", "\r"], "\n", file_get_contents($file)));
+    /**
+     * @return Configuration
+     */
+    public function config() {
+        return $this->config;
     }
 
     /**
@@ -49,6 +48,31 @@ class StopWords
      */
     public function removePunctuation($str) {
         return preg_replace("/[[:punct:]]+/", '', $str);
+    }
+
+    /**
+     * @return string
+     */
+    public function getLanguage() {
+        list($language) = explode('-', $this->config()->get('language'));
+
+        if (!in_array($language, $this->languages)) {
+            $language = 'en';
+        }
+        return mb_strtolower($language);
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getWordList() {
+        if (empty($this->cached)) {
+            $file = sprintf(__DIR__ . '/../../resources/text/stopwords-%s.txt', $this->getLanguage());
+
+            $this->cached = explode("\n", str_replace(["\r\n", "\r"], "\n", file_get_contents($file)));
+        }
+
+        return $this->cached;
     }
 
     /**
@@ -66,7 +90,7 @@ class StopWords
 
         $overlappingStopWords = [];
         foreach ($candidateWords as $w) {
-            if (in_array(mb_strtolower($w), $this->cached)) {
+            if (in_array(mb_strtolower($w), $this->getWordList())) {
                 $overlappingStopWords[] = mb_strtolower($w);
             }
         }
@@ -82,6 +106,6 @@ class StopWords
      * @return string
      */
     public function getCurrentStopWords() {
-        return $this->cached;
+        return $this->getWordList();
     }
 }

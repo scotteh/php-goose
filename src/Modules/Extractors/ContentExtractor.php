@@ -1,23 +1,24 @@
 <?php
 
-namespace Goose\Extractors;
+namespace Goose\Modules\Extractors;
 
 use Goose\Article;
-use Goose\Configuration;
 use Goose\DOM\DOMDocument;
 use Goose\DOM\DOMElement;
 use Goose\DOM\DOMNodeList;
 use Goose\Traits\NodeCommonTrait;
 use Goose\Traits\NodeGravityTrait;
 use Goose\Traits\ArticleMutatorTrait;
+use Goose\Modules\AbstractModule;
+use Goose\Modules\ModuleInterface;
 
 /**
  * Content Extractor
  *
- * @package Goose\Extractors
+ * @package Goose\Modules\Extractors
  * @license http://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0
  */
-class ContentExtractor extends AbstractExtractor implements ExtractorInterface {
+class ContentExtractor extends AbstractModule implements ModuleInterface {
     use ArticleMutatorTrait, NodeGravityTrait, NodeCommonTrait;
 
     /** @var double */
@@ -26,7 +27,7 @@ class ContentExtractor extends AbstractExtractor implements ExtractorInterface {
     /**
      * @param Article $article
      */
-    public function extract(Article $article) {
+    public function run(Article $article) {
         $this->article($article);
 
         $article->setTopNode($this->getTopNode());
@@ -43,7 +44,7 @@ class ContentExtractor extends AbstractExtractor implements ExtractorInterface {
         $nodes = $article->getDoc()->filter('p, td, pre');
 
         foreach ($nodes as $node) {
-            $wordStats = $this->config->getStopWords()->getStopwordCount($node->text());
+            $wordStats = $this->config()->getStopWords()->getStopwordCount($node->text());
             $highLinkDensity = $this->isHighLinkDensity($node);
 
             if ($wordStats->getStopWordCount() > 2 && !$highLinkDensity) {
@@ -76,7 +77,7 @@ class ContentExtractor extends AbstractExtractor implements ExtractorInterface {
             }
         }
 
-        $wordStats = $this->config->getStopWords()->getStopwordCount($node->text());
+        $wordStats = $this->config()->getStopWords()->getStopwordCount($node->text());
         $upscore = $wordStats->getStopWordCount() + $boostScore;
 
         return $upscore;
@@ -192,7 +193,7 @@ class ContentExtractor extends AbstractExtractor implements ExtractorInterface {
                     return false;
                 }
 
-                $wordStats = $this->config->getStopWords()->getStopwordCount($sibling->text());
+                $wordStats = $this->config()->getStopWords()->getStopwordCount($sibling->text());
 
                 if ($wordStats->getStopWordCount() > $minimumStopWordCount) {
                     return true;

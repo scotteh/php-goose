@@ -1,28 +1,29 @@
 <?php
 
-namespace Goose\Formatters;
+namespace Goose\Modules\Formatters;
 
 use Goose\Article;
-use Goose\Configuration;
 use Goose\DOM\DOMText;
 use Goose\DOM\DOMElement;
 use Goose\Traits\NodeCommonTrait;
 use Goose\Traits\NodeGravityTrait;
 use Goose\Traits\ArticleMutatorTrait;
+use Goose\Modules\AbstractModule;
+use Goose\Modules\ModuleInterface;
 
 /**
  * Output Formatter
  *
- * @package Goose\Formatters
+ * @package Goose\Modules\Formatters
  * @license http://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0
  */
-class OutputFormatter extends AbstractFormatter implements FormatterInterface {
+class OutputFormatter extends AbstractModule implements ModuleInterface {
     use ArticleMutatorTrait, NodeGravityTrait, NodeCommonTrait;
 
     /**
      * @param Article $article
      */
-    public function format(Article $article) {
+    public function run(Article $article) {
         $this->article($article);
 
         if ($this->article()->getTopNode() instanceof DOMElement) {
@@ -173,7 +174,7 @@ class OutputFormatter extends AbstractFormatter implements FormatterInterface {
             $nodes = $topNode->filter('p');
 
             foreach ($nodes as $node) {
-                $stopWords = $this->config->getStopWords()->getStopwordCount($node->text());
+                $stopWords = $this->config()->getStopWords()->getStopwordCount($node->text());
 
                 if (mb_strlen($node->text(DOM_NODE_TEXT_NORMALISED)) < 8 && $stopWords->getStopWordCount() < 3 && $node->filter('object')->count() == 0 && $node->filter('embed')->count() == 0) {
                     $node->remove();
@@ -282,7 +283,7 @@ class OutputFormatter extends AbstractFormatter implements FormatterInterface {
             $text = $node->text(DOM_NODE_TEXT_TRIM);
 
             if (!empty($text)) {
-                $wordStats = $this->config->getStopWords()->getStopwordCount($text);
+                $wordStats = $this->config()->getStopWords()->getStopwordCount($text);
 
                 if (($baselineScoreForSiblingParagraphs * self::$SIBLING_BASE_LINE_SCORE) < $wordStats->getStopWordCount()) {
                     $results[] = $node->document()->createElement('p', $text);
@@ -326,7 +327,7 @@ class OutputFormatter extends AbstractFormatter implements FormatterInterface {
 
         foreach ($nodesToCheck as $node) {
             $nodeText = $node->text();
-            $wordStats = $this->config->getStopWords()->getStopwordCount($nodeText);
+            $wordStats = $this->config()->getStopWords()->getStopwordCount($nodeText);
             $highLinkDensity = $this->isHighLinkDensity($node);
 
             if ($wordStats->getStopWordCount() > 2 && !$highLinkDensity) {
