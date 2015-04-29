@@ -74,13 +74,15 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
      * @return string Formatted string with all HTML
      */
     private function cleanupHtml() {
-        if (empty($this->article()->getTopNode())) {
+        $topNode = $this->article()->getTopNode();
+
+        if (empty($topNode)) {
             return '';
         }
 
-        $this->removeParagraphsWithFewWords($this->article()->getTopNode());
+        $this->removeParagraphsWithFewWords($topNode);
 
-        $html = $this->convertToHtml($this->article()->getTopNode());
+        $html = $this->convertToHtml($topNode);
 
         return str_replace(['<p></p>', '<p>&nbsp;</p>'], '', $html);
     }
@@ -271,7 +273,9 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
      * @return DOMElement[]
      */
     private function getSiblingContent(DOMElement $currentSibling, $baselineScoreForSiblingParagraphs) {
-        if ($currentSibling->is('p, strong') && !empty($currentSibling->text(DOM_NODE_TEXT_TRIM))) {
+        $text = $currentSibling->text(DOM_NODE_TEXT_TRIM);
+
+        if ($currentSibling->is('p, strong') && !empty($text)) {
             return [$currentSibling];
         }
 
