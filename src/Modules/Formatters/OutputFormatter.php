@@ -229,7 +229,7 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
 
         if ($nodes->count() == 0 && $topNode->is(':not(td)')) {
             if ($topNode->is('ul, ol')) {
-                $linkTextLength = array_sum(array_map(function($value){
+                $linkTextLength = array_sum(array_map(function($value) {
                     return mb_strlen($value->text(DOM_NODE_TEXT_NORMALISED));
                 }, $topNode->filter('a')->toArray()));
 

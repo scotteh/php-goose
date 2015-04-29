@@ -1,14 +1,13 @@
 <?php
 
-namespace Goose\Modules\Images;
+namespace Goose\Modules\Extractors;
 
 use Goose\Article;
-use Goose\Configuration;
 use Goose\DOM\DOMElement;
-use Goose\DOM\DOMDocument;
 use Goose\DOM\DOMNodeList;
 use Goose\Images\Image;
 use Goose\Images\ImageUtils;
+use Goose\Images\LocallyStoredImage;
 use Goose\Traits\ArticleMutatorTrait;
 use Goose\Modules\AbstractModule;
 use Goose\Modules\ModuleInterface;
@@ -16,7 +15,7 @@ use Goose\Modules\ModuleInterface;
 /**
  * Image Extractor
  *
- * @package Goose\Modules\Images
+ * @package Goose\Modules\Extractors
  * @license http://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0
  */
 class ImageExtractor extends AbstractModule implements ModuleInterface {

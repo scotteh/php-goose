@@ -38,7 +38,7 @@ class Configuration {
         ],
         'extractors' => [
             '\Goose\Modules\Extractors\ContentExtractor',
-            '\Goose\Modules\Images\ImageExtractor',
+            '\Goose\Modules\Extractors\ImageExtractor',
             '\Goose\Modules\Extractors\MetaExtractor',
             '\Goose\Modules\Extractors\PublishDateExtractor',
         ],
@@ -57,7 +57,7 @@ class Configuration {
     }
 
     /**
-     * @param mixed $option
+     * @param string $option
      *
      * @return mixed
      */
@@ -70,7 +70,7 @@ class Configuration {
     }
 
     /**
-     * @param mixed $option
+     * @param string $option
      * @param mixed $value
      */
     public function set($option, $value) {
@@ -141,7 +141,7 @@ class Configuration {
 
     /**
      * @param string $category
-     * @param string $class
+     * @param string[] $classes
      *
      * @return bool
      */

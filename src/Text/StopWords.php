@@ -28,7 +28,6 @@ class StopWords
 
     /**
      * @param Configuration $config
-     * @param string $language
      */
     public function __construct(Configuration $config) {
         $this->config = $config;
@@ -103,7 +102,7 @@ class StopWords
     }
 
     /**
-     * @return string
+     * @return string[]
      */
     public function getCurrentStopWords() {
         return $this->getWordList();
