@@ -56,7 +56,7 @@ class DOMDocument extends \DOMDocument
      *
      * @return self
      */
-    public function html($html) {
+    public function html($html, $options = 0) {
         $internalErrors = libxml_use_internal_errors(true);
         $disableEntities = libxml_disable_entity_loader(true);
 
@@ -74,7 +74,7 @@ class DOMDocument extends \DOMDocument
             $html = mb_convert_encoding($html, 'HTML-ENTITIES', 'UTF-8');
         }
 
-        $this->loadHTML($html);
+        $this->loadHTML($html, $options);
 
         libxml_use_internal_errors($internalErrors);
         libxml_disable_entity_loader($disableEntities);
