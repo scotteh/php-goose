@@ -1,27 +1,25 @@
 <?php
 
-namespace Goose\Tests\Cleaners;
+namespace Goose\Tests\Modules\Cleaners;
 
 use Goose\Article;
-use Goose\Configuration;
-use Goose\DOM\DOMElement;
-use Goose\DOM\DOMDocument;
-use Goose\Cleaners\DocumentCleaner;
 
 class DocumentCleanerTest extends \PHPUnit_Framework_TestCase
 {
+    use \Goose\Tests\Harness\TestTrait;
+
+    private static $CLASS_NAME = '\Goose\Modules\Cleaners\DocumentCleaner';
+
     /**
      * @dataProvider removeCommentsProvider
      */
     public function testRemoveComments($expected, $article, $message)
     {
-        $obj = new DocumentCleaner($this->config());
+        $this->call('run', $article);
 
-        $obj->clean($article);
-
-        $this->assertEquals(
-            $this->html($expected),
-            $this->html($article->getDoc()),
+        $this->assertEqualXMLStructure(
+            $expected->firstChild,
+            $article->getDoc()->firstChild,
             $message
         );
     }
@@ -46,13 +44,11 @@ class DocumentCleanerTest extends \PHPUnit_Framework_TestCase
      */
     public function testCleanTextTags($expected, $article, $message)
     {
-        $obj = new DocumentCleaner($this->config());
+        $this->call('run', $article);
 
-        $obj->clean($article);
-
-        $this->assertEquals(
-            $this->html($expected),
-            $this->html($article->getDoc()),
+        $this->assertEqualXMLStructure(
+            $expected->firstChild,
+            $article->getDoc()->firstChild,
             $message
         );
     }
@@ -77,13 +73,11 @@ class DocumentCleanerTest extends \PHPUnit_Framework_TestCase
      */
     public function testCleanUpSpanTagsInParagraphs($expected, $article, $message)
     {
-        $obj = new DocumentCleaner($this->config());
+        $this->call('run', $article);
 
-        $obj->clean($article);
-
-        $this->assertEquals(
-            $this->html($expected),
-            $this->html($article->getDoc()),
+        $this->assertEqualXMLStructure(
+            $expected->firstChild,
+            $article->getDoc()->firstChild,
             $message
         );
     }
@@ -108,13 +102,11 @@ class DocumentCleanerTest extends \PHPUnit_Framework_TestCase
      */
     public function testRemoveScriptsAndStyles($expected, $article, $message)
     {
-        $obj = new DocumentCleaner($this->config());
+        $this->call('run', $article);
 
-        $obj->clean($article);
-
-        $this->assertEquals(
-            $this->html($expected),
-            $this->html($article->getDoc()),
+        $this->assertEqualXMLStructure(
+            $expected->firstChild,
+            $article->getDoc()->firstChild,
             $message
         );
     }
@@ -149,13 +141,11 @@ class DocumentCleanerTest extends \PHPUnit_Framework_TestCase
      */
     public function testRemoveDropCaps($expected, $article, $message)
     {
-        $obj = new DocumentCleaner($this->config());
+        $this->call('run', $article);
 
-        $obj->clean($article);
-
-        $this->assertEquals(
-            $this->html($expected),
-            $this->html($article->getDoc()),
+        $this->assertEqualXMLStructure(
+            $expected->firstChild,
+            $article->getDoc()->firstChild,
             $message
         );
     }
@@ -185,13 +175,11 @@ class DocumentCleanerTest extends \PHPUnit_Framework_TestCase
      */
     public function testRemoveUselessTags($expected, $article, $message)
     {
-        $obj = new DocumentCleaner($this->config());
+        $this->call('run', $article);
 
-        $obj->clean($article);
-
-        $this->assertEquals(
-            $this->html($expected),
-            $this->html($article->getDoc()),
+        $this->assertEqualXMLStructure(
+            $expected->firstChild,
+            $article->getDoc()->firstChild,
             $message
         );
     }
@@ -226,13 +214,11 @@ class DocumentCleanerTest extends \PHPUnit_Framework_TestCase
      */
     public function testCleanBadTags($expected, $article, $message)
     {
-        $obj = new DocumentCleaner($this->config());
+        $this->call('run', $article);
 
-        $obj->clean($article);
-
-        $this->assertEquals(
-            $this->html($expected),
-            $this->html($article->getDoc()),
+        $this->assertEqualXMLStructure(
+            $expected->firstChild,
+            $article->getDoc()->firstChild,
             $message
         );
     }
@@ -302,13 +288,11 @@ class DocumentCleanerTest extends \PHPUnit_Framework_TestCase
      */
     public function testRemoveNodesViaFilter($expected, $article, $message)
     {
-        $obj = new DocumentCleaner($this->config());
+        $this->call('run', $article);
 
-        $obj->clean($article);
-
-        $this->assertEquals(
-            $this->html($expected),
-            $this->html($article->getDoc()),
+        $this->assertEqualXMLStructure(
+            $expected->firstChild,
+            $article->getDoc()->firstChild,
             $message
         );
     }
@@ -343,13 +327,11 @@ class DocumentCleanerTest extends \PHPUnit_Framework_TestCase
      */
     public function testConvertWantedTagsToParagraphs($expected, $article, $message)
     {
-        $obj = new DocumentCleaner($this->config());
+        $this->call('run', $article);
 
-        $obj->clean($article);
-
-        $this->assertEquals(
-            $this->html($expected),
-            $this->html($article->getDoc()),
+        $this->assertEqualXMLStructure(
+            $expected->firstChild,
+            $article->getDoc()->firstChild,
             $message
         );
     }
@@ -392,77 +374,5 @@ class DocumentCleanerTest extends \PHPUnit_Framework_TestCase
                 'Convert wanted tags to paragraphs #7'
             ],
         ];
-    }
-
-    /*
-    / **
-     * @dataProvider convertDivsToParagraphsProvider
-     * /
-    public function testConvertDivsToParagraphs($expected, $article, $message)
-    {
-        $obj = new DocumentCleaner($this->config());
-
-        $this->assertEquals(
-            $this->html($expected),
-            $this->html($obj->convertDivsToParagraphs($article->getDoc(), 'span')),
-            $message
-        );
-    }
-
-    public function convertDivsToParagraphsProvider() {
-        return [
-            [
-                $this->document('<html><body><p>Example</p></body></html>'),
-                $this->generate('<html><body><span>Example</span></body></html>'),
-                'Convert divs to paragraphs #1'
-            ],
-            [
-                $this->document('<html><body><span><p>test </p><pre>Example</pre><p> test</p></span></body></html>'),
-                $this->generate('<html><body><span>test <pre>Example</pre> test</span></body></html>'),
-                'Convert divs to paragraphs #2'
-            ],
-        ];
-    }
-    */
-
-    public function html($doc) {
-        if ($doc instanceof DOMDocument) {
-            $el = $doc->documentElement;
-        } else if ($doc instanceof DOMElement) {
-            $el = $doc;
-            $doc = $doc->ownerDocument;
-        } else if ($doc instanceof Article) {
-            $doc = $doc->getDoc();
-            $el = $doc->documentElement;
-        }
-
-        return $doc->saveXML($el);
-    }
-
-    private function document($html) {
-        $doc = new DOMDocument(1.0);
-        $doc->registerNodeClass('DOMText', 'Goose\\DOM\\DOMText');
-        $doc->registerNodeClass('DOMElement', 'Goose\\DOM\\DOMElement');
-        $doc->registerNodeClass('DOMComment', 'Goose\\DOM\\DOMComment');
-
-        // Silence 'Tag xyz invalid in Entity' for HTML5 tags.
-        libxml_use_internal_errors(true);
-        $doc->loadHTML($html, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
-        libxml_use_internal_errors(false);
-
-        return $doc;
-    }
-
-    private function generate($html) {
-        $article = new Article();
-        $article->setDoc($this->document($html));
-
-        return $article;
-    }
-
-    private function config() {
-        $config = new Configuration();
-
-        return $config;
     }
 }

@@ -29,6 +29,11 @@
             "Goose\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Goose\\Tests\\": "tests/"
+        }
+    },
     "extra": {
         "branch-alias": {
             "dev-master": "0.3-dev"
