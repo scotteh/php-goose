@@ -16,6 +16,7 @@ class Configuration {
     protected $options = [
         'language' => 'en',
         'image_min_bytes' => 4500,
+        'image_max_bytes' => 5242880,
         'image_min_width' => 120,
         'image_min_height' => 120,
         'image_fetch_best' => true,

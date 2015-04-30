@@ -39,12 +39,6 @@ class ImageExtractor extends AbstractModule implements ModuleInterface {
     ];
 
     /** @var int */
-    private static $MAX_BYTES_SIZE = 15728640;
-
-    /** @var int */
-    private static $MIN_WIDTH = 50;
-
-    /** @var int */
     private static $MAX_PARENT_DEPTH = 2;
 
     /** @var string[] */
@@ -249,7 +243,8 @@ class ImageExtractor extends AbstractModule implements ModuleInterface {
      * @return bool
      */
     private function isWorthyImage($locallyStoredImage, $depthLevel) {
-        if ($locallyStoredImage->getWidth() <= self::$MIN_WIDTH
+        if ($locallyStoredImage->getWidth() <= $this->config()->get('image_min_width')
+          || $locallyStoredImage->getHeight() <= $this->config()->get('image_min_height')
           || $locallyStoredImage->getFileExtension() == 'NA'
           || ($depthLevel < 1 && $locallyStoredImage->getWidth() < 300) || $depthLevel >= 1
           || $this->isBannerDimensions($locallyStoredImage->getWidth(), $locallyStoredImage->getHeight())) {
@@ -400,7 +395,7 @@ class ImageExtractor extends AbstractModule implements ModuleInterface {
 
             $bytes = $localImage->getBytes();
 
-            if ($bytes < $this->config()->get('image_min_bytes') && $bytes != 0 || $bytes > self::$MAX_BYTES_SIZE) {
+            if ($bytes < $this->config()->get('image_min_bytes') && $bytes != 0 || $bytes > $this->config()->get('image_max_bytes')) {
                 $image->remove();
 
                 return false;
