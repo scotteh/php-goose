@@ -74,7 +74,7 @@ class MetaExtractor extends AbstractModule implements ModuleInterface {
 
         foreach (self::$SPLITTER_CHARS as $char) {
             if (strpos($title, $char) !== false) {
-                $title = array_reduce(explode($char, $title), function($carry, $item) {
+                $part = array_reduce(explode($char, $title), function($carry, $item) {
                     if (mb_strlen($item) > mb_strlen($carry)) {
                         return $item;
                     }
@@ -82,7 +82,8 @@ class MetaExtractor extends AbstractModule implements ModuleInterface {
                     return $carry;
                 });
 
-                if (!empty($title)) {
+                if (!empty($part)) {
+                    $title = $part;
                     break;
                 }
             }
