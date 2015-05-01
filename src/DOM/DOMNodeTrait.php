@@ -82,7 +82,7 @@ trait DOMNodeTrait
      * @return DOMNodeList
      */
     public function filter($selector, $prefix = 'descendant::') {
-        return new DOMNodeList($this->filterXPath(CssSelector::toXPath($selector, $prefix)));
+        return $this->filterXPath(CssSelector::toXPath($selector, $prefix));
     }
 
     /**

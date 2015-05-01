@@ -288,26 +288,28 @@ class DocumentCleaner extends AbstractModule implements ModuleInterface {
             } else {
                 if (!empty($replacementText)) {
                     $nodesToReturn[] = $this->getFlushedBuffer($replacementText);
+                    $replacementText = [];
                 }
 
                 $nodesToReturn[] = $child;
             }
         }
 
+        // Flush any remaining replacementText left over from text nodes.
         if (!empty($replacementText)) {
             $nodesToReturn[] = $this->getFlushedBuffer($replacementText);
         }
 
-        $nodesToRemove->remove();
-
         // Remove potential duplicate <a> tags.
         foreach ($nodesToRemove as $remove) {
             foreach ($nodesToReturn as $key => $return) {
-                if ($remove === $return) {
+                if ($return->isSameNode($remove)) {
                     unset($nodesToReturn[$key]);
                 }
             }
         }
+
+        $nodesToRemove->remove();
 
         return $nodesToReturn;
     }

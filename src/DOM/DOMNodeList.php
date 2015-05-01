@@ -230,6 +230,8 @@ class DOMNodeList implements Countable, ArrayAccess, RecursiveIterator
             $node->parentNode->removeChild($node);
         }
 
+        $this->nodes = [];
+
         return $this;
     }
 
