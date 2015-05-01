@@ -15,7 +15,7 @@ class MetaExtractorTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetTitle($expected, $article, $message)
     {
-        $this->article($article);
+        $this->setArticle($article);
 
         $this->assertEquals(
             $expected,

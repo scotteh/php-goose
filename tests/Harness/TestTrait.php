@@ -8,7 +8,7 @@ use Goose\DOM\DOMElement;
 use Goose\DOM\DOMDocument;
 
 /**
- * Node Gravity Trait
+ * Test Trait
  *
  * @package Goose\Tests\Harness
  * @license http://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0
@@ -16,6 +16,9 @@ use Goose\DOM\DOMDocument;
 trait TestTrait {
     /** @var Article */
     private $article;
+
+    /** @var DOMDocument */
+    private $document;
 
     /**
      * @param DOMDocument|DOMElement|Article $doc
@@ -74,12 +77,21 @@ trait TestTrait {
      *
      * @return Article
      */
-    private function article(Article $article = null) {
+    private function setArticle(Article $article = null) {
         if ($article === null) {
             return $this->article;
         }
 
         $this->article = $article;
+    }
+
+    /**
+     * @param DOMDocument $document
+     *
+     * @return DOMDocument
+     */
+    private function setDocument(DOMDocument $document) {
+        $this->document = $document;
     }
 
     /**
@@ -101,7 +113,12 @@ trait TestTrait {
             $prop = $class->getProperty('article');
             $prop->setAccessible(true);
             $prop->setValue($obj, $this->article);
-            
+        }
+
+        if ($class->hasProperty('document')) {
+            $prop = $class->getProperty('document');
+            $prop->setAccessible(true);
+            $prop->setValue($obj, $this->document);
         }
 
         if (!$class->hasMethod($method)) {

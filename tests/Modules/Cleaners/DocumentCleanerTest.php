@@ -11,11 +11,13 @@ class DocumentCleanerTest extends \PHPUnit_Framework_TestCase
     private static $CLASS_NAME = '\Goose\Modules\Cleaners\DocumentCleaner';
 
     /**
-     * @dataProvider removeCommentsProvider
+     * @dataProvider removeXPathProvider
      */
-    public function testRemoveComments($expected, $article, $message)
+    public function testRemoveXPath($expected, $article, $xpath, $message)
     {
-        $this->call('run', $article);
+        $this->setDocument($article->getDoc());
+
+        $this->call('removeXPath', $xpath);
 
         $this->assertEqualXMLStructure(
             $expected->firstChild,
@@ -24,27 +26,31 @@ class DocumentCleanerTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    public function removeCommentsProvider() {
+    public function removeXPathProvider() {
         return [
             [
                 $this->document('<html></html>'),
                 $this->generate('<html><!-- Comment --></html>'),
+                '//comment()',
                 'Single Line Comment'
             ],
             [
                 $this->document('<html></html>'),
                 $this->generate("<html><!-- \n Comment \n --></html>"),
+                '//comment()',
                 'Multi Line Comment'
             ],
         ];
     }
 
     /**
-     * @dataProvider cleanTextTagsProvider
+     * @dataProvider replaceProvider
      */
-    public function testCleanTextTags($expected, $article, $message)
+    public function testReplace($expected, $article, $selector, $message)
     {
-        $this->call('run', $article);
+        $this->setDocument($article->getDoc());
+
+        $this->call('replace', $selector);
 
         $this->assertEqualXMLStructure(
             $expected->firstChild,
@@ -53,27 +59,60 @@ class DocumentCleanerTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    public function cleanTextTagsProvider() {
+    public function replaceProvider() {
         return [
             [
-                $this->document('<html><p>a b c d e f g </p></html>'),
+                $this->document('<html><p>abc123</p></html>'),
+                $this->generate('<html><p><span class="test dropcap example">abc123</span></p></html>'),
+                'span[class~=dropcap], span[class~=drop_cap]',
+                'Clean text tags #1'
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider replaceWithCallbackProvider
+     */
+    public function testReplaceWithCallback($expected, $article, $selector, $message)
+    {
+        $this->setDocument($article->getDoc());
+
+        $this->call('replace', $selector, function($node) {
+            return !$node->filter('img')->count();
+        });
+
+        $this->assertEqualXMLStructure(
+            $expected->firstChild,
+            $article->getDoc()->firstChild,
+            $message
+        );
+    }
+
+    public function replaceWithCallbackProvider() {
+        return [
+            [
+                $this->document('<html><p>abcdefg</p></html>'),
                 $this->generate('<html><p><em>a</em><strong>b</strong><b>c</b><i>d</i><strike>e</strike><del>f</del><ins>g</ins></p></html>'),
+                'em, strong, b, i, strike, del, ins',
                 'Clean text tags #1'
             ],
             [
-                $this->document('<html><p>a <em>b<img src="http://example.org/image.png" /></em></p></html>'),
+                $this->document('<html><p>a<em>b<img src="http://example.org/image.png" /></em></p></html>'),
                 $this->generate('<html><p><strong>a</strong><em>b<img src="http://example.org/image.png" /></em></p></html>'),
+                'em, strong, b, i, strike, del, ins',
                 'Clean text tags #2'
             ],
         ];
     }
 
     /**
-     * @dataProvider cleanUpSpanTagsInParagraphsProvider
+     * @dataProvider removeBadTagsProvider
      */
-    public function testCleanUpSpanTagsInParagraphs($expected, $article, $message)
+    public function testRemoveBadTags($expected, $article, $message)
     {
-        $this->call('run', $article);
+        $this->setDocument($article->getDoc());
+
+        $this->call('removeBadTags');
 
         $this->assertEqualXMLStructure(
             $expected->firstChild,
@@ -82,148 +121,7 @@ class DocumentCleanerTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    public function cleanUpSpanTagsInParagraphsProvider() {
-        return [
-            [
-                $this->document('<html><p>Example</p></html>'),
-                $this->generate('<html><p><span>Example</span></p></html>'),
-                'Replace single span tag'
-            ],
-            [
-                $this->document('<html><p>Example Tags</p></html>'),
-                $this->generate('<html><p><span>Example</span> <span>Tags</span></p></html>'),
-                'Replace multiple span tags'
-            ],
-        ];
-    }
-
-    /**
-     * @dataProvider removeScriptsAndStylesProvider
-     */
-    public function testRemoveScriptsAndStyles($expected, $article, $message)
-    {
-        $this->call('run', $article);
-
-        $this->assertEqualXMLStructure(
-            $expected->firstChild,
-            $article->getDoc()->firstChild,
-            $message
-        );
-    }
-
-    public function removeScriptsAndStylesProvider() {
-        return [
-            [
-                $this->document('<html><body></body></html>'),
-                $this->generate('<html><body><script>alert("test");</script></body></html>'),
-                'Script #1'
-            ],
-            [
-                $this->document('<html><body></body></html>'),
-                $this->generate('<html><body><script type="text/javascript">alert("test");</script></body></html>'),
-                'Script #2'
-            ],
-            [
-                $this->document('<html><body></body></html>'),
-                $this->generate('<html><body><style>alert("test");</style></body></html>'),
-                'Style #1'
-            ],
-            [
-                $this->document('<html><body></body></html>'),
-                $this->generate('<html><body><style type="text/css">alert("test");</style></body></html>'),
-                'Style #2'
-            ],
-        ];
-    }
-
-    /**
-     * @dataProvider removeDropCapsProvider
-     */
-    public function testRemoveDropCaps($expected, $article, $message)
-    {
-        $this->call('run', $article);
-
-        $this->assertEqualXMLStructure(
-            $expected->firstChild,
-            $article->getDoc()->firstChild,
-            $message
-        );
-    }
-
-    public function removeDropCapsProvider() {
-        return [
-            [
-                $this->document('<html><body>Example</body></html>'),
-                $this->generate('<html><body><span class="drop_cap">Example</span></body></html>'),
-                'Drop Caps #1'
-            ],
-            [
-                $this->document('<html><body>Example</body></html>'),
-                $this->generate('<html><body><span class="dropcap">Example</span></body></html>'),
-                'Drop Caps #2'
-            ],
-            [
-                $this->document('<html><body>ExampleExample</body></html>'),
-                $this->generate('<html><body><span class="dropcap">Example</span><span class="drop_cap">Example</span></body></html>'),
-                'Drop Caps #3'
-            ],
-        ];
-    }
-
-    /**
-     * @dataProvider removeUselessTagsProvider
-     */
-    public function testRemoveUselessTags($expected, $article, $message)
-    {
-        $this->call('run', $article);
-
-        $this->assertEqualXMLStructure(
-            $expected->firstChild,
-            $article->getDoc()->firstChild,
-            $message
-        );
-    }
-
-    public function removeUselessTagsProvider() {
-        return [
-            [
-                $this->document('<html><body></body></html>'),
-                $this->generate('<html><body><header></header></body></html>'),
-                'Useless tags'
-            ],
-            [
-                $this->document('<html><body></body></html>'),
-                $this->generate('<html><body><header><meta /></header></body></html>'),
-                'Useless tags nested'
-            ],
-            [
-                $this->document('<html><body></body></html>'),
-                $this->generate('<html><body><header></header><footer></footer></body></html>'),
-                'Useless tags multiple'
-            ],
-            [
-                $this->document('<html><body></body></html>'),
-                $this->generate('<html><body><header><footer><form><button><aside><input /><meta /></aside></button></form></footer></header></body></html>'),
-                'Useless tags all'
-            ],
-        ];
-    }
-
-    /**
-     * @dataProvider cleanBadTagsProvider
-     */
-    public function testCleanBadTags($expected, $article, $message)
-    {
-        $this->call('run', $article);
-
-        $this->assertEqualXMLStructure(
-            $expected->firstChild,
-            $article->getDoc()->firstChild,
-            $message
-        );
-    }
-
-    public function cleanBadTagsProvider() {
+    public function removeBadTagsProvider() {
         return [
             [
                 $this->document('<html><body></body></html>'),
@@ -284,11 +182,13 @@ class DocumentCleanerTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @dataProvider removeNodesViaFilterProvider
+     * @dataProvider removeProvider
      */
-    public function testRemoveNodesViaFilter($expected, $article, $message)
+    public function testRemove($expected, $article, $selector, $message)
     {
-        $this->call('run', $article);
+        $this->setDocument($article->getDoc());
+
+        $this->call('remove', $selector);
 
         $this->assertEqualXMLStructure(
             $expected->firstChild,
@@ -297,37 +197,43 @@ class DocumentCleanerTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    public function removeNodesViaFilterProvider() {
+    public function removeProvider() {
         return [
             [
                 $this->document('<html><body></body></html>'),
                 $this->generate('<html><body><span class="caption">Example</span></body></html>'),
+                "[id='caption'],[class='caption']",
                 'Remove nodes via filter #1'
             ],
             [
                 $this->document('<html><body></body></html>'),
                 $this->generate('<html><body><span class="test google filter">Example</span></body></html>'),
+                "[id*=' google '],[class*=' google ']",
                 'Remove nodes via filter #2'
             ],
             [
                 $this->document('<html><body><p class="entry-more">Example</p></body></html>'),
                 $this->generate('<html><body><p class="entry-more">Example</p></body></html>'),
+                "[id*='more']:not([id^=entry-]),[class*='more']:not([class^=entry-])",
                 'Remove nodes via filter #3'
             ],
             [
                 $this->document('<html><body></body></html>'),
                 $this->generate('<html><body><span class="something-more">Example</span></body></html>'),
+                "[id*='more']:not([id^=entry-]),[class*='more']:not([class^=entry-])",
                 'Remove nodes via filter #4'
             ],
         ];
     }
 
     /**
-     * @dataProvider convertWantedTagsToParagraphsProvider
+     * @dataProvider convertToParagraphProvider
      */
-    public function testConvertWantedTagsToParagraphs($expected, $article, $message)
+    public function testConvertToParagraph($expected, $article, $message)
     {
-        $this->call('run', $article);
+        $this->setDocument($article->getDoc());
+
+        $this->call('convertToParagraph', 'div, span, article');
 
         $this->assertEqualXMLStructure(
             $expected->firstChild,
@@ -336,11 +242,11 @@ class DocumentCleanerTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    public function convertWantedTagsToParagraphsProvider() {
+    public function convertToParagraphProvider() {
         return [
             [
-                $this->document('<html><body><div><img/><p> text </p><p>No children!</p><p> text</p></div></body></html>'),
-                $this->generate('<html><body><div><img/> text <p>No children!</p> text</div></body></html>'),
+                $this->document('<html><body><div><img/><p>text</p><p>No children!</p><p>text</p></div></body></html>'),
+                $this->generate('<html><body><div><img/>text<p>No children!</p>text</div></body></html>'),
                 'Convert wanted tags to paragraphs #1'
             ],
             [
@@ -349,28 +255,28 @@ class DocumentCleanerTest extends \PHPUnit_Framework_TestCase
                 'Convert wanted tags to paragraphs #2'
             ],
             [
-                $this->document('<html><body><div><img/><p> <a>Example<img/></a>  Text Node! </p><pre>Test!</pre></div></body></html>'),
-                $this->generate('<html><body><div><img/><a>Example<img/></a> Text Node! <pre>Test!</pre></div></body></html>'),
+                $this->document('<html><body><div><img/><a>Example<img/></a><p>Text Node!</p><pre>Test!</pre></div></body></html>'),
+                $this->generate('<html><body><div><img/><a>Example<img/></a>Text Node!<pre>Test!</pre></div></body></html>'),
                 'Convert wanted tags to paragraphs #3'
             ],
             [
-                $this->document('<html><body><div><img/><p>Text Node! </p><pre>Test!</pre><a>Example<img/></a></div></body></html>'),
-                $this->generate('<html><body><div><img/>Text Node! <pre>Test!</pre> <a>Example<img/></a></div></body></html>'),
+                $this->document('<html><body><div><img/><p>Text Node!</p><pre>Test!</pre><a>Example<img/></a></div></body></html>'),
+                $this->generate('<html><body><div><img/>Text Node!<pre>Test!</pre><a>Example<img/></a></div></body></html>'),
                 'Convert wanted tags to paragraphs #4'
             ],
             [
-                $this->document('<html><body><div><img/><p> <a>Example<img/></a>  Text Node! </p><pre>Test!</pre><a>Example<img/></a></div></body></html>'),
-                $this->generate('<html><body><div><img/><a>Example<img/></a> Text Node! <pre>Test!</pre> <a>Example<img/></a></div></body></html>'),
+                $this->document('<html><body><div><img/><a>Example<img/></a><p>Text Node!</p><pre>Test!</pre><a>Example<img/></a></div></body></html>'),
+                $this->generate('<html><body><div><img/><a>Example<img/></a>Text Node!<pre>Test!</pre><a>Example<img/></a></div></body></html>'),
                 'Convert wanted tags to paragraphs #5'
             ],
             [
-                $this->document('<html><body><p><img/><a>Example<img/></a> Text Node!</p> <pre>Test!</pre></body></html>'),
-                $this->generate('<html><body><p><img/><a>Example<img/></a> Text Node!</p> <pre>Test!</pre></body></html>'),
+                $this->document('<html><body><p><img/><a>Example<img/></a>Text Node!</p><pre>Test!</pre></body></html>'),
+                $this->generate('<html><body><p><img/><a>Example<img/></a>Text Node!</p><pre>Test!</pre></body></html>'),
                 'Convert wanted tags to paragraphs #6'
             ],
             [
-                $this->document('<html><body><div><img/><p> <a>Example<img/></a>  Text Node! </p><pre>Test!</pre><p>test <a>Example<img/></a> </p></div></body></html>'),
-                $this->generate('<html><body><div><img/><a>Example<img/></a> Text Node! <pre>Test!</pre>test<a>Example<img/></a></div></body></html>'),
+                $this->document('<html><body><div><img/><a>Example<img/></a><p>Text Node!</p><pre>Test!</pre><p>test</p><a>Example<img/></a></div></body></html>'),
+                $this->generate('<html><body><div><img/><a>Example<img/></a>Text Node!<pre>Test!</pre>test<a>Example<img/></a></div></body></html>'),
                 'Convert wanted tags to paragraphs #7'
             ],
         ];

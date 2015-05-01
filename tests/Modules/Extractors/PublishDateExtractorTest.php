@@ -18,7 +18,7 @@ class PublishDateExtractorTest extends \PHPUnit_Framework_TestCase
         $article = new Article();
         $article->setFinalUrl($url);
 
-        $this->article($article);
+        $this->setArticle($article);
 
         $this->assertEquals(
             $expected,
@@ -29,7 +29,10 @@ class PublishDateExtractorTest extends \PHPUnit_Framework_TestCase
 
     public function getDateFromURLProvider() {
         return [
-            ['', 'http://example.org/', 'Stub']
+            [new \DateTime('2014-03-26'), 'http://example.org/2014/03/26/hello-world', 'Date format: Y/m/d'],
+            [new \DateTime('2014-03-26'), 'http://example.org/2014-03-26/hello-world', 'Date format: Y-m-d'],
+            [null, 'http://example.org/folder/2014-203-2a6/hello-world', 'Date format: Invalid #1'],
+            [null, 'http://example.org/folder/2014-03/26/hello-world', 'Date format: Invalid #2'],
         ];
     }
 }

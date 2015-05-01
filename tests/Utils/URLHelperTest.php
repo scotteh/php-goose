@@ -9,11 +9,11 @@ class URLHelperTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider getCleanedUrlProvider
      */
-    public function testGetCleanedUrl($expected, $article, $message)
+    public function testGetCleanedUrl($expected, $url, $message)
     {
         $this->assertEquals(
             $expected,
-            URLHelper::getCleanedUrl($article),
+            URLHelper::getCleanedUrl($url),
             $message
         );
     }
