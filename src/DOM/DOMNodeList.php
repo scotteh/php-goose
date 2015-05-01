@@ -227,7 +227,10 @@ class DOMNodeList implements Countable, ArrayAccess, RecursiveIterator
      */
     public function remove() {
         foreach ($this->nodes as $node) {
-            $node->parentNode->removeChild($node);
+            if ($node instanceof \DOMNode
+              && $node->parentNode instanceof \DOMNode) {
+                $node->parentNode->removeChild($node);
+            }
         }
 
         $this->nodes = [];

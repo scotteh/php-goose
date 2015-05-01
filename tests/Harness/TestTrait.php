@@ -46,7 +46,7 @@ trait TestTrait {
      */
     private function document($html) {
         $doc = new DOMDocument();
-        $doc->html($html, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+        $doc->html($html);
 
         return $doc;
     }
