@@ -32,7 +32,7 @@ class MetaExtractorTest extends \PHPUnit_Framework_TestCase
             ['rutrum ex, eu feugiat dolor.', $this->generate('<html><head><title>Ut venenatis » rutrum ex, eu feugiat dolor.</title></head></html>'), 'Right pointing guillemet splitter'],
             ['rutrum ex, eu feugiat dolor.', $this->generate('<html><head><title>Ut venenatis : rutrum ex, eu feugiat dolor.</title></head></html>'), 'Colon splitter'],
             // libxml will automatically place <title> inside <head>.
-            ['Ut venenatis rutrum ex, eu feugiat dolor.', '<html><title>Ut venenatis rutrum ex, eu feugiat dolor.</title></html>', 'Title tag not in head tag'],
+            ['Ut venenatis rutrum ex, eu feugiat dolor.', $this->generate('<html><title>Ut venenatis rutrum ex, eu feugiat dolor.</title></html>'), 'Title tag not in head tag'],
             ['', $this->generate('<html></html>'), 'No title tag'],
             ['Ut venenatis rutrum ex, eu feugiat dolor.', $this->generate('<html><head><title>Ut venenatis rutrum ex, eu feugiat dolor. |</title></head></html>'), 'Splitter as last character'],
             ['Ut venenatis rutrum ex, eu feugiat dolor.', $this->generate('<html><head><title>|Ut venenatis rutrum ex, eu feugiat dolor.</title></head></html>'), 'Splitter as first character'],
