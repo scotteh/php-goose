@@ -48,6 +48,11 @@ trait TestTrait {
         $doc = new DOMDocument();
         $doc->html($html);
 
+        // Remove the doctype (if it exists) so we can use DOMDocument::$firstChild
+        if ($doc->doctype instanceof \DOMDocumentType) {
+            $doc->removeChild($doc->doctype);
+        }
+
         return $doc;
     }
 
