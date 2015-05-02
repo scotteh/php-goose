@@ -47,7 +47,7 @@ class DocumentCleaner extends AbstractModule implements ModuleInterface {
         'popup', 'author-dropdown', 'tools', 'socialtools', 'byline',
         'konafilter', 'KonaFilter', 'breadcrumbs', 'wp-caption-text', 'source',
         'legende', 'ajoutVideo', 'timestamp', 'js_replies', 'creative_commons', 'topics',
-        'pagination', 'mtl', 'author', 'credit', 'toc_container', 'sharedaddy', 'ad', 'po'
+        'pagination', 'mtl', 'author', 'credit', 'toc_container', 'sharedaddy',
     ];
 
     /** @var array Element tagNames exempt from removal */
