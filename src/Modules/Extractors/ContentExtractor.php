@@ -128,12 +128,12 @@ class ContentExtractor extends AbstractModule implements ModuleInterface {
      * @param array $nodeCandidates
      */
     private function updateBestNodeCandidates(DOMElement $node, $nodeCandidates) {
-        if (!in_array($node->parent(), $nodeCandidates)) {
+        if (!in_array($node->parent(), $nodeCandidates, true)) {
             $nodeCandidates[] = $node->parent();
         }
 
         if ($node->parent() instanceof DOMElement) {
-            if (!in_array($node->parent()->parent(), $nodeCandidates)) {
+            if (!in_array($node->parent()->parent(), $nodeCandidates, true)) {
                 $nodeCandidates[] = $node->parent()->parent();
             }
         }
