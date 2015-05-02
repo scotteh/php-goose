@@ -53,7 +53,7 @@ class Configuration {
      */
     public function __construct($options = []) {
         if (is_array($options)) {
-            $this->options = array_merge_recursive($this->options, $options);
+            $this->options = array_replace_recursive($this->options, $options);
         }
     }
 
