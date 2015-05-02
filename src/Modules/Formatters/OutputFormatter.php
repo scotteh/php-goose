@@ -20,6 +20,9 @@ use Goose\Modules\ModuleInterface;
 class OutputFormatter extends AbstractModule implements ModuleInterface {
     use ArticleMutatorTrait, NodeGravityTrait, NodeCommonTrait;
 
+    /** @var double */
+    protected static $SIBLING_BASE_LINE_SCORE = 0.30;
+
     /**
      * @param Article $article
      */
