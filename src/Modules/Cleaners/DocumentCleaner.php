@@ -236,7 +236,7 @@ class DocumentCleaner extends AbstractModule implements ModuleInterface {
      */
     private function getFlushedBuffer($replacementText) {
         $fragment = $this->document()->createDocumentFragment();
-        $fragment->appendXML(str_replace('&', '&amp;', implode(' ', $replacementText)));
+        $fragment->appendXML(htmlspecialchars(implode(' ', $replacementText)));
 
         $el = $this->document()->createElement('p');
         $el->appendChild($fragment);
