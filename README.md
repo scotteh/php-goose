@@ -80,7 +80,7 @@ $allImages = $article->getAllImages();
 
 ##Configuration
 
-Configuration options are listed below along with their default values.
+All config options are not required and are optional. Default (fallback) values have been used below.
 
 ``` php
 $goose = new GooseClient([
