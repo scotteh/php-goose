@@ -4,8 +4,8 @@ namespace Goose\Tests\Harness;
 
 use Goose\Article;
 use Goose\Configuration;
-use Goose\DOM\DOMElement;
-use Goose\DOM\DOMDocument;
+use DOMWrap\Element;
+use DOMWrap\Document;
 
 /**
  * Test Trait
@@ -17,18 +17,18 @@ trait TestTrait {
     /** @var Article */
     private $article;
 
-    /** @var DOMDocument */
+    /** @var Document */
     private $document;
 
     /**
-     * @param DOMDocument|DOMElement|Article $doc
+     * @param Document|Element|Article $doc
      *
      * @return string
      */
     public function html($doc) {
-        if ($doc instanceof DOMDocument) {
+        if ($doc instanceof Document) {
             $el = $doc->documentElement;
-        } else if ($doc instanceof DOMElement) {
+        } else if ($doc instanceof Element) {
             $el = $doc;
             $doc = $doc->ownerDocument;
         } else if ($doc instanceof Article) {
@@ -42,13 +42,13 @@ trait TestTrait {
     /**
      * @param string $html
      *
-     * @return DOMDocument
+     * @return Document
      */
     private function document($html) {
-        $doc = new DOMDocument();
+        $doc = new Document();
         $doc->html($html);
 
-        // Remove the doctype (if it exists) so we can use DOMDocument::$firstChild
+        // Remove the doctype (if it exists) so we can use Document::$firstChild
         if ($doc->doctype instanceof \DOMDocumentType) {
             $doc->removeChild($doc->doctype);
         }
@@ -91,11 +91,11 @@ trait TestTrait {
     }
 
     /**
-     * @param DOMDocument $document
+     * @param Document $document
      *
-     * @return DOMDocument
+     * @return Document
      */
-    private function setDocument(DOMDocument $document) {
+    private function setDocument(Document $document) {
         $this->document = $document;
     }
 
