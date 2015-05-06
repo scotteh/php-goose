@@ -78,6 +78,38 @@ $image = $article->getTopImage();
 $allImages = $article->getAllImages();
 ```
 
+##Configuration
+
+Configuration options are listed below along with their default values.
+
+``` php
+$goose = new GooseClient([
+    // Language - Selects common word dictionary
+    //   Supported languages:
+    //     ar, da, de, en, es, fi, fr, hu, id, it, ko,
+    //     nb, nl, no, pl, pt, ru, sv, zh
+    'language' => 'en',
+    // Minimum image size (bytes)
+    'image_min_bytes' => 4500,
+    // Maximum image size (bytes)
+    'image_max_bytes' => 5242880,
+    // Minimum image size (pixels)
+    'image_min_width' => 120,
+    // Maximum image size (pixels)
+    'image_min_height' => 120,
+    // Fetch best image
+    'image_fetch_best' => true,
+    // Fetch all images
+    'image_fetch_all' => false,
+    // Guzzle configuration - All values are passed directly to Guzzle
+    //   See: http://guzzle.readthedocs.org/en/latest/clients.html#request-options
+    'browser' => [
+        'timeout' => 60,
+        'connect_timeout' => 30
+    ]
+]);
+```
+
 ##Licensing
 
 PHP Goose is licensed by Gravity.com under the Apache 2.0 license, see the LICENSE file for more details
