@@ -128,22 +128,22 @@ class ImageExtractor extends AbstractModule implements ModuleInterface {
      * @return Image|null
      */
     private function checkForLargeImages(DOMElement $node, $parentDepthLevel, $siblingDepthLevel) {
-        $goodImages = $this->getImageCandidates($node);
+        $goodLocalImages = $this->getImageCandidates($node);
 
-        $scoredImages = $this->downloadImagesAndGetResults($goodImages, $parentDepthLevel);
+        $scoredLocalImages = $this->scoreLocalImages($goodLocalImages, $parentDepthLevel);
 
-        ksort($scoredImages);
+        ksort($scoredLocalImages);
 
-        if (!empty($scoredImages)) {
-            foreach ($scoredImages as $imageScore => $scoredImage) {
+        if (!empty($scoredLocalImages)) {
+            foreach ($scoredLocalImages as $imageScore => $scoredLocalImage) {
                 $mainImage = new Image();
-                $mainImage->setImageSrc($scoredImage->getImgSrc());
+                $mainImage->setImageSrc($scoredLocalImage->getImgSrc());
                 $mainImage->setImageExtractionType('bigimage');
-                $mainImage->setConfidenceScore(100 / count($scoredImages));
+                $mainImage->setConfidenceScore(100 / count($scoredLocalImages));
                 $mainImage->setImageScore($imageScore);
-                $mainImage->setBytes($scoredImage->getBytes());
-                $mainImage->setHeight($scoredImage->getHeight());
-                $mainImage->setWidth($scoredImage->getWidth());
+                $mainImage->setBytes($scoredLocalImage->getBytes());
+                $mainImage->setHeight($scoredLocalImage->getHeight());
+                $mainImage->setWidth($scoredLocalImage->getWidth());
 
                 return $mainImage;
             }
@@ -192,45 +192,41 @@ class ImageExtractor extends AbstractModule implements ModuleInterface {
     }
 
     /**
-     * download the images to temp disk and set their dimensions
-     * <p/>
+     * Set image score and on locally downloaded images
+     *
      * we're going to score the images in the order in which they appear so images higher up will have more importance,
      * we'll count the area of the 1st image as a score of 1 and then calculate how much larger or small each image after it is
      * we'll also make sure to try and weed out banner type ad blocks that have big widths and small heights or vice versa
      * so if the image is 3rd found in the dom it's sequence score would be 1 / 3 = .33 * diff in area from the first image
      *
-     * @param DOMElement[] $images
+     * @param LocallyStoredImage[] $locallyStoredImages
      * @param int $depthLevel
      *
      * @return LocallyStoredImage[]
      */
-    private function downloadImagesAndGetResults($images, $depthLevel) {
+    private function scoreLocalImages($locallyStoredImages, $depthLevel) {
         $results = [];
         $i = 1;
         $initialArea = 0;
 
         // Limit to the first 30 images
-        $images = array_slice($images, 0, 30);
+        $locallyStoredImages = array_slice($locallyStoredImages, 0, 30);
 
-        foreach ($images as $image) {
-            $locallyStoredImage = $this->getLocallyStoredImage($this->buildImagePath($image->getAttribute('src')));
+        foreach ($locallyStoredImages as $locallyStoredImage) {
+            $sequenceScore = 1 / $i;
+            $area = $locallyStoredImage->getWidth() * $locallyStoredImage->getHeight();
 
-            if (!empty($locallyStoredImage) && $this->isWorthyImage($locallyStoredImage, $depthLevel)) {
-                $sequenceScore = 1 / $i;
-                $area = $locallyStoredImage->getWidth() * $locallyStoredImage->getHeight();
-
-                if ($initialArea == 0) {
-                    $initialArea = $area * 1.48;
-                    $totalScore = 1;
-                } else {
-                    $areaDifference = $area * $initialArea;
-                    $totalScore = $sequenceScore * $areaDifference;
-                }
-
-                $i++;
-
-                $results[$totalScore] = $locallyStoredImage;
+            if ($initialArea == 0) {
+                $initialArea = $area * 1.48;
+                $totalScore = 1;
+            } else {
+                $areaDifference = $area * $initialArea;
+                $totalScore = $sequenceScore * $areaDifference;
             }
+
+            $i++;
+
+            $results[$totalScore] = $locallyStoredImage;
         }
 
         return $results;
@@ -360,7 +356,7 @@ class ImageExtractor extends AbstractModule implements ModuleInterface {
     /**
      * @param DOMElement $node
      *
-     * @return DOMElement[]
+     * @return LocallyStoredImage[]
      */
     private function getImageCandidates(DOMElement $node) {
         $images = $node->filter('img');
@@ -375,7 +371,7 @@ class ImageExtractor extends AbstractModule implements ModuleInterface {
      *
      * @param DOMElement[] $images
      *
-     * @return DOMElement[]
+     * @return LocallyStoredImage[]
      */
     private function findImagesThatPassByteSizeTest($images) {
         $i = 0; /** @todo Re-factor how the LocallyStoredImage => Image relation works ? Note: PHP 5.6.x adds a 3rd argument to array_filter() to pass the key as well as value. */
