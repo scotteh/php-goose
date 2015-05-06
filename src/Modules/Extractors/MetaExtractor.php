@@ -3,12 +3,12 @@
 namespace Goose\Modules\Extractors;
 
 use Goose\Article;
-use Goose\DOM\DOMDocument;
-use Goose\DOM\DOMElement;
-use Goose\DOM\DOMNodeList;
 use Goose\Traits\ArticleMutatorTrait;
 use Goose\Modules\AbstractModule;
 use Goose\Modules\ModuleInterface;
+use DOMWrap\Element;
+use DOMWrap\Document;
+use DOMWrap\Collections\NodeList;
 
 /**
  * Content Extractor
@@ -51,7 +51,7 @@ class MetaExtractor extends AbstractModule implements ModuleInterface {
         $article->setCanonicalLink($this->getCanonicalLink());
         $article->setTags($this->getTags());
 
-        if ($this->article()->getTopNode() instanceof DOMElement) {
+        if ($this->article()->getTopNode() instanceof Element) {
             $article->setVideos($this->getVideos());
             $article->setLinks($this->getLinks());
             $article->setPopularWords($this->getPopularWords());
@@ -93,26 +93,26 @@ class MetaExtractor extends AbstractModule implements ModuleInterface {
     }
 
     /**
-     * @param DOMDocument $doc
+     * @param Document $doc
      * @param string $tag
      * @param string $property
      * @param string $value
      *
-     * @return DOMNodeList
+     * @return NodeList
      */
-    private function getNodesByLowercasePropertyValue(DOMDocument $doc, $tag, $property, $value) {
+    private function getNodesByLowercasePropertyValue(Document $doc, $tag, $property, $value) {
         return $doc->filterXPath("descendant::".$tag."[translate(@".$property.", 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz')='".$value."']");
     }
 
     /**
-     * @param DOMDocument $doc
+     * @param Document $doc
      * @param string $property
      * @param string $value
      * @param string $attr
      *
      * @return string
      */
-    private function getMetaContent(DOMDocument $doc, $property, $value, $attr = 'content') {
+    private function getMetaContent(Document $doc, $property, $value, $attr = 'content') {
         $nodes = $this->getNodesByLowercasePropertyValue($doc, 'meta', $property, $value);
 
         if (!$nodes->count()) {

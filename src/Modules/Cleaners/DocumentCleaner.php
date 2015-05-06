@@ -3,11 +3,12 @@
 namespace Goose\Modules\Cleaners;
 
 use Goose\Article;
-use Goose\DOM\DOMText;
-use Goose\DOM\DOMNodeList;
 use Goose\Traits\DocumentMutatorTrait;
 use Goose\Modules\AbstractModule;
 use Goose\Modules\ModuleInterface;
+use DOMWrap\Text;
+use DOMWrap\Element;
+use DOMWrap\Collections\NodeList;
 
 /**
  * Document Cleaner
@@ -138,7 +139,7 @@ class DocumentCleaner extends AbstractModule implements ModuleInterface {
 
         foreach ($nodes as $node) {
             if (is_null($callback) || $callback($node)) {
-                $node->replace(new DOMText((string)$node->text()));
+                $node->replace(new Text((string)$node->text()));
             }
         }
     }
@@ -184,11 +185,11 @@ class DocumentCleaner extends AbstractModule implements ModuleInterface {
     /**
      * Replace supplied element with <p> new element.
      *
-     * @param Goose\DOM\DOMElement $node
+     * @param Element $node
      *
      * @return null
      */
-    private function replaceElementsWithPara($node) {
+    private function replaceElementsWithPara(Element $node) {
         $el = $this->document()->createElement('p');
 
         foreach ($node->children() as $child) {
@@ -232,7 +233,7 @@ class DocumentCleaner extends AbstractModule implements ModuleInterface {
      *
      * @param array $replacementText Contents of element
      *
-     * @return Goose\DOM\DOMElement
+     * @return Element
      */
     private function getFlushedBuffer($replacementText) {
         $fragment = $this->document()->createDocumentFragment();
@@ -247,14 +248,14 @@ class DocumentCleaner extends AbstractModule implements ModuleInterface {
     /**
      * Generate <p> element replacements for supplied elements child nodes as required.
      *
-     * @param Goose\DOM\DOMElement $node
+     * @param Element $node
      *
-     * @return DOMNodeList $nodesToReturn Replacement elements
+     * @return NodeList $nodesToReturn Replacement elements
      */
-    private function getReplacementNodes($node) {
+    private function getReplacementNodes(Element $node) {
         $replacementText = [];
-        $nodesToReturn = new DOMNodeList;
-        $nodesToRemove = new DOMNodeList;
+        $nodesToReturn = new NodeList;
+        $nodesToRemove = new NodeList;
 
         foreach ($node->children() as $child) {
             if ($child->is('p') && !empty($replacementText)) {

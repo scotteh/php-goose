@@ -2,7 +2,7 @@
 
 namespace Goose\Traits;
 
-use Goose\DOM\DOMElement;
+use DOMWrap\Element;
 
 /**
  * Node Gravity Trait
@@ -14,11 +14,11 @@ trait NodeGravityTrait {
     /**
      * Returns the gravityScore as an integer from this node
      *
-     * @param DOMElement $node
+     * @param Element $node
      *
      * @return int
      */
-    private function getScore(DOMElement $node) {
+    private function getScore(Element $node) {
         return (int)$node->getAttribute('gravityScore');
     }
 
@@ -26,11 +26,11 @@ trait NodeGravityTrait {
      * Adds a score to the gravityScore Attribute we put on divs
      * we'll get the current score then add the score we're passing in to the current
      *
-     * @param DOMElement $node
+     * @param Element $node
      * @param int $addToScore
      */
-    private function updateScore(DOMElement $node, $addToScore) {
-        if ($node instanceof DOMElement) {
+    private function updateScore(Element $node, $addToScore) {
+        if ($node instanceof Element) {
             $currentScore = (int)$node->getAttribute('gravityScore');
 
             $node->setAttribute('gravityScore', $currentScore + $addToScore);
@@ -40,11 +40,11 @@ trait NodeGravityTrait {
     /**
      * Stores how many decent nodes are under a parent node
      *
-     * @param DOMElement $node
+     * @param Element $node
      * @param int $addToCount
      */
-    private function updateNodeCount(DOMElement $node, $addToCount) {
-        if ($node instanceof DOMElement) {
+    private function updateNodeCount(Element $node, $addToCount) {
+        if ($node instanceof Element) {
             $currentScore = (int)$node->getAttribute('gravityNodes');
 
             $node->setAttribute('gravityNodes', $currentScore + $addToCount);

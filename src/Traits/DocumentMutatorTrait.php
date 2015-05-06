@@ -2,7 +2,7 @@
 
 namespace Goose\Traits;
 
-use Goose\DOM\DOMDocument;
+use DOMWrap\Document;
 
 /**
  * Document Mutator Trait
@@ -11,15 +11,15 @@ use Goose\DOM\DOMDocument;
  * @license http://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0
  */
 trait DocumentMutatorTrait {
-    /** @var DOMDocument */
+    /** @var Document */
     protected $document;
 
     /**
-     * @param DOMDocument $document
+     * @param Document $document
      *
-     * @return DOMDocument|null
+     * @return Document|null
      */
-    protected function document(DOMDocument $document = null) {
+    protected function document(Document $document = null) {
         if ($document === null) {
             return $this->document;
         }

@@ -2,7 +2,7 @@
 
 namespace Goose\Traits;
 
-use Goose\DOM\DOMElement;
+use DOMWrap\Element;
 
 /**
  * Node Common Trait
@@ -15,12 +15,12 @@ trait NodeCommonTrait {
      * Checks the density of links within a node, is there not much text and most of it contains linky shit?
      * if so it's no good
      *
-     * @param DOMElement $node
+     * @param Element $node
      * @param double $limit
      *
      * @return bool
      */
-    private function isHighLinkDensity(DOMElement $node, $limit = 1.0) {
+    private function isHighLinkDensity(Element $node, $limit = 1.0) {
         $links = $node->filter('a, [onclick]');
 
         if ($links->count() == 0) {

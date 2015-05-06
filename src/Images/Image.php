@@ -2,7 +2,7 @@
 
 namespace Goose\Images;
 
-use Goose\DOM\DOMElement;
+use DOMWrap\Element;
 
 /**
  * Image
@@ -24,18 +24,18 @@ class Image {
         }
     }
 
-    /** @var DOMElement */
+    /** @var Element */
     private $topImageNode = null;
 
     /**
-     * @param DOMElement $topImageNode
+     * @param Element $topImageNode
      */
     public function setTopImageNode($topImageNode) {
         $this->topImageNode = $topImageNode;
     }
 
     /**
-     * @return DOMElement
+     * @return Element
      */
     public function getTopImageNode() {
         return $this->topImageNode;

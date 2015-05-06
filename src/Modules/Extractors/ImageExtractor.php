@@ -3,14 +3,14 @@
 namespace Goose\Modules\Extractors;
 
 use Goose\Article;
-use Goose\DOM\DOMElement;
-use Goose\DOM\DOMNodeList;
 use Goose\Images\Image;
 use Goose\Images\ImageUtils;
 use Goose\Images\LocallyStoredImage;
 use Goose\Traits\ArticleMutatorTrait;
 use Goose\Modules\AbstractModule;
 use Goose\Modules\ModuleInterface;
+use DOMWrap\Element;
+use DOMWrap\Collections\NodeList;
 
 /**
  * Image Extractor
@@ -51,7 +51,7 @@ class ImageExtractor extends AbstractModule implements ModuleInterface {
             $article->setTopImage($this->getBestImage());
 
             if ($this->config()->get('image_fetch_all')
-              && $article->getTopNode() instanceof DOMElement) {
+              && $article->getTopNode() instanceof Element) {
                 $article->setAllImages($this->getAllImages());
             }
         }
@@ -73,7 +73,7 @@ class ImageExtractor extends AbstractModule implements ModuleInterface {
             return $image;
         }
 
-        if ($this->article()->getTopNode() instanceof DOMElement) {
+        if ($this->article()->getTopNode() instanceof Element) {
             $image = $this->checkForLargeImages($this->article()->getTopNode(), 0, 0);
 
             if ($image) {
@@ -121,13 +121,13 @@ class ImageExtractor extends AbstractModule implements ModuleInterface {
      * 4. any images left over let's do a full GET request, download em to disk and check their dimensions
      * 5. Score images based on different factors like height/width and possibly things like color density
      *
-     * @param DOMElement $node
+     * @param Element $node
      * @param int $parentDepthLevel
      * @param int $siblingDepthLevel
      *
      * @return Image|null
      */
-    private function checkForLargeImages(DOMElement $node, $parentDepthLevel, $siblingDepthLevel) {
+    private function checkForLargeImages(Element $node, $parentDepthLevel, $siblingDepthLevel) {
         $goodLocalImages = $this->getImageCandidates($node);
 
         $scoredLocalImages = $this->scoreLocalImages($goodLocalImages, $parentDepthLevel);
@@ -159,13 +159,13 @@ class ImageExtractor extends AbstractModule implements ModuleInterface {
     }
 
     /**
-     * @param DOMElement $node
+     * @param Element $node
      * @param int $parentDepth
      * @param int $siblingDepth
      *
      * @return object|null
      */
-    private function getDepthLevel(DOMElement $node, $parentDepth, $siblingDepth) {
+    private function getDepthLevel(Element $node, $parentDepth, $siblingDepth) {
         if (is_null($node)) {
             return null;
         }
@@ -312,11 +312,11 @@ class ImageExtractor extends AbstractModule implements ModuleInterface {
     /**
      * takes a list of image elements and filters out the ones with bad names
      *
-     * @param DOMNodeList $images
+     * @param NodeList $images
      *
-     * @return DOMElement[]
+     * @return Element[]
      */
-    private function filterBadNames(DOMNodeList $images) {
+    private function filterBadNames(NodeList $images) {
         $goodImages = [];
 
         foreach ($images as $image) {
@@ -333,11 +333,11 @@ class ImageExtractor extends AbstractModule implements ModuleInterface {
     /**
      * will check the image src against a list of bad image files we know of like buttons, etc...
      *
-     * @param DOMElement $imageNode
+     * @param Element $imageNode
      *
      * @return bool
      */
-    private function isOkImageFileName(DOMElement $imageNode) {
+    private function isOkImageFileName(Element $imageNode) {
         $imgSrc = $imageNode->getAttribute('src');
 
         if (empty($imgSrc)) {
@@ -354,11 +354,11 @@ class ImageExtractor extends AbstractModule implements ModuleInterface {
     }
 
     /**
-     * @param DOMElement $node
+     * @param Element $node
      *
      * @return LocallyStoredImage[]
      */
-    private function getImageCandidates(DOMElement $node) {
+    private function getImageCandidates(Element $node) {
         $images = $node->filter('img');
         $filteredImages = $this->filterBadNames($images);
         $goodImages = $this->findImagesThatPassByteSizeTest($filteredImages);
@@ -369,7 +369,7 @@ class ImageExtractor extends AbstractModule implements ModuleInterface {
     /**
      * loop through all the images and find the ones that have the best bytes to even make them a candidate
      *
-     * @param DOMElement[] $images
+     * @param Element[] $images
      *
      * @return LocallyStoredImage[]
      */
@@ -446,7 +446,7 @@ class ImageExtractor extends AbstractModule implements ModuleInterface {
 
         $node = $meta->first();
 
-        if (!($node instanceof DOMElement)) {
+        if (!($node instanceof Element)) {
             return null;
         }
 

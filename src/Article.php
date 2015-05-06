@@ -3,8 +3,8 @@
 namespace Goose;
 
 use Goose\Images\Image;
-use Goose\DOM\DOMElement;
-use Goose\DOM\DOMDocument;
+use DOMWrap\Element;
+use DOMWrap\Document;
 
 /**
  * Article
@@ -153,16 +153,16 @@ class Article {
     /**
      * Top Element we think is a candidate for the main body of the article
      *
-     * @var DOMElement|null
+     * @var Element|null
      */
     protected $topNode;
 
-    /** @param DOMElement|null $topNode */
-    public function setTopNode(DOMElement $topNode = null) {
+    /** @param Element|null $topNode */
+    public function setTopNode(Element $topNode = null) {
         $this->topNode = $topNode;
     }
 
-    /** @return DOMElement|null */
+    /** @return Element|null */
     public function getTopNode() {
         return $this->topNode;
     }
@@ -307,16 +307,16 @@ class Article {
     /**
      * DOM Document object
      *
-     * @var DOMDocument
+     * @var Document
      */
     protected $doc;
 
-    /** @param DOMDocument $doc */
-    public function setDoc(DOMDocument $doc) {
+    /** @param Document $doc */
+    public function setDoc(Document $doc) {
         $this->doc = $doc;
     }
 
-    /** @return DOMDocument */
+    /** @return Document */
     public function getDoc() {
         return $this->doc;
     }
@@ -325,16 +325,16 @@ class Article {
      * Original DOM document that contains a pure object from the original HTML without any cleaning
      * options done on it
      *
-     * @var DOMDocument
+     * @var Document
      */
     protected $rawDoc;
 
-    /** @param DOMDocument $rawDoc */
-    public function setRawDoc(DOMDocument $rawDoc) {
+    /** @param Document $rawDoc */
+    public function setRawDoc(Document $rawDoc) {
         $this->rawDoc = $rawDoc;
     }
 
-    /** @return DOMDocument */
+    /** @return Document */
     public function getRawDoc() {
         return $this->rawDoc;
     }

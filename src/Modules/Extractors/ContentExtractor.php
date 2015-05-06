@@ -3,14 +3,12 @@
 namespace Goose\Modules\Extractors;
 
 use Goose\Article;
-use Goose\DOM\DOMDocument;
-use Goose\DOM\DOMElement;
-use Goose\DOM\DOMNodeList;
 use Goose\Traits\NodeCommonTrait;
 use Goose\Traits\NodeGravityTrait;
 use Goose\Traits\ArticleMutatorTrait;
 use Goose\Modules\AbstractModule;
 use Goose\Modules\ModuleInterface;
+use DOMWrap\Element;
 
 /**
  * Content Extractor
@@ -53,13 +51,13 @@ class ContentExtractor extends AbstractModule implements ModuleInterface {
     }
 
     /**
-     * @param DOMElement $node
+     * @param Element $node
      * @param int $i
      * @param int $totalNodes
      *
      * @return double
      */
-    private function getTopNodeCandidateScore(DOMElement $node, $i, $totalNodes) {
+    private function getTopNodeCandidateScore(Element $node, $i, $totalNodes) {
         $boostScore = (1.0 / ($i + 1)) * 50;
         $bottomNodesForNegativeScore = $totalNodes * 0.25;
 
@@ -83,7 +81,7 @@ class ContentExtractor extends AbstractModule implements ModuleInterface {
     /**
      * @param array $nodes
      *
-     * @return DOMElement|null
+     * @return Element|null
      */
     private function getTopNodeByScore($nodes) {
         $topNode = null;
@@ -110,11 +108,11 @@ class ContentExtractor extends AbstractModule implements ModuleInterface {
     }
 
     /**
-     * @param DOMElement $node
+     * @param Element $node
      * @param double $upscore
      */
-    private function calculateBestNodeCandidateScores(DOMElement $node, $upscore) {
-        if ($node->parent() instanceof DOMElement) {
+    private function calculateBestNodeCandidateScores(Element $node, $upscore) {
+        if ($node->parent() instanceof Element) {
             $this->updateScore($node->parent(), $upscore);
             $this->updateNodeCount($node->parent(), 1);
 
@@ -124,15 +122,15 @@ class ContentExtractor extends AbstractModule implements ModuleInterface {
     }
 
     /**
-     * @param DOMElement $node
+     * @param Element $node
      * @param array $nodeCandidates
      */
-    private function updateBestNodeCandidates(DOMElement $node, $nodeCandidates) {
+    private function updateBestNodeCandidates(Element $node, $nodeCandidates) {
         if (!in_array($node->parent(), $nodeCandidates, true)) {
             $nodeCandidates[] = $node->parent();
         }
 
-        if ($node->parent() instanceof DOMElement) {
+        if ($node->parent() instanceof Element) {
             if (!in_array($node->parent()->parent(), $nodeCandidates, true)) {
                 $nodeCandidates[] = $node->parent()->parent();
             }
@@ -146,7 +144,7 @@ class ContentExtractor extends AbstractModule implements ModuleInterface {
      * and the number of consecutive paragraphs together, which should form the cluster of text that this node is around
      * also store on how high up the paragraphs are, comments are usually at the bottom and should get a lower score
      *
-     * @return DOMElement|null
+     * @return Element|null
      */
     public function getTopNode() {
         $nodes = $this->getTopNodeCandidatesByContents($this->article());
@@ -173,11 +171,11 @@ class ContentExtractor extends AbstractModule implements ModuleInterface {
      * boost a parent node that it should be connected to other paragraphs, at least for the first n paragraphs
      * so we'll want to make sure that the next sibling is a paragraph and has at least some substantial weight to it
      *
-     * @param DOMElement $node
+     * @param Element $node
      *
      * @return bool
      */
-    private function isOkToBoost(DOMElement $node) {
+    private function isOkToBoost(Element $node) {
         $stepsAway = 0;
         $minimumStopWordCount = 5;
         $maxStepsAwayFromNode = 3;

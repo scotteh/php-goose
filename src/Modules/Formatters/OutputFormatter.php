@@ -3,13 +3,13 @@
 namespace Goose\Modules\Formatters;
 
 use Goose\Article;
-use Goose\DOM\DOMText;
-use Goose\DOM\DOMElement;
 use Goose\Traits\NodeCommonTrait;
 use Goose\Traits\NodeGravityTrait;
 use Goose\Traits\ArticleMutatorTrait;
 use Goose\Modules\AbstractModule;
 use Goose\Modules\ModuleInterface;
+use DOMWrap\Text;
+use DOMWrap\Element;
 
 /**
  * Output Formatter
@@ -29,7 +29,7 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
     public function run(Article $article) {
         $this->article($article);
 
-        if ($this->article()->getTopNode() instanceof DOMElement) {
+        if ($this->article()->getTopNode() instanceof Element) {
             $this->postExtractionCleanup();
 
             $article->setCleanedArticleText($this->getFormattedText());
@@ -54,11 +54,11 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
     /**
      * Takes an element and turns the P tags into \n\n
      *
-     * @param DOMElement $topNode The top most node to format
+     * @param Element $topNode The top most node to format
      *
      * @return string
      */
-    private function convertToText(DOMElement $topNode) {
+    private function convertToText(Element $topNode) {
         if (empty($topNode)) {
             return '';
         }
@@ -91,11 +91,11 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
     }
 
     /**
-     * @param DOMElement $topNode
+     * @param Element $topNode
      *
      * @return string
      */
-    private function convertToHtml(DOMElement $topNode) {
+    private function convertToHtml(Element $topNode) {
         if (empty($topNode)) {
             return '';
         }
@@ -106,9 +106,9 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
     /**
      * cleans up and converts any nodes that should be considered text into text
      *
-     * @param DOMElement $topNode
+     * @param Element $topNode
      */
-    private function convertLinksToText(DOMElement $topNode) {
+    private function convertLinksToText(Element $topNode) {
         if (!empty($topNode)) {
             $links = $topNode->filter('a');
 
@@ -116,7 +116,7 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
                 $images = $item->filter('img');
 
                 if ($images->count() == 0) {
-                    $item->replace(new DOMText($item->text(DOM_NODE_TEXT_NORMALISED)));
+                    $item->replace(new Text($item->text(DOM_NODE_TEXT_NORMALISED)));
                 }
             }
         }
@@ -126,9 +126,9 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
      * if there are elements inside our top node that have a negative gravity score, let's
      * give em the boot
      *
-     * @param DOMElement $topNode
+     * @param Element $topNode
      */
-    private function removeNodesWithNegativeScores(DOMElement $topNode) {
+    private function removeNodesWithNegativeScores(Element $topNode) {
         if (!empty($topNode)) {
             $gravityItems = $topNode->filter('*[gravityScore]');
 
@@ -146,14 +146,14 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
      * replace common tags with just text so we don't have any crazy formatting issues
      * so replace <br>, <i>, <strong>, etc.... with whatever text is inside them
      *
-     * @param DOMElement $topNode
+     * @param Element $topNode
      */
-    private function replaceTagsWithText(DOMElement $topNode) {
+    private function replaceTagsWithText(Element $topNode) {
         if (!empty($topNode)) {
             $items = $topNode->filter('b, strong, i');
 
             foreach ($items as $item) {
-                $item->replace(new DOMText($this->getTagCleanedText($item)));
+                $item->replace(new Text($this->getTagCleanedText($item)));
             }
         }
     }
@@ -161,20 +161,20 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
     /**
      * @todo Implement
      *
-     * @param DOMElement $item
+     * @param Element $item
      *
      * @return string
      */
-    private function getTagCleanedText(DOMElement $item) {
+    private function getTagCleanedText(Element $item) {
         return $item->text(DOM_NODE_TEXT_NORMALISED);
     }
 
     /**
      * remove paragraphs that have less than x number of words, would indicate that it's some sort of link
      *
-     * @param DOMElement $topNode
+     * @param Element $topNode
      */
-    private function removeParagraphsWithFewWords(DOMElement $topNode) {
+    private function removeParagraphsWithFewWords(Element $topNode) {
         if (!empty($topNode)) {
             $nodes = $topNode->filter('p');
 
@@ -208,9 +208,9 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
     }
 
     /**
-     * @param DOMElement $topNode
+     * @param Element $topNode
      */
-    private function removeSmallParagraphs(DOMElement $topNode) {
+    private function removeSmallParagraphs(Element $topNode) {
         $nodes = $topNode->filter('p, strong');
 
         foreach ($nodes as $node) {
@@ -221,11 +221,11 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
     }
 
     /**
-     * @param DOMElement $topNode
+     * @param Element $topNode
      *
      * @return bool
      */
-    private function isTableTagAndNoParagraphsExist(DOMElement $topNode) {
+    private function isTableTagAndNoParagraphsExist(Element $topNode) {
         $this->removeSmallParagraphs($topNode);
 
         $nodes = $topNode->filter('p');
@@ -250,12 +250,12 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
     }
 
     /**
-     * @param DOMElement $topNode
-     * @param DOMElement $node
+     * @param Element $topNode
+     * @param Element $node
      *
      * @return bool
      */
-    private function isNodeScoreThreshholdMet(DOMElement $topNode, DOMElement $node) {
+    private function isNodeScoreThreshholdMet(Element $topNode, Element $node) {
         $topNodeScore = $this->getScore($topNode);
         $currentNodeScore = $this->getScore($node);
         $thresholdScore = ($topNodeScore * 0.08);
@@ -270,12 +270,12 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
     /**
      * Adds any siblings that may have a decent score to this node
      *
-     * @param DOMElement $currentSibling
+     * @param Element $currentSibling
      * @param int $baselineScoreForSiblingParagraphs
      *
-     * @return DOMElement[]
+     * @return Element[]
      */
-    private function getSiblingContent(DOMElement $currentSibling, $baselineScoreForSiblingParagraphs) {
+    private function getSiblingContent(Element $currentSibling, $baselineScoreForSiblingParagraphs) {
         $text = $currentSibling->text(DOM_NODE_TEXT_TRIM);
 
         if ($currentSibling->is('p, strong') && !empty($text)) {
@@ -302,9 +302,9 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
     }
 
     /**
-     * @param DOMElement $topNode
+     * @param Element $topNode
      */
-    private function addSiblings(DOMElement $topNode) {
+    private function addSiblings(Element $topNode) {
         $baselineScoreForSiblingParagraphs = $this->getBaselineScoreForSiblings($topNode);
 
         foreach ($topNode->previousAll(XML_ELEMENT_NODE) as $currentNode) {
@@ -322,11 +322,11 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
      * of the paragraphs within the top node. For example if our total score of 10 paragraphs was 1000 but each had an average value of
      * 100 then 100 should be our base.
      *
-     * @param DOMElement $topNode
+     * @param Element $topNode
      *
      * @return int
      */
-    private function getBaselineScoreForSiblings(DOMElement $topNode) {
+    private function getBaselineScoreForSiblings(Element $topNode) {
         $base = 100000;
         $numberOfParagraphs = 0;
         $scoreOfParagraphs = 0;

@@ -2,17 +2,9 @@
 
 namespace Goose;
 
-use GuzzleHttp\Client as GuzzleClient;
 use Goose\Utils\URLHelper;
-use Goose\DOM\DOMElement;
-use Goose\DOM\DOMDocument;
-use Goose\Images\Image;
-use Goose\Images\ImageExtractor;
-use Goose\Extractors\MetaExtractor;
-use Goose\Extractors\PublishDateExtractor;
-use Goose\Extractors\ExtractorInterface;
-use Goose\Cleaners\DocumentCleaner;
-use Goose\Formatters\OutputFormatter;
+use DOMWrap\Document;
+use GuzzleHttp\Client as GuzzleClient;
 
 /**
  * Crawler
@@ -93,10 +85,10 @@ class Crawler {
     /**
      * @param string $rawHTML
      *
-     * @return DOMDocument
+     * @return Document
      */
     private function getDocument($rawHTML) {
-        $doc = new DOMDocument();
+        $doc = new Document();
         $doc->html($rawHTML);
 
         return $doc;
