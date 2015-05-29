@@ -21,7 +21,7 @@ trait NodeCommonTrait {
      * @return bool
      */
     private function isHighLinkDensity(Element $node, $limit = 1.0) {
-        $links = $node->filter('a, [onclick]');
+        $links = $node->find('a, [onclick]');
 
         if ($links->count() == 0) {
             return false;

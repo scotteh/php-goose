@@ -110,13 +110,13 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
      */
     private function convertLinksToText(Element $topNode) {
         if (!empty($topNode)) {
-            $links = $topNode->filter('a');
+            $links = $topNode->find('a');
 
             foreach ($links as $item) {
-                $images = $item->filter('img');
+                $images = $item->find('img');
 
                 if ($images->count() == 0) {
-                    $item->replace(new Text($item->text(DOM_NODE_TEXT_NORMALISED)));
+                    $item->replaceWith(new Text($item->text(DOM_NODE_TEXT_NORMALISED)));
                 }
             }
         }
@@ -130,10 +130,10 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
      */
     private function removeNodesWithNegativeScores(Element $topNode) {
         if (!empty($topNode)) {
-            $gravityItems = $topNode->filter('*[gravityScore]');
+            $gravityItems = $topNode->find('*[gravityScore]');
 
             foreach ($gravityItems as $item) {
-                $score = (int)$item->getAttribute('gravityScore');
+                $score = (int)$item->attr('gravityScore');
 
                 if ($score < 1) {
                     $item->remove();
@@ -150,10 +150,10 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
      */
     private function replaceTagsWithText(Element $topNode) {
         if (!empty($topNode)) {
-            $items = $topNode->filter('b, strong, i');
+            $items = $topNode->find('b, strong, i');
 
             foreach ($items as $item) {
-                $item->replace(new Text($this->getTagCleanedText($item)));
+                $item->replaceWith(new Text($this->getTagCleanedText($item)));
             }
         }
     }
@@ -176,12 +176,12 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
      */
     private function removeParagraphsWithFewWords(Element $topNode) {
         if (!empty($topNode)) {
-            $nodes = $topNode->filter('p');
+            $nodes = $topNode->find('p');
 
             foreach ($nodes as $node) {
                 $stopWords = $this->config()->getStopWords()->getStopwordCount($node->text());
 
-                if (mb_strlen($node->text(DOM_NODE_TEXT_NORMALISED)) < 8 && $stopWords->getStopWordCount() < 3 && $node->filter('object')->count() == 0 && $node->filter('embed')->count() == 0) {
+                if (mb_strlen($node->text(DOM_NODE_TEXT_NORMALISED)) < 8 && $stopWords->getStopWordCount() < 3 && $node->find('object')->count() == 0 && $node->find('embed')->count() == 0) {
                     $node->remove();
                 }
             }
@@ -211,7 +211,7 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
      * @param Element $topNode
      */
     private function removeSmallParagraphs(Element $topNode) {
-        $nodes = $topNode->filter('p, strong');
+        $nodes = $topNode->find('p, strong');
 
         foreach ($nodes as $node) {
             if (mb_strlen($node->text(DOM_NODE_TEXT_NORMALISED)) < 25) {
@@ -228,13 +228,13 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
     private function isTableTagAndNoParagraphsExist(Element $topNode) {
         $this->removeSmallParagraphs($topNode);
 
-        $nodes = $topNode->filter('p');
+        $nodes = $topNode->find('p');
 
         if ($nodes->count() == 0 && $topNode->is(':not(td)')) {
             if ($topNode->is('ul, ol')) {
                 $linkTextLength = array_sum(array_map(function($value) {
                     return mb_strlen($value->text(DOM_NODE_TEXT_NORMALISED));
-                }, $topNode->filter('a')->toArray()));
+                }, $topNode->find('a')->toArray()));
 
                 $elementTextLength = mb_strlen($topNode->text(DOM_NODE_TEXT_NORMALISED));
 
@@ -284,7 +284,7 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
 
         $results = [];
 
-        $nodes = $currentSibling->filter('p, strong');
+        $nodes = $currentSibling->find('p, strong');
 
         foreach ($nodes as $node) {
             $text = $node->text(DOM_NODE_TEXT_TRIM);
@@ -307,8 +307,13 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
     private function addSiblings(Element $topNode) {
         $baselineScoreForSiblingParagraphs = $this->getBaselineScoreForSiblings($topNode);
 
-        foreach ($topNode->previousAll(XML_ELEMENT_NODE) as $currentNode) {
-            $results = $this->getSiblingContent($currentNode, $baselineScoreForSiblingParagraphs);
+        $previousSiblings = $topNode->precedingAll(function($node) {
+            return $node instanceof Element;
+        });
+
+        // Find all previous sibling element nodes
+        foreach ($previousSiblings as $siblingNode) {
+            $results = $this->getSiblingContent($siblingNode, $baselineScoreForSiblingParagraphs);
 
             foreach ($results as $result) {
                 $topNode->insertBefore($result, $topNode->firstChild);
@@ -330,7 +335,7 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
         $base = 100000;
         $numberOfParagraphs = 0;
         $scoreOfParagraphs = 0;
-        $nodesToCheck = $topNode->filter('p, strong');
+        $nodesToCheck = $topNode->find('p, strong');
 
         foreach ($nodesToCheck as $node) {
             $nodeText = $node->text();

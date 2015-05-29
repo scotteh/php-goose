@@ -66,7 +66,7 @@ class MetaExtractor extends AbstractModule implements ModuleInterface {
      * @return string
      */
     private function getTitle() {
-        $nodes = $this->article()->getDoc()->filter('html > head > title');
+        $nodes = $this->article()->getDoc()->find('html > head > title');
 
         if (!$nodes->count()) return '';
 
@@ -101,7 +101,7 @@ class MetaExtractor extends AbstractModule implements ModuleInterface {
      * @return NodeList
      */
     private function getNodesByLowercasePropertyValue(Document $doc, $tag, $property, $value) {
-        return $doc->filterXPath("descendant::".$tag."[translate(@".$property.", 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz')='".$value."']");
+        return $doc->findXPath("descendant::".$tag."[translate(@".$property.", 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz')='".$value."']");
     }
 
     /**
@@ -119,7 +119,7 @@ class MetaExtractor extends AbstractModule implements ModuleInterface {
             return '';
         }
 
-        $content = $nodes->first()->getAttribute($attr);
+        $content = $nodes->first()->attr($attr);
         $content = trim($content);
 
         return $content;
@@ -133,10 +133,10 @@ class MetaExtractor extends AbstractModule implements ModuleInterface {
     private function getMetaLanguage() {
         $lang = '';
 
-        $el = $this->article()->getDoc()->filter('html[lang]');
+        $el = $this->article()->getDoc()->find('html[lang]');
 
         if ($el->count()) {
-            $lang = $el->first()->getAttribute('lang');
+            $lang = $el->first()->attr('lang');
         }
 
         if (empty($lang)) {
@@ -146,10 +146,10 @@ class MetaExtractor extends AbstractModule implements ModuleInterface {
             ];
 
             foreach ($selectors as $selector) {
-                $el = $this->article()->getDoc()->filter($selector);
+                $el = $this->article()->getDoc()->find($selector);
 
                 if ($el->count()) {
-                    $lang = $el->first()->getAttribute('content');
+                    $lang = $el->first()->attr('content');
                     break;
                 }
             }
@@ -199,19 +199,19 @@ class MetaExtractor extends AbstractModule implements ModuleInterface {
         $nodes = $this->getNodesByLowercasePropertyValue($this->article()->getDoc(), 'link', 'rel', 'canonical');
 
         if ($nodes->count()) {
-            return trim($nodes->first()->getAttribute('href'));
+            return trim($nodes->first()->attr('href'));
         }
 
         $nodes = $this->getNodesByLowercasePropertyValue($this->article()->getDoc(), 'meta', 'property', 'og:url');
 
         if ($nodes->count()) {
-            return trim($nodes->first()->getAttribute('content'));
+            return trim($nodes->first()->attr('content'));
         }
 
         $nodes = $this->getNodesByLowercasePropertyValue($this->article()->getDoc(), 'meta', 'name', 'twitter:url');
 
         if ($nodes->count()) {
-            return trim($nodes->first()->getAttribute('content'));
+            return trim($nodes->first()->attr('content'));
         }
 
         return $this->article()->getFinalUrl();
@@ -221,7 +221,7 @@ class MetaExtractor extends AbstractModule implements ModuleInterface {
      * @return string[]
      */
     private function getTags() {
-        $nodes = $this->article()->getDoc()->filter(self::$A_REL_TAG_SELECTOR);
+        $nodes = $this->article()->getDoc()->find(self::$A_REL_TAG_SELECTOR);
 
         $tags = [];
 
@@ -240,13 +240,13 @@ class MetaExtractor extends AbstractModule implements ModuleInterface {
     private function getVideos() {
         $videos = [];
 
-        $nodes = $this->article()->getTopNode()->parent()->filter('embed, object, iframe');
+        $nodes = $this->article()->getTopNode()->parent()->find('embed, object, iframe');
 
         foreach ($nodes as $node) {
             if ($node->hasAttribute('src')) {
-                $src = $node->getAttribute('src');
+                $src = $node->attr('src');
             } else {
-                $src = $node->getAttribute('data');
+                $src = $node->attr('data');
             }
 
             $match = array_reduce(self::$VIDEO_PROVIDERS, function($match, $domain) use ($src) {
@@ -272,12 +272,12 @@ class MetaExtractor extends AbstractModule implements ModuleInterface {
     private function getLinks() {
         $goodLinks = [];
 
-        $candidates = $this->article()->getTopNode()->parent()->filter('a[href]');
+        $candidates = $this->article()->getTopNode()->parent()->find('a[href]');
 
         foreach ($candidates as $el) {
-            if ($el->getAttribute('href') != '#' && trim($el->getAttribute('href')) != '') {
+            if ($el->attr('href') != '#' && trim($el->attr('href')) != '') {
                 $goodLinks[] = [
-                    'url' => $el->getAttribute('href'),
+                    'url' => $el->attr('href'),
                     'text' => $el->text(DOM_NODE_TEXT_NORMALISED),
                 ];
             }

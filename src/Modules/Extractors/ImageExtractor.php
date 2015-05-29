@@ -174,7 +174,10 @@ class ImageExtractor extends AbstractModule implements ModuleInterface {
             return null;
         }
 
-        $siblingNode = $node->previous(XML_ELEMENT_NODE);
+        // Find previous sibling element node
+        $siblingNode = $node->preceding(function($node) {
+            return $node instanceof Element;
+        });
 
         if (is_null($siblingNode)) {
             return (object)[
@@ -256,11 +259,11 @@ class ImageExtractor extends AbstractModule implements ModuleInterface {
     private function getAllImages() {
         $results = [];
 
-        $images = $this->article()->getTopNode()->filter('img');
+        $images = $this->article()->getTopNode()->find('img');
 
         // Generate a complete URL for each image
         $imageUrls = array_map(function($image) {
-            return $this->buildImagePath($image->getAttribute('src'));
+            return $this->buildImagePath($image->attr('src'));
         }, $images->toArray());
 
         $localImages = $this->getLocallyStoredImages($imageUrls);
@@ -338,7 +341,7 @@ class ImageExtractor extends AbstractModule implements ModuleInterface {
      * @return bool
      */
     private function isOkImageFileName(Element $imageNode) {
-        $imgSrc = $imageNode->getAttribute('src');
+        $imgSrc = $imageNode->attr('src');
 
         if (empty($imgSrc)) {
             return false;
@@ -359,7 +362,7 @@ class ImageExtractor extends AbstractModule implements ModuleInterface {
      * @return LocallyStoredImage[]
      */
     private function getImageCandidates(Element $node) {
-        $images = $node->filter('img');
+        $images = $node->find('img');
         $filteredImages = $this->filterBadNames($images);
         $goodImages = $this->findImagesThatPassByteSizeTest($filteredImages);
 
@@ -381,7 +384,7 @@ class ImageExtractor extends AbstractModule implements ModuleInterface {
 
         // Generate a complete URL for each image
         $imageUrls = array_map(function($image) {
-            return $this->buildImagePath($image->getAttribute('src'));
+            return $this->buildImagePath($image->attr('src'));
         }, $images);
 
         $localImages = $this->getLocallyStoredImages($imageUrls, true);
@@ -438,7 +441,7 @@ class ImageExtractor extends AbstractModule implements ModuleInterface {
      * @return Image|null
      */
     private function checkForTag($selector, $attr, $type) {
-        $meta = $this->article()->getRawDoc()->filter($selector);
+        $meta = $this->article()->getRawDoc()->find($selector);
 
         if (!$meta->count()) {
             return null;
@@ -454,7 +457,7 @@ class ImageExtractor extends AbstractModule implements ModuleInterface {
             return null;
         }
 
-        $imagePath = $this->buildImagePath($node->getAttribute($attr));
+        $imagePath = $this->buildImagePath($node->attr($attr));
         $mainImage = new Image();
         $mainImage->setImageSrc($imagePath);
         $mainImage->setImageExtractionType($type);
@@ -542,14 +545,14 @@ class ImageExtractor extends AbstractModule implements ModuleInterface {
         $knownImage = null;
 
         foreach ($knownImgDomNames as $knownName) {
-            $known = $this->article()->getRawDoc()->filter('#' . $knownName);
+            $known = $this->article()->getRawDoc()->find('#' . $knownName);
 
             if (!$known->count()) {
-                $known = $this->article()->getRawDoc()->filter('.' . $knownName);
+                $known = $this->article()->getRawDoc()->find('.' . $knownName);
             }
 
             if ($known->count()) {
-                $mainImage = $known->first()->filter('img');
+                $mainImage = $known->first()->find('img');
 
                 if ($mainImage->count()) {
                     $knownImage = $mainImage->first();
@@ -561,7 +564,7 @@ class ImageExtractor extends AbstractModule implements ModuleInterface {
             return null;
         }
 
-        $knownImgSrc = $knownImage->getAttribute('src');
+        $knownImgSrc = $knownImage->attr('src');
 
         $mainImage = new Image();
         $mainImage->setImageSrc($this->buildImagePath($knownImgSrc));

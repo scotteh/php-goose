@@ -68,7 +68,7 @@ class DocumentCleaner extends AbstractModule implements ModuleInterface {
 
         $this->removeXPath('//comment()');
         $this->replace('em, strong, b, i, strike, del, ins', function($node) {
-            return !$node->filter('img')->count();
+            return !$node->find('img')->count();
         });
         $this->replace('span[class~=dropcap], span[class~=drop_cap]');
         $this->remove('script, style');
@@ -99,7 +99,7 @@ class DocumentCleaner extends AbstractModule implements ModuleInterface {
      * @return null
      */
     private function remove($selector, \Closure $callback = null) {
-        $nodes = $this->document()->filter($selector);
+        $nodes = $this->document()->find($selector);
 
         foreach ($nodes as $node) {
             if (is_null($callback) || $callback($node)) {
@@ -117,7 +117,7 @@ class DocumentCleaner extends AbstractModule implements ModuleInterface {
      * @return null
      */
     private function removeXPath($expression, \Closure $callback = null) {
-        $nodes = $this->document()->filterXPath($expression);
+        $nodes = $this->document()->findXPath($expression);
 
         foreach ($nodes as $node) {
             if (is_null($callback) || $callback($node)) {
@@ -135,11 +135,11 @@ class DocumentCleaner extends AbstractModule implements ModuleInterface {
      * @return null
      */
     private function replace($selector, \Closure $callback = null) {
-        $nodes = $this->document()->filter($selector);
+        $nodes = $this->document()->find($selector);
 
         foreach ($nodes as $node) {
             if (is_null($callback) || $callback($node)) {
-                $node->replace(new Text((string)$node->text()));
+                $node->replaceWith(new Text((string)$node->text()));
             }
         }
     }
@@ -174,7 +174,7 @@ class DocumentCleaner extends AbstractModule implements ModuleInterface {
                 foreach ($attrs as $attr) {
                     $selector = sprintf($expr, $attr, $value) . $exceptions;
 
-                    foreach ($this->document()->filter($selector) as $node) {
+                    foreach ($this->document()->find($selector) as $node) {
                         $node->remove();
                     }
                 }
@@ -198,10 +198,10 @@ class DocumentCleaner extends AbstractModule implements ModuleInterface {
         }
 
         foreach ($node->attributes as $attr) {
-            $el->setAttribute($attr->localName, $attr->nodeValue);
+            $el->attr($attr->localName, $attr->nodeValue);
         }
 
-        $node->replace($el);
+        $node->replaceWith($el);
     }
 
     /**
@@ -212,10 +212,10 @@ class DocumentCleaner extends AbstractModule implements ModuleInterface {
      * @return null
      */
     private function convertToParagraph($selector) {
-        $nodes = $this->document()->filter($selector);
+        $nodes = $this->document()->find($selector);
 
         foreach ($nodes as $node) {
-            $tagNodes = $node->filter('a, blockquote, dl, div, img, ol, p, pre, table, ul');
+            $tagNodes = $node->find('a, blockquote, dl, div, img, ol, p, pre, table, ul');
 
             if (!$tagNodes->count()) {
                 $this->replaceElementsWithPara($node);
@@ -254,8 +254,8 @@ class DocumentCleaner extends AbstractModule implements ModuleInterface {
      */
     private function getReplacementNodes(Element $node) {
         $replacementText = [];
-        $nodesToReturn = new NodeList;
-        $nodesToRemove = new NodeList;
+        $nodesToReturn = $node->newNodeList();
+        $nodesToRemove = $node->newNodeList();
 
         foreach ($node->children() as $child) {
             if ($child->is('p') && !empty($replacementText)) {
@@ -267,7 +267,7 @@ class DocumentCleaner extends AbstractModule implements ModuleInterface {
 
                 if (!empty($replaceText)) {
                     // Get all previous sibling <a> nodes, the current text node, and all next sibling <a> nodes.
-                    $siblings = $child->previousAll('a')->merge([$child])->merge($child->nextAll('a'));
+                    $siblings = $child->precedingAll('a')->merge([$child])->merge($child->followingAll('a'));
 
                     foreach ($siblings as $sibling) {
                         // Place current nodes textual contents in-between previous and next nodes.
@@ -275,8 +275,8 @@ class DocumentCleaner extends AbstractModule implements ModuleInterface {
                             $replacementText[] = $replaceText;
 
                         // Grab the contents of any unprocessed <a> siblings and flag them for removal.
-                        } else if ($sibling->getAttribute('grv-usedalready') != 'yes') {
-                            $sibling->setAttribute('grv-usedalready', 'yes');
+                        } else if ($sibling->attr('grv-usedalready') != 'yes') {
+                            $sibling->attr('grv-usedalready', 'yes');
 
                             $replacementText[] = $this->document()->saveXML($sibling);
                             $nodesToRemove[] = $sibling;

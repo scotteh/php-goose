@@ -36,7 +36,7 @@ class ContentExtractor extends AbstractModule implements ModuleInterface {
     private function getTopNodeCandidatesByContents(Article $article) {
         $results = [];
 
-        $nodes = $article->getDoc()->filter('p, td, pre');
+        $nodes = $article->getDoc()->find('p, td, pre');
 
         foreach ($nodes as $node) {
             $wordStats = $this->config()->getStopWords()->getStopwordCount($node->text());
@@ -180,7 +180,10 @@ class ContentExtractor extends AbstractModule implements ModuleInterface {
         $minimumStopWordCount = 5;
         $maxStepsAwayFromNode = 3;
 
-        $siblings = $node->previousAll(XML_ELEMENT_NODE);
+        // Find all previous sibling element nodes
+        $siblings = $node->precedingAll(function($node) {
+            return $node instanceof Element;
+        });
 
         foreach ($siblings as $sibling) {
             if ($sibling->is('p, strong')) {
