@@ -64,7 +64,7 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
         }
 
         $list = [];
-        foreach ($topNode->children() as $child) {
+        foreach ($topNode->contents() as $child) {
             $list[] = $child->text(DOM_NODE_TEXT_TRIM);
         }
 
@@ -196,7 +196,7 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
     private function postExtractionCleanup() {
         $this->addSiblings($this->article()->getTopNode());
 
-        foreach ($this->article()->getTopNode()->children() as $node) {
+        foreach ($this->article()->getTopNode()->contents() as $node) {
             if ($node->is(':not(p):not(strong)')) {
                 if ($this->isHighLinkDensity($node)
                     || $this->isTableTagAndNoParagraphsExist($node)

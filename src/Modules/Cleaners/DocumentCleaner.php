@@ -190,18 +190,15 @@ class DocumentCleaner extends AbstractModule implements ModuleInterface {
      * @return null
      */
     private function replaceElementsWithPara(Element $node) {
-        $el = $this->document()->createElement('p');
+        $newEl = $this->document()->createElement('p');
 
-        foreach ($node->children() as $child) {
-            $child = $child->cloneNode(true);
-            $el->appendChild($child);
-        }
+        $newEl->append($node->contents()->detach());
 
         foreach ($node->attributes as $attr) {
-            $el->attr($attr->localName, $attr->nodeValue);
+            $newEl->attr($attr->localName, $attr->nodeValue);
         }
 
-        $node->replaceWith($el);
+        $node->replaceWith($newEl);
     }
 
     /**
@@ -222,7 +219,7 @@ class DocumentCleaner extends AbstractModule implements ModuleInterface {
             } else {
                 $replacements = $this->getReplacementNodes($node);
 
-                $node->children()->remove();
+                $node->contents()->remove();
                 $node->append($replacements);
             }
         }
@@ -231,18 +228,15 @@ class DocumentCleaner extends AbstractModule implements ModuleInterface {
     /**
      * Generate new <p> element with supplied content.
      *
-     * @param array $replacementText Contents of element
+     * @param NodeList $replacementNodes
      *
      * @return Element
      */
-    private function getFlushedBuffer($replacementText) {
-        $fragment = $this->document()->createDocumentFragment();
-        $fragment->appendXML(htmlspecialchars(implode(' ', $replacementText)));
+    private function getFlushedBuffer($replacementNodes) {
+        $newEl = $this->document()->createElement('p');
+        $newEl->append($replacementNodes);
 
-        $el = $this->document()->createElement('p');
-        $el->appendChild($fragment);
-
-        return $el;
+        return $newEl;
     }
 
     /**
@@ -253,32 +247,32 @@ class DocumentCleaner extends AbstractModule implements ModuleInterface {
      * @return NodeList $nodesToReturn Replacement elements
      */
     private function getReplacementNodes(Element $node) {
-        $replacementText = [];
         $nodesToReturn = $node->newNodeList();
         $nodesToRemove = $node->newNodeList();
+        $replacementNodes = $node->newNodeList();
 
-        foreach ($node->children() as $child) {
-            if ($child->is('p') && !empty($replacementText)) {
-                $nodesToReturn[] = $this->getFlushedBuffer($replacementText);
-                $replacementText = [];
+        foreach ($node->contents() as $child) {
+            if ($child->is('p') && $replacementNodes->count()) {
+                $nodesToReturn[] = $this->getFlushedBuffer($replacementNodes);
+                $replacementNodes->fromArray([]);
                 $nodesToReturn[] = $child;
             } else if ($child->nodeType == XML_TEXT_NODE) {
                 $replaceText = $child->text(DOM_NODE_TEXT_NORMALISED);
 
                 if (!empty($replaceText)) {
                     // Get all previous sibling <a> nodes, the current text node, and all next sibling <a> nodes.
-                    $siblings = $child->precedingAll('a')->merge([$child])->merge($child->followingAll('a'));
+                    $siblings = $child->precedingUntil(':not(a)', 'a')->merge([$child])->merge($child->followingUntil(':not(a)', 'a'));
 
                     foreach ($siblings as $sibling) {
                         // Place current nodes textual contents in-between previous and next nodes.
                         if ($sibling->isSameNode($child)) {
-                            $replacementText[] = $replaceText;
+                            $replacementNodes[] = new Text($replaceText);
 
                         // Grab the contents of any unprocessed <a> siblings and flag them for removal.
-                        } else if ($sibling->attr('grv-usedalready') != 'yes') {
-                            $sibling->attr('grv-usedalready', 'yes');
+                        } else if ($sibling->getAttribute('grv-usedalready') != 'yes') {
+                            $sibling->setAttribute('grv-usedalready', 'yes');
 
-                            $replacementText[] = $this->document()->saveXML($sibling);
+                            $replacementNodes[] = $sibling->cloneNode(true);
                             $nodesToRemove[] = $sibling;
                         }
 
@@ -287,26 +281,24 @@ class DocumentCleaner extends AbstractModule implements ModuleInterface {
 
                 $nodesToRemove[] = $child;
             } else {
-                if (!empty($replacementText)) {
-                    $nodesToReturn[] = $this->getFlushedBuffer($replacementText);
-                    $replacementText = [];
+                if ($replacementNodes->count()) {
+                    $nodesToReturn[] = $this->getFlushedBuffer($replacementNodes);
+                    $replacementNodes->fromArray([]);
                 }
 
                 $nodesToReturn[] = $child;
             }
         }
 
-        // Flush any remaining replacementText left over from text nodes.
-        if (!empty($replacementText)) {
-            $nodesToReturn[] = $this->getFlushedBuffer($replacementText);
+        // Flush any remaining replacementNodes left over from text nodes.
+        if ($replacementNodes->count()) {
+            $nodesToReturn[] = $this->getFlushedBuffer($replacementNodes);
         }
 
         // Remove potential duplicate <a> tags.
-        foreach ($nodesToRemove as $remove) {
-            foreach ($nodesToReturn as $key => $return) {
-                if ($return->isSameNode($remove)) {
-                    unset($nodesToReturn[$key]);
-                }
+        foreach ($nodesToReturn as $key => $return) {
+            if ($nodesToRemove->exists($return)) {
+                unset($nodesToReturn[$key]);
             }
         }
 

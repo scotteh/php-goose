@@ -78,7 +78,7 @@ class DocumentCleanerTest extends \PHPUnit_Framework_TestCase
         $this->setDocument($article->getDoc());
 
         $this->call('replace', $selector, function($node) {
-            return !$node->filter('img')->count();
+            return !$node->find('img')->count();
         });
 
         $this->assertEqualXMLStructure(
@@ -255,7 +255,7 @@ class DocumentCleanerTest extends \PHPUnit_Framework_TestCase
                 'Convert wanted tags to paragraphs #2'
             ],
             [
-                $this->document('<html><body><div><img/><a>Example<img/></a><p>Text Node!</p><pre>Test!</pre></div></body></html>'),
+                $this->document('<html><body><div><img/><p><a grv-usedalready="yes">Example<img/></a>Text Node!</p><pre>Test!</pre></div></body></html>'),
                 $this->generate('<html><body><div><img/><a>Example<img/></a>Text Node!<pre>Test!</pre></div></body></html>'),
                 'Convert wanted tags to paragraphs #3'
             ],
@@ -265,7 +265,7 @@ class DocumentCleanerTest extends \PHPUnit_Framework_TestCase
                 'Convert wanted tags to paragraphs #4'
             ],
             [
-                $this->document('<html><body><div><img/><a>Example<img/></a><p>Text Node!</p><pre>Test!</pre><a>Example<img/></a></div></body></html>'),
+                $this->document('<html><body><div><img/><p><a grv-usedalready="yes">Example<img/></a>Text Node!</p><pre>Test!</pre><a>Example<img/></a></div></body></html>'),
                 $this->generate('<html><body><div><img/><a>Example<img/></a>Text Node!<pre>Test!</pre><a>Example<img/></a></div></body></html>'),
                 'Convert wanted tags to paragraphs #5'
             ],
@@ -275,7 +275,7 @@ class DocumentCleanerTest extends \PHPUnit_Framework_TestCase
                 'Convert wanted tags to paragraphs #6'
             ],
             [
-                $this->document('<html><body><div><img/><a>Example<img/></a><p>Text Node!</p><pre>Test!</pre><p>test</p><a>Example<img/></a></div></body></html>'),
+                $this->document('<html><body><div><img/><p><a grv-usedalready="yes">Example<img/></a>Text Node!</p><pre>Test!</pre><p>test<a grv-usedalready="yes">Example<img/></a></p></div></body></html>'),
                 $this->generate('<html><body><div><img/><a>Example<img/></a>Text Node!<pre>Test!</pre>test<a>Example<img/></a></div></body></html>'),
                 'Convert wanted tags to paragraphs #7'
             ],
