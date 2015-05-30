@@ -8,7 +8,6 @@ use Goose\Modules\AbstractModule;
 use Goose\Modules\ModuleInterface;
 use DOMWrap\Element;
 use DOMWrap\Document;
-use DOMWrap\Collections\NodeList;
 
 /**
  * Content Extractor
@@ -98,7 +97,7 @@ class MetaExtractor extends AbstractModule implements ModuleInterface {
      * @param string $property
      * @param string $value
      *
-     * @return NodeList
+     * @return \DOMWrap\NodeList
      */
     private function getNodesByLowercasePropertyValue(Document $doc, $tag, $property, $value) {
         return $doc->findXPath("descendant::".$tag."[translate(@".$property.", 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz')='".$value."']");

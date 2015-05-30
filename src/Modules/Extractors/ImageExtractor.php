@@ -10,7 +10,7 @@ use Goose\Traits\ArticleMutatorTrait;
 use Goose\Modules\AbstractModule;
 use Goose\Modules\ModuleInterface;
 use DOMWrap\Element;
-use DOMWrap\Collections\NodeList;
+use DOMWrap\NodeList;
 
 /**
  * Image Extractor
@@ -315,7 +315,7 @@ class ImageExtractor extends AbstractModule implements ModuleInterface {
     /**
      * takes a list of image elements and filters out the ones with bad names
      *
-     * @param NodeList $images
+     * @param \DOMWrap\NodeList $images
      *
      * @return Element[]
      */

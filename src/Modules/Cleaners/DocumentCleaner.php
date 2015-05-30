@@ -8,7 +8,7 @@ use Goose\Modules\AbstractModule;
 use Goose\Modules\ModuleInterface;
 use DOMWrap\Text;
 use DOMWrap\Element;
-use DOMWrap\Collections\NodeList;
+use DOMWrap\NodeList;
 
 /**
  * Document Cleaner
@@ -228,11 +228,11 @@ class DocumentCleaner extends AbstractModule implements ModuleInterface {
     /**
      * Generate new <p> element with supplied content.
      *
-     * @param NodeList $replacementNodes
+     * @param \DOMWrap\NodeList $replacementNodes
      *
      * @return Element
      */
-    private function getFlushedBuffer($replacementNodes) {
+    private function getFlushedBuffer(NodeList $replacementNodes) {
         $newEl = $this->document()->createElement('p');
         $newEl->append($replacementNodes);
 
@@ -244,7 +244,7 @@ class DocumentCleaner extends AbstractModule implements ModuleInterface {
      *
      * @param Element $node
      *
-     * @return NodeList $nodesToReturn Replacement elements
+     * @return \DOMWrap\NodeList $nodesToReturn Replacement elements
      */
     private function getReplacementNodes(Element $node) {
         $nodesToReturn = $node->newNodeList();
