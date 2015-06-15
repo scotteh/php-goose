@@ -31,6 +31,23 @@ class Article {
     }
 
     /**
+     * OpenGraph meta data
+     *
+     * @var string[]
+     */
+    protected $openGraph;
+
+    /** @param string[] $openGraph */
+    public function setOpenGraph($openGraph) {
+        $this->openGraph = $openGraph;
+    }
+
+    /** @return string[] */
+    public function getOpenGraph() {
+        return $this->openGraph;
+    }
+
+    /**
      * Title of the article
      *
      * @var string

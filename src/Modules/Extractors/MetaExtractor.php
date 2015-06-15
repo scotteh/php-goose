@@ -44,6 +44,7 @@ class MetaExtractor extends AbstractModule implements ModuleInterface {
     public function run(Article $article) {
         $this->article($article);
 
+        $article->setOpenGraph($this->getOpenGraph());
         $article->setTitle($this->getTitle());
         $article->setMetaDescription($this->getMetaDescription());
         $article->setMetaKeywords($this->getMetaKeywords());
@@ -62,33 +63,102 @@ class MetaExtractor extends AbstractModule implements ModuleInterface {
     }
 
     /**
+     * Retrieve all OpenGraph meta data
+     *
+     * Ported from python-goose https://github.com/grangier/python-goose/ by Xavier Grangier
+     * 
+     * @return string[]
+     */
+    private function getOpenGraph() {
+        $results = array();
+
+        $nodes = $this->article()->getRawDoc()->find('meta[property^="og:"]');
+
+        foreach ($nodes as $node) {
+            $property = explode(':', $node->attr('property'));
+
+            $results[$property[1]] = $node->attr('content');
+        }
+
+        return $results;
+    }
+
+    /**
+     * Clean title text
+     *
+     * Ported from python-goose https://github.com/grangier/python-goose/ by Xavier Grangier
+     * 
+     * @param string $title
+     *
+     * @return string
+     */
+    private function cleanTitle($title) {
+        $openGraph = $this->article()->getOpenGraph();
+
+        // Check if we have the site name in OpenGraph data
+        if (isset($openGraph['site_name'])) {
+            $title = str_replace($openGraph['site_name'], '', $title);
+        }
+
+        // Try to remove the domain from URL
+        if ($this->article()->getDomain()) {
+            $title = str_ireplace($this->article()->getDomain(), '', $title);
+        }
+
+        // Split the title in words
+        // TechCrunch | my wonderfull article
+        // my wonderfull article | TechCrunch
+        $titleWords = preg_split('@[\s]+@', trim($title));
+
+        // Check for an empty title
+        if (empty($titleWords)) {
+            return '';
+        }
+
+        // Check if last letter is in self::$SPLITTER_CHARS
+        // if so remove it
+        if (in_array($titleWords[count($titleWords) - 1], self::$SPLITTER_CHARS)) {
+            array_pop($titleWords);
+        }
+
+        // Check if first letter is in self::$SPLITTER_CHARS
+        // if so remove it
+        if (isset($titleWords[0]) && in_array($titleWords[0], self::$SPLITTER_CHARS)) {
+            array_shift($titleWords);
+        }
+
+        // Rebuild the title
+        $title = trim(implode(' ', $titleWords));
+
+        return $title;
+    }
+
+    /**
+     * Get article title
+     *
+     * Ported from python-goose https://github.com/grangier/python-goose/ by Xavier Grangier
+     * 
      * @return string
      */
     private function getTitle() {
-        $nodes = $this->article()->getDoc()->find('html > head > title');
+        $openGraph = $this->article()->getOpenGraph();
 
-        if (!$nodes->count()) return '';
-
-        $title = $nodes->first()->text(DOM_NODE_TEXT_NORMALISED);
-
-        foreach (self::$SPLITTER_CHARS as $char) {
-            if (strpos($title, $char) !== false) {
-                $part = array_reduce(explode($char, $title), function($carry, $item) {
-                    if (mb_strlen($item) > mb_strlen($carry)) {
-                        return $item;
-                    }
-
-                    return $carry;
-                });
-
-                if (!empty($part)) {
-                    $title = $part;
-                    break;
-                }
-            }
+        // Rely on OpenGraph in case we have the data
+        if (isset($openGraph['title'])) {
+            return $this->cleanTitle($openGraph['title']);
         }
 
-        return trim($title);
+        $nodes = $this->article()->getDoc()->find('meta[name="headline"]');
+        if ($nodes->count()) {
+            return $this->cleanTitle($nodes->first()->attr('content'));
+        }
+
+        $nodes = $this->article()->getDoc()->find('html > head > title');
+        if ($nodes->count()) {
+            return $this->cleanTitle($nodes->first()->text(DOM_NODE_TEXT_NORMALISED));
+        }
+
+        return '';
     }
 
     /**
