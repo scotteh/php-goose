@@ -79,7 +79,7 @@ class Crawler {
         $guzzle = new GuzzleClient();
         $response = $guzzle->get($url, $options);
 
-        return $response->getBody();
+        return $response->getBody()->getContents();
     }
 
     /**
