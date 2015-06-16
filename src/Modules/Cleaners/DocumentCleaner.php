@@ -72,7 +72,7 @@ class DocumentCleaner extends AbstractModule implements ModuleInterface {
         });
         $this->replace('span[class~=dropcap], span[class~=drop_cap]');
         $this->remove('script, style');
-        $this->remove('header, footer, input, form, button, aside, meta');
+        $this->remove('header, footer, input, form, button, aside');
         $this->removeBadTags();
         $this->remove("[id='caption'],[class='caption']");
         $this->remove("[id*=' google '],[class*=' google ']");

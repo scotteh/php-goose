@@ -72,7 +72,7 @@ class MetaExtractor extends AbstractModule implements ModuleInterface {
     private function getOpenGraph() {
         $results = array();
 
-        $nodes = $this->article()->getRawDoc()->find('meta[property^="og:"]');
+        $nodes = $this->article()->getDoc()->find('meta[property^="og:"]');
 
         foreach ($nodes as $node) {
             $property = explode(':', $node->attr('property'));
@@ -148,7 +148,7 @@ class MetaExtractor extends AbstractModule implements ModuleInterface {
             return $this->cleanTitle($openGraph['title']);
         }
 
-        $nodes = $this->article()->getDoc()->find('meta[name="headline"]');
+        $nodes = $this->getNodesByLowercasePropertyValue($this->article()->getDoc(), 'meta', 'name', 'headline');
         if ($nodes->count()) {
             return $this->cleanTitle($nodes->first()->attr('content'));
         }
