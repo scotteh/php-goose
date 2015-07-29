@@ -29,6 +29,10 @@ trait NodeCommonTrait {
 
         $words = preg_split('@[\s]+@iu', $node->text(), -1, PREG_SPLIT_NO_EMPTY);
 
+        if (count($words) == 0) {
+            return false;
+        }
+
         $sb = [];
         foreach ($links as $link) {
             $sb[] = $link->text(DOM_NODE_TEXT_NORMALISED);
