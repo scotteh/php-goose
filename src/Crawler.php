@@ -2,7 +2,7 @@
 
 namespace Goose;
 
-use Goose\Utils\URLHelper;
+use Goose\Utils\Helper;
 use DOMWrap\Document;
 use GuzzleHttp\Client as GuzzleClient;
 
@@ -39,7 +39,7 @@ class Crawler {
     public function crawl($url, $rawHTML = null) {
         $article = new Article();
 
-        $parseCandidate = URLHelper::getCleanedUrl($url);
+        $parseCandidate = Helper::getCleanedUrl($url);
 
         if (empty($rawHTML)) {
             $rawHTML = $this->getHTML($parseCandidate->url);

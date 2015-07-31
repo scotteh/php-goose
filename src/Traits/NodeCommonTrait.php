@@ -2,6 +2,7 @@
 
 namespace Goose\Traits;
 
+use Goose\Utils\Helper;
 use DOMWrap\Element;
 
 /**
@@ -35,7 +36,7 @@ trait NodeCommonTrait {
 
         $sb = [];
         foreach ($links as $link) {
-            $sb[] = $link->text(DOM_NODE_TEXT_NORMALISED);
+            $sb[] = Helper::textNormalise($link->text());
         }
 
         $linkText = implode('', $sb);

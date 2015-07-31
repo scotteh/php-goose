@@ -3,6 +3,7 @@
 namespace Goose\Modules\Extractors;
 
 use Goose\Article;
+use Goose\Utils\Helper;
 use Goose\Traits\ArticleMutatorTrait;
 use Goose\Modules\AbstractModule;
 use Goose\Modules\ModuleInterface;
@@ -155,7 +156,7 @@ class MetaExtractor extends AbstractModule implements ModuleInterface {
 
         $nodes = $this->article()->getDoc()->find('html > head > title');
         if ($nodes->count()) {
-            return $this->cleanTitle($nodes->first()->text(DOM_NODE_TEXT_NORMALISED));
+            return $this->cleanTitle(Helper::textNormalise($nodes->first()->text()));
         }
 
         return '';
@@ -295,7 +296,7 @@ class MetaExtractor extends AbstractModule implements ModuleInterface {
         $tags = [];
 
         foreach ($nodes as $node) {
-            $tags[] = $node->text(DOM_NODE_TEXT_NORMALISED);
+            $tags[] = Helper::textNormalise($node->text());
         }
 
         return $tags;
@@ -347,7 +348,7 @@ class MetaExtractor extends AbstractModule implements ModuleInterface {
             if ($el->attr('href') != '#' && trim($el->attr('href')) != '') {
                 $goodLinks[] = [
                     'url' => $el->attr('href'),
-                    'text' => $el->text(DOM_NODE_TEXT_NORMALISED),
+                    'text' => Helper::textNormalise($el->text()),
                 ];
             }
         }

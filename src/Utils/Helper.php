@@ -5,12 +5,12 @@ namespace Goose\Utils;
 use Goose\Exceptions\MalformedURLException;
 
 /**
- * URL Helper
+ * Helper
  *
  * @package Goose\Utils
  * @license http://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0
  */
-class URLHelper {
+class Helper {
     /**
      * @todo Re-factor result into class
      *
@@ -35,5 +35,16 @@ class URLHelper {
             'linkhash' => md5($urlToCrawl),
             'finalUrl' => $finalUrl,
         ];
+    }
+
+    /**
+     * @param string $text
+     *
+     * @return text
+     */
+    public static function textNormalise($text) {
+        $text = preg_replace('@[\n\r\s\t]+@', " ", $text);
+
+        return trim($text);
     }
 }

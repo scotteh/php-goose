@@ -3,6 +3,7 @@
 namespace Goose\Modules\Cleaners;
 
 use Goose\Article;
+use Goose\Utils\Helper;
 use Goose\Traits\DocumentMutatorTrait;
 use Goose\Modules\AbstractModule;
 use Goose\Modules\ModuleInterface;
@@ -257,7 +258,7 @@ class DocumentCleaner extends AbstractModule implements ModuleInterface {
                 $replacementNodes->fromArray([]);
                 $nodesToReturn[] = $child;
             } else if ($child->nodeType == XML_TEXT_NODE) {
-                $replaceText = $child->text(DOM_NODE_TEXT_NORMALISED);
+                $replaceText = Helper::textNormalise($child->text());
 
                 if (!empty($replaceText)) {
                     // Get all previous sibling <a> nodes, the current text node, and all next sibling <a> nodes.

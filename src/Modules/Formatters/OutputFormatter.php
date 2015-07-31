@@ -3,6 +3,7 @@
 namespace Goose\Modules\Formatters;
 
 use Goose\Article;
+use Goose\Utils\Helper;
 use Goose\Traits\NodeCommonTrait;
 use Goose\Traits\NodeGravityTrait;
 use Goose\Traits\ArticleMutatorTrait;
@@ -65,7 +66,7 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
 
         $list = [];
         foreach ($topNode->contents() as $child) {
-            $list[] = $child->text(DOM_NODE_TEXT_TRIM);
+            $list[] = trim($child->text());
         }
 
         return implode("\n\n", $list);
@@ -116,7 +117,7 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
                 $images = $item->find('img');
 
                 if ($images->count() == 0) {
-                    $item->replaceWith(new Text($item->text(DOM_NODE_TEXT_NORMALISED)));
+                    $item->replaceWith(new Text(Helper::textNormalise($item->text())));
                 }
             }
         }
@@ -166,7 +167,7 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
      * @return string
      */
     private function getTagCleanedText(Element $item) {
-        return $item->text(DOM_NODE_TEXT_NORMALISED);
+        return Helper::textNormalise($item->text());
     }
 
     /**
@@ -181,7 +182,7 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
             foreach ($nodes as $node) {
                 $stopWords = $this->config()->getStopWords()->getStopwordCount($node->text());
 
-                if (mb_strlen($node->text(DOM_NODE_TEXT_NORMALISED)) < 8 && $stopWords->getStopWordCount() < 3 && $node->find('object')->count() == 0 && $node->find('embed')->count() == 0) {
+                if (mb_strlen(Helper::textNormalise($node->text())) < 8 && $stopWords->getStopWordCount() < 3 && $node->find('object')->count() == 0 && $node->find('embed')->count() == 0) {
                     $node->remove();
                 }
             }
@@ -214,7 +215,7 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
         $nodes = $topNode->find('p, strong');
 
         foreach ($nodes as $node) {
-            if (mb_strlen($node->text(DOM_NODE_TEXT_NORMALISED)) < 25) {
+            if (mb_strlen(Helper::textNormalise($node->text())) < 25) {
                 $node->remove();
             }
         }
@@ -233,10 +234,10 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
         if ($nodes->count() == 0 && $topNode->is(':not(td)')) {
             if ($topNode->is('ul, ol')) {
                 $linkTextLength = array_sum(array_map(function($value) {
-                    return mb_strlen($value->text(DOM_NODE_TEXT_NORMALISED));
+                    return mb_strlen(Helper::textNormalise($value->text()));
                 }, $topNode->find('a')->toArray()));
 
-                $elementTextLength = mb_strlen($topNode->text(DOM_NODE_TEXT_NORMALISED));
+                $elementTextLength = mb_strlen(Helper::textNormalise($topNode->text()));
 
                 if ($elementTextLength > 0 && ($linkTextLength / $elementTextLength) < 0.5) {
                     return false;
@@ -276,7 +277,7 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
      * @return Element[]
      */
     private function getSiblingContent(Element $currentSibling, $baselineScoreForSiblingParagraphs) {
-        $text = $currentSibling->text(DOM_NODE_TEXT_TRIM);
+        $text = trim($currentSibling->text());
 
         if ($currentSibling->is('p, strong') && !empty($text)) {
             return [$currentSibling];
@@ -287,7 +288,7 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
         $nodes = $currentSibling->find('p, strong');
 
         foreach ($nodes as $node) {
-            $text = $node->text(DOM_NODE_TEXT_TRIM);
+            $text = trim($node->text());
 
             if (!empty($text)) {
                 $wordStats = $this->config()->getStopWords()->getStopwordCount($text);

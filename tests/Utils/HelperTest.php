@@ -2,9 +2,9 @@
 
 namespace Goose\Tests\Utils;
 
-use Goose\Utils\URLHelper;
+use Goose\Utils\Helper;
 
-class URLHelperTest extends \PHPUnit_Framework_TestCase
+class HelperTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @dataProvider getCleanedUrlProvider
@@ -13,7 +13,7 @@ class URLHelperTest extends \PHPUnit_Framework_TestCase
     {
         $this->assertEquals(
             $expected,
-            URLHelper::getCleanedUrl($url),
+            Helper::getCleanedUrl($url),
             $message
         );
     }
@@ -61,6 +61,6 @@ class URLHelperTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetCleanedUrlException()
     {
-        URLHelper::getCleanedUrl('http://example.org:port/');
+        Helper::getCleanedUrl('http://example.org:port/');
     }
 }
