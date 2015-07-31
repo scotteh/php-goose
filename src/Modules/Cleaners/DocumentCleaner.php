@@ -252,17 +252,26 @@ class DocumentCleaner extends AbstractModule implements ModuleInterface {
         $nodesToRemove = $node->newNodeList();
         $replacementNodes = $node->newNodeList();
 
+        $fnCompareSiblingNodes = function($node) {
+            if ($node->is(':not(a)') || $node->nodeType == XML_TEXT_NODE) {
+                return true;
+            }
+        };
+
         foreach ($node->contents() as $child) {
             if ($child->is('p') && $replacementNodes->count()) {
                 $nodesToReturn[] = $this->getFlushedBuffer($replacementNodes);
                 $replacementNodes->fromArray([]);
                 $nodesToReturn[] = $child;
             } else if ($child->nodeType == XML_TEXT_NODE) {
-                $replaceText = Helper::textNormalise($child->text());
+                $replaceText = $child->text();
 
                 if (!empty($replaceText)) {
                     // Get all previous sibling <a> nodes, the current text node, and all next sibling <a> nodes.
-                    $siblings = $child->precedingUntil(':not(a)', 'a')->merge([$child])->merge($child->followingUntil(':not(a)', 'a'));
+                    $siblings = $child
+                        ->precedingUntil($fnCompareSiblingNodes, 'a')
+                        ->merge([$child])
+                        ->merge($child->followingUntil($fnCompareSiblingNodes, 'a'));
 
                     foreach ($siblings as $sibling) {
                         // Place current nodes textual contents in-between previous and next nodes.
