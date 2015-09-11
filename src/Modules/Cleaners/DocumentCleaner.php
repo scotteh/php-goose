@@ -191,6 +191,13 @@ class DocumentCleaner extends AbstractModule implements ModuleInterface {
      * @return null
      */
     private function replaceElementsWithPara(Element $node) {
+        // Check to see if the node no longer exist.
+        // 'Ghost' nodes have their ownerDocument property set to null - will throw a warning on access.
+        // Use another common property with isset() - won't throw any warnings.
+        if (!isset($node->nodeName)) {
+            return;
+        }
+
         $newEl = $this->document()->createElement('p');
 
         $newEl->append($node->contents()->detach());
