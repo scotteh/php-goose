@@ -12,15 +12,13 @@ use GuzzleHttp\Client as GuzzleClient;
  * @package Goose\Images
  * @license http://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0
  */
-class ImageUtils
-{
+class ImageUtils {
     /**
      * @param string $filePath
      *
      * @return object
      */
-    public static function getImageDimensions($filePath)
-    {
+    public static function getImageDimensions($filePath) {
         list($width, $height, $type) = getimagesize($filePath);
 
         return (object)[
@@ -40,8 +38,7 @@ class ImageUtils
      *
      * @return LocallyStoredImage[]
      */
-    public static function storeImagesToLocalFile($imageSrcs, $returnAll, Configuration $config)
-    {
+    public static function storeImagesToLocalFile($imageSrcs, $returnAll, Configuration $config) {
         $localImages = self::handleEntity($imageSrcs, $returnAll, $config);
 
         if (empty($localImages)) {
@@ -71,8 +68,7 @@ class ImageUtils
      *
      * @return string
      */
-    private static function getFileExtensionName($imageDetails)
-    {
+    private static function getFileExtensionName($imageDetails) {
         $extensions = [
             'image/gif' => '.gif',
             'image/jpeg' => '.jpg',
@@ -93,8 +89,7 @@ class ImageUtils
      *
      * @return object[]|null
      */
-    private static function handleEntity($imageSrcs, $returnAll, $config)
-    {
+    private static function handleEntity($imageSrcs, $returnAll, $config) {
         $guzzle = new GuzzleClient();
 
         $requests = [];
