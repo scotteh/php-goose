@@ -117,6 +117,13 @@ class ImageUtils {
                         'file' => null,
                     ];
                 }
+            } elseif ($batchResult instanceof \GuzzleHttp\Exception\RequestException) {
+                if ($returnAll) {
+                    $results[] = (object)[
+                        'url' => $batchResult->getResponse()->getEffectiveUrl(),
+                        'file' => null,
+                    ];
+                }
             } else {
                 if ($returnAll || $batchResult->getStatusCode() == 200) {
                     $results[] = (object)[
