@@ -53,6 +53,11 @@ trait TestTrait {
             $doc->removeChild($doc->doctype);
         }
 
+        // Remove any leading ProcessingInstructions
+        if ($doc->firstChild instanceof \DOMProcessingInstruction) {
+            $doc->removeChild($doc->firstChild);
+        }
+
         return $doc;
     }
 
