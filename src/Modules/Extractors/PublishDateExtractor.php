@@ -218,8 +218,21 @@ class PublishDateExtractor extends AbstractModule implements ModuleInterface {
         }
 
         // parsely-page
+        $nodes = $this->article()->getRawDoc()->find('meta[name="parsely-page"]');
 
-        /* @todo https://www.parsely.com/help/integration/ppage/ */
+        /* @var $node Element */
+        foreach ($nodes as $node) {
+            try {
+                $json = json_decode($node->text());
+                if (isset($json->pub_date)) {
+                    $dt = new \DateTime($json->pub_date);
+                    break;
+                }
+            }
+            catch (\Exception $e) {
+                // Do nothing here in case the node has unrecognizable date information.
+            }
+        }
 
         return $dt;
     }
