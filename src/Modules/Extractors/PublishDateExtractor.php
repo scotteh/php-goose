@@ -6,6 +6,7 @@ use Goose\Article;
 use Goose\Traits\ArticleMutatorTrait;
 use Goose\Modules\AbstractModule;
 use Goose\Modules\ModuleInterface;
+use DOMWrap\Element;
 
 /**
  * Publish Date Extractor
@@ -43,5 +44,61 @@ class PublishDateExtractor extends AbstractModule implements ModuleInterface {
         /** @todo Add more date detection methods */
 
         return null;
+    }
+
+    /**
+     * Check for and determine dates from Schema.org's datePublished property.
+     *
+     * Checks HTML tags (e.g. <meta>, <time>, etc.) and JSON-LD.
+     *
+     * @return \DateTime|null
+     *
+     * @see https://schema.org/datePublished
+     */
+    private function getDateFromSchemaOrg() {
+        $dt = null;
+
+        // Check for HTML tags (<meta>, <time>, etc.)
+        $nodes = $this->article()->getRawDoc()->find('*[itemprop="datePublished"]');
+
+        /* @var $node Element */
+        foreach ($nodes as $node) {
+            try {
+                if ($node->hasAttribute('datetime')) {
+                    $dt = new \DateTime($node->getAttribute('datetime'));
+                    break;
+                }
+                if ($node->hasAttribute('content')) {
+                    $dt = new \DateTime($node->getAttribute('content'));
+                    break;
+                }
+            }
+            catch (\Exception $e) {
+                // Do nothing here in case the node has unrecognizable date information.
+            }
+        }
+
+        if (!is_null($dt)) {
+            return $dt;
+        }
+
+        // Check for JSON-LD
+        $nodes = $this->article()->getRawDoc()->find('script[type="application/ld+json"]');
+
+        /* @var $node Element */
+        foreach ($nodes as $node) {
+            try {
+                $json = json_decode($node->text());
+                if (isset($json->datePublished)) {
+                    $dt = new \DateTime($json->datePublished);
+                    break;
+                }
+            }
+            catch (\Exception $e) {
+                // Do nothing here in case the node has unrecognizable date information.
+            }
+        }
+
+        return $dt;
     }
 }
