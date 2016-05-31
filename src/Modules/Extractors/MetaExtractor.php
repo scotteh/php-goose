@@ -21,7 +21,7 @@ class MetaExtractor extends AbstractModule implements ModuleInterface {
 
     /** @var string[] */
     protected static $SPLITTER_CHARS = [
-        '|', '-', '�', ':',
+        '|', '-', '»', ':',
     ];
 
     /** @var string */
