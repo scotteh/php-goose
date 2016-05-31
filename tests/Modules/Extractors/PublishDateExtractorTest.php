@@ -174,4 +174,51 @@ class PublishDateExtractorTest extends \PHPUnit_Framework_TestCase
             ]
         ];
     }
+
+
+    /**
+     * @dataProvider getDateFromParselyProvider
+     */
+    public function testGetDateFromParsely($expected, $document, $message)
+    {
+        $article = $this->generate($document);
+        $this->setArticle($article);
+        $article->setRawDoc($document);
+
+        $this->assertEquals(
+            $expected,
+            $this->call('getDateFromParsely'),
+            $message
+        );
+    }
+
+    public function getDateFromParselyProvider() {
+        return [
+            [
+                new \DateTime('2016-05-31T22:52:11Z'),
+                $this->document('<html><head><title>Example Article</title><script type="application/ld+json">{"@context":"http://schema.org","@type":"NewsArticle","creator":["John Smith"],"dateCreated":"2016-05-31T22:52:11Z"}</script></head></html>'),
+                'Valid date with JSON-LD and attribute: "datePublished"'
+            ],
+            [
+                new \DateTime('2016-05-31T22:52:11Z'),
+                $this->document('<html><head><title>Example Article</title><meta name="parsely-pub-date" content="2016-05-31T22:52:11Z"></head></html>'),
+                'Valid date with tag: <meta> and name: "parsely-pub-date"'
+            ],
+            [
+                new \DateTime('2016-05-31T22:52:11Z'),
+                $this->document('<html><head><title>Example Article</title><meta name="parsely-page" content=\'{"title": "Example Article","pub_date": "2016-05-31T22:52:11Z"}\'></head></html>'),
+                'Valid date with tag: <meta>, name: "parsely-page", attribute "content" and JSON parameter "pub_date"'
+            ],
+            [
+                null,
+                $this->document('<html><head><title>Example Article</title></head></html>'),
+                'No date provided'
+            ],
+            [
+                null,
+                $this->document('<html><head><title>Example Article</title><meta name="parsely-pub-date" content="last"></head></html>'),
+                'Invalid date provided'
+            ],
+        ];
+    }
 }
