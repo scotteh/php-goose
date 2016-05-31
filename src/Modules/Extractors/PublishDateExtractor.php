@@ -101,4 +101,36 @@ class PublishDateExtractor extends AbstractModule implements ModuleInterface {
 
         return $dt;
     }
+
+    /**
+     * Check for and determine dates based on Dublin Core standards.
+     *
+     * @return \DateTime|null
+     *
+     * @see http://dublincore.org/documents/dcmi-terms/#elements-date
+     * @see http://dublincore.org/documents/2000/07/16/usageguide/qualified-html.shtml
+     */
+    private function getDateFromDublinCore() {
+        $dt = null;
+        $nodes = $this->article()->getRawDoc()->find('*[name="dc.date"], *[name="dc.date.issued"], *[name="DC.date.issued"]');
+
+        /* @var $node Element */
+        foreach ($nodes as $node) {
+            try {
+                if ($node->hasAttribute('content')) {
+                    $dt = new \DateTime($node->getAttribute('content'));
+                    break;
+                }
+            }
+            catch (\Exception $e) {
+                // Do nothing here in case the node has unrecognizable date information.
+            }
+        }
+
+        if (!is_null($dt)) {
+            return $dt;
+        }
+
+        return $dt;
+    }
 }
