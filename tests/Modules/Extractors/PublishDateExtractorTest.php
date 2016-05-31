@@ -86,4 +86,50 @@ class PublishDateExtractorTest extends \PHPUnit_Framework_TestCase
             ]
         ];
     }
+
+    /**
+     * @dataProvider getDateFromDublinCoreProvider
+     */
+    public function testGetDateFromDublinCore($expected, $document, $message)
+    {
+        $article = $this->generate($document);
+        $this->setArticle($article);
+        $article->setRawDoc($document);
+
+        $this->assertEquals(
+            $expected,
+            $this->call('getDateFromDublinCore'),
+            $message
+        );
+    }
+
+    public function getDateFromDublinCoreProvider() {
+        return [
+            [
+                new \DateTime('2016-05-31T22:52:11Z'),
+                $this->document('<html><head><title>Example Article</title><meta name="dc.date" content="2016-05-31T22:52:11Z"></head></html>'),
+                'Valid date with tag: <meta> and name: "dc.date"'
+            ],
+            [
+                new \DateTime('2016-05-31T22:52:11Z'),
+                $this->document('<html><head><title>Example Article</title><meta name="dc.date.issued" content="2016-05-31T22:52:11Z"></head></html>'),
+                'Valid date with tag: <meta> and name: "dc.date.issued"'
+            ],
+            [
+                new \DateTime('2016-05-31T22:52:11Z'),
+                $this->document('<html><head><title>Example Article</title><meta name="DC.date.issued" content="2016-05-31T22:52:11Z"></head></html>'),
+                'Valid date with tag: <meta> and name: "DC.date.issued"'
+            ],
+            [
+                null,
+                $this->document('<html><head><title>Example Article</title></head></html>'),
+                'No date provided.'
+            ],
+            [
+                null,
+                $this->document('<html><head><title>Example Article</title><meta name="DC.date.issued" content="2"</head></html>'),
+                'Invalid date format provided.'
+            ]
+        ];
+    }
 }
