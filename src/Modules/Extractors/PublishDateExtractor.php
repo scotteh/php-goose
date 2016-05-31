@@ -133,4 +133,32 @@ class PublishDateExtractor extends AbstractModule implements ModuleInterface {
 
         return $dt;
     }
+
+    /**
+     * Check for and determine dates based on OpenGraph standards.
+     *
+     * @return \DateTime|null
+     *
+     * @see http://ogp.me/
+     * @see http://ogp.me/#type_article
+     */
+    private function getDateFromOpenGraph() {
+        $dt = null;
+
+        $og_data = $this->article()->getOpenGraph();
+
+        try {
+            if (isset($og_data['published_time'])) {
+                $dt = new \DateTime($og_data['published_time']);
+            }
+            if (is_null($dt) && isset($og_data['pubdate'])) {
+                $dt = new \DateTime($og_data['pubdate']);
+            }
+        }
+        catch (\Exception $e) {
+            // Do nothing here in case the node has unrecognizable date information.
+        }
+
+        return $dt;
+    }
 }
