@@ -77,12 +77,12 @@ class PublishDateExtractorTest extends \PHPUnit_Framework_TestCase
             [
                 null,
                 $this->document('<html><head><title>Example Article</title></head></html>'),
-                'No date provided.'
+                'No date provided'
             ],
             [
                 null,
                 $this->document('<html><head><title>Example Article</title><meta itemprop="datePublished" datetime="two days ago"></head></html>'),
-                'Invalid date format provided.'
+                'Invalid date format provided'
             ]
         ];
     }
@@ -123,12 +123,54 @@ class PublishDateExtractorTest extends \PHPUnit_Framework_TestCase
             [
                 null,
                 $this->document('<html><head><title>Example Article</title></head></html>'),
-                'No date provided.'
+                'No date provided'
             ],
             [
                 null,
                 $this->document('<html><head><title>Example Article</title><meta name="DC.date.issued" content="2"</head></html>'),
-                'Invalid date format provided.'
+                'Invalid date format provided'
+            ]
+        ];
+    }
+
+    /**
+     * @dataProvider getDateFromOpenGraphProvider
+     */
+    public function testGetDateFromOpenGraph($expected, $article, $message)
+    {
+        $this->setArticle($article);
+
+        $this->assertEquals(
+            $expected,
+            $this->call('getDateFromOpenGraph'),
+            $message
+        );
+    }
+
+    public function getDateFromOpenGraphProvider() {
+        $pubdate_article = $this->generate('<html><head><title>Example Article</title></html>');
+        $pubdate_article->setOpenGraph(['pubdate' => '2016-05-31T22:52:11Z']);
+
+        $published_time_article = $this->generate('<html><head><title>Example Article</title></html>');
+        $published_time_article->setOpenGraph(['published_time' => '2016-05-31T22:52:11Z']);
+
+        $no_og_article = $this->generate('<html><head><title>Example Article</title></html>');
+
+        return [
+            [
+                new \DateTime('2016-05-31T22:52:11Z'),
+                $pubdate_article,
+                'Valid date with og:pubdate'
+            ],
+            [
+                new \DateTime('2016-05-31T22:52:11Z'),
+                $published_time_article,
+                'Valid date with og:article and article:published_time'
+            ],
+            [
+                null,
+                $no_og_article,
+                'No date provided'
             ]
         ];
     }
