@@ -161,4 +161,66 @@ class PublishDateExtractor extends AbstractModule implements ModuleInterface {
 
         return $dt;
     }
+
+    /**
+     * Check for and determine dates based on Parsely metadata.
+     *
+     * Checks JSON-LD, <meta> tags and parsely-page.
+     *
+     * @return \DateTime|null
+     *
+     * @see https://www.parsely.com/help/integration/jsonld/
+     * @see https://www.parsely.com/help/integration/metatags/
+     * @see https://www.parsely.com/help/integration/ppage/
+     */
+    private function getDateFromParsely() {
+        $dt = null;
+
+        // JSON-LD
+        $nodes = $this->article()->getRawDoc()->find('script[type="application/ld+json"]');
+
+        /* @var $node Element */
+        foreach ($nodes as $node) {
+            try {
+                $json = json_decode($node->text());
+                if (isset($json->dateCreated)) {
+                    $dt = new \DateTime($json->dateCreated);
+                    break;
+                }
+            }
+            catch (\Exception $e) {
+                // Do nothing here in case the node has unrecognizable date information.
+            }
+        }
+
+        if (!is_null($dt)) {
+            return $dt;
+        }
+
+        // <meta> tags
+        $nodes = $this->article()->getRawDoc()->find('meta[name="parsely-pub-date"]');
+
+        /* @var $node Element */
+        foreach ($nodes as $node) {
+            try {
+                if ($node->hasAttribute('content')) {
+                    $dt = new \DateTime($node->getAttribute('content'));
+                    break;
+                }
+            }
+            catch (\Exception $e) {
+                // Do nothing here in case the node has unrecognizable date information.
+            }
+        }
+
+        if (!is_null($dt)) {
+            return $dt;
+        }
+
+        // parsely-page
+
+        /* @todo https://www.parsely.com/help/integration/ppage/ */
+
+        return $dt;
+    }
 }
