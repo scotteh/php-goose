@@ -223,10 +223,12 @@ class PublishDateExtractor extends AbstractModule implements ModuleInterface {
         /* @var $node Element */
         foreach ($nodes as $node) {
             try {
-                $json = json_decode($node->text());
-                if (isset($json->pub_date)) {
-                    $dt = new \DateTime($json->pub_date);
-                    break;
+                if ($node->hasAttribute('content')) {
+                    $json = json_decode($node->getAttribute('content'));
+                    if (isset($json->pub_date)) {
+                        $dt = new \DateTime($json->pub_date);
+                        break;
+                    }
                 }
             }
             catch (\Exception $e) {
