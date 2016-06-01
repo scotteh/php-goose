@@ -27,7 +27,7 @@ class Client {
      */
     public function __call($name, $arguments) {
         if (method_exists($this->config, $name)) {
-            return call_user_func_array(array($this->config, $name), $name);
+            return call_user_func_array(array($this->config, $name), $arguments);
         }
 
         return null;
