@@ -20,12 +20,32 @@ class PublishDateExtractor extends AbstractModule implements ModuleInterface {
     /**
      * @param Article $article
      *
-     * @return DateTime
+     * @return \DateTime
      */
     public function run(Article $article) {
         $this->article($article);
 
-        $article->setPublishDate($this->getDateFromURL());
+        $dt = null;
+
+        $dt = $this->getDateFromSchemaOrg();
+
+        if (is_null($dt)) {
+            $dt = $this->getDateFromOpenGraph();
+        }
+
+        if (is_null($dt)) {
+            $dt = $this->getDateFromURL();
+        }
+
+        if (is_null($dt)) {
+            $dt = $this->getDateFromDublinCore();
+        }
+
+        if (is_null($dt)) {
+            $dt = $this->getDateFromParsely();
+        }
+
+        $article->setPublishDate($dt);
     }
 
     private function getDateFromURL() {
