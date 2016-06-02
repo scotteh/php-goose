@@ -22,7 +22,7 @@ The php version was rewritten by:
 
 ##Requirement
 
- - PHP 5.4 or later
+ - PHP 5.5 or later
  - PSR-4 compatible autoloader
 
 ##Install

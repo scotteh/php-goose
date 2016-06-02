@@ -12,11 +12,11 @@
         }
     ],
     "require": {
-        "php": ">=5.4.0",
+        "php": ">=5.5.0",
         "ext-mbstring": "*",
         "ext-libxml": "*",
         "lib-libxml": ">=2.7.7",
-        "guzzlehttp/guzzle": "5.*",
+        "guzzlehttp/guzzle": "6.*",
         "jakeasmith/http_build_url": "0.1.*",
         "scotteh/php-dom-wrapper": "~0.6"
     },

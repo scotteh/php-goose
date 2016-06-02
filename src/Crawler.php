@@ -4,7 +4,6 @@ namespace Goose;
 
 use Goose\Utils\Helper;
 use DOMWrap\Document;
-use GuzzleHttp\Client as GuzzleClient;
 
 /**
  * Crawler
@@ -41,6 +40,8 @@ class Crawler {
 
         $parseCandidate = Helper::getCleanedUrl($url);
 
+        $xmlInternalErrors = libxml_use_internal_errors(true);
+
         if (empty($rawHTML)) {
             $rawHTML = $this->getHTML($parseCandidate->url);
         }
@@ -65,6 +66,8 @@ class Crawler {
         // Post-extraction content formatting
         $this->modules('formatters', $article);
 
+        libxml_use_internal_errors($xmlInternalErrors);
+
         return $article;
     }
 
@@ -76,7 +79,7 @@ class Crawler {
     private function getHTML($url) {
         $options = $this->config()->get('browser');
 
-        $guzzle = new GuzzleClient();
+        $guzzle = new \GuzzleHttp\Client();
         $response = $guzzle->get($url, $options);
 
         return $response->getBody()->getContents();

@@ -3,8 +3,6 @@
 namespace Goose\Images;
 
 use Goose\Configuration;
-use GuzzleHttp\Pool as GuzzlePool;
-use GuzzleHttp\Client as GuzzleClient;
 
 /**
  * Image Utils
@@ -90,49 +88,45 @@ class ImageUtils {
      * @return object[]|null
      */
     private static function handleEntity($imageSrcs, $returnAll, $config) {
-        $guzzle = new GuzzleClient();
-
-        $requests = [];
-
-        foreach ($imageSrcs as $imageSrc) {
-            $file = tempnam(sys_get_temp_dir(), 'goose');
-
-            $options = $config->get('browser');
-
-            $options['save_to'] = $file;
-
-            $requests[] = $guzzle->createRequest('GET', $imageSrc, $options);
-        }
-
-        $batchResults = GuzzlePool::batch($guzzle, $requests);
+        $guzzle = new \GuzzleHttp\Client();
 
         $results = [];
 
-        foreach ($batchResults as $batchResult) {
-            /** @todo Handle failures gracefully */
-            if ($batchResult instanceof \GuzzleHttp\Exception\ClientException) {
-                if ($returnAll) {
-                    $results[] = (object)[
-                        'url' => $batchResult->getResponse()->getEffectiveUrl(),
-                        'file' => null,
-                    ];
-                }
-            } elseif ($batchResult instanceof \GuzzleHttp\Exception\RequestException) {
-                if ($returnAll) {
-                    $results[] = (object)[
-                        'url' => $batchResult->getResponse()->getEffectiveUrl(),
-                        'file' => null,
-                    ];
-                }
-            } else {
-                if ($returnAll || $batchResult->getStatusCode() == 200) {
-                    $results[] = (object)[
-                        'url' => $batchResult->getEffectiveUrl(),
-                        'file' => $batchResult->getBody()->getContents(),
-                    ];
-                }
+        $requests = function($urls) use ($guzzle, $config, &$results) {
+            foreach ($urls as $key => $url) {
+                $file = tempnam(sys_get_temp_dir(), 'goose');
+
+                $results[] = (object)[
+                    'url' => $url,
+                    'file' => $file,
+                ];
+
+                yield $key => function($options) use ($guzzle, $url, $file) {
+                    $options['sink'] = $file;
+
+                    return $guzzle->sendAsync(new \GuzzleHttp\Psr7\Request('GET', $url), $options);
+                };
             }
-        }
+        };
+
+        $pool = new \GuzzleHttp\Pool($guzzle, $requests($imageSrcs), [
+            'concurrency' => 25,
+            'fulfilled' => function($response, $index) use (&$results, $returnAll) {
+                if (!$returnAll && $response->getStatusCode() != 200) {
+                    unset($results[$index]);
+                }
+            },
+            'rejected' => function($reason, $index) use (&$results, $returnAll) {
+                if ($returnAll) {
+                    $results[$index]->file = null;
+                } else {
+                    unset($results[$index]);
+                }
+            },
+            'options' => $config->get('browser'),
+        ]);
+
+        $pool->promise()->wait();
 
         if (empty($results)) {
             return null;
