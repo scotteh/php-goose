@@ -21,7 +21,7 @@ class MetaExtractor extends AbstractModule implements ModuleInterface {
 
     /** @var string[] */
     protected static $SPLITTER_CHARS = [
-        '|', '-', '»', ':',
+        '|', '-', 'Â»', ':',
     ];
 
     /** @var string */
@@ -79,6 +79,17 @@ class MetaExtractor extends AbstractModule implements ModuleInterface {
             $property = explode(':', $node->attr('property'));
 
             $results[$property[1]] = $node->attr('content');
+        }
+
+        // Additionally retrieve type values based on provided og:type (http://ogp.me/#types)
+        if (isset($results['type'])) {
+            $nodes = $this->article()->getDoc()->find('meta[property^="' . $results['type'] .':"]');
+
+            foreach ($nodes as $node) {
+                $property = explode(':', $node->attr('property'));
+
+                $results[$property[1]] = $node->attr('content');
+            }
         }
 
         return $results;
