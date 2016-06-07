@@ -42,6 +42,7 @@ class Configuration {
             '\Goose\Modules\Extractors\ContentExtractor',
             '\Goose\Modules\Extractors\ImageExtractor',
             '\Goose\Modules\Extractors\PublishDateExtractor',
+            '\Goose\Modules\Extractors\AdditionalDataExtractor',
         ],
         'formatters' => [
             '\Goose\Modules\Formatters\OutputFormatter',
