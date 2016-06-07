@@ -24,6 +24,9 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
     /** @var double */
     protected static $SIBLING_BASE_LINE_SCORE = 0.30;
 
+    /** @var string */
+    protected static $CLEANUP_IGNORE_SELECTOR = ':not(p):not(strong):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6)';
+
     /**
      * @param Article $article
      */
@@ -198,7 +201,7 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
         $this->addSiblings($this->article()->getTopNode());
 
         foreach ($this->article()->getTopNode()->contents() as $node) {
-            if ($node->is(':not(p):not(strong)')) {
+            if ($node->is(self::$CLEANUP_IGNORE_SELECTOR)) {
                 if ($this->isHighLinkDensity($node)
                     || $this->isTableTagAndNoParagraphsExist($node)
                     || !$this->isNodeScoreThreshholdMet($this->article()->getTopNode(), $node)) {
