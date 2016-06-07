@@ -38,9 +38,9 @@ class Configuration {
             '\Goose\Modules\Cleaners\DocumentCleaner',
         ],
         'extractors' => [
+            '\Goose\Modules\Extractors\MetaExtractor',
             '\Goose\Modules\Extractors\ContentExtractor',
             '\Goose\Modules\Extractors\ImageExtractor',
-            '\Goose\Modules\Extractors\MetaExtractor',
             '\Goose\Modules\Extractors\PublishDateExtractor',
         ],
         'formatters' => [
