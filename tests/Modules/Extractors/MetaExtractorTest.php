@@ -3,6 +3,8 @@
 namespace Goose\Tests\Modules\Extractors;
 
 use Goose\Article;
+use Goose\Configuration;
+use Goose\Modules\Extractors\MetaExtractor;
 
 class MetaExtractorTest extends \PHPUnit_Framework_TestCase
 {
@@ -26,6 +28,32 @@ class MetaExtractorTest extends \PHPUnit_Framework_TestCase
             $expected,
             $this->call('getTitle'),
             $message
+        );
+    }
+
+    public function testEmptyMetaLanguageShouldNotRewriteConfiguredValue()
+    {
+        $article = $this->generate('<html><head><title>Ut venenatis rutrum ex, eu feugiat dolor</title></head></html>');
+        $metaExtractor = new MetaExtractor(new Configuration([
+            'language' => 'zh'
+        ]));
+        $metaExtractor->run($article);
+        $this->assertSame(
+            'zh',
+            $metaExtractor->config()->get('language')
+        );
+    }
+
+    public function testMetaLanguageShouldRewriteConfiguredValue()
+    {
+        $article = $this->generate('<html><head><title>Ut venenatis rutrum ex, eu feugiat dolor</title><meta name="lang" content="ru" /></head></html>');
+        $metaExtractor = new MetaExtractor(new Configuration([
+            'language' => 'zh'
+        ]));
+        $metaExtractor->run($article);
+        $this->assertSame(
+            'ru',
+            $metaExtractor->config()->get('language')
         );
     }
 

@@ -34,8 +34,7 @@ class MetaExtractor extends AbstractModule implements ModuleInterface {
         $article->setMetaDescription($this->getMetaDescription());
         $article->setMetaKeywords($this->getMetaKeywords());
         $article->setCanonicalLink($this->getCanonicalLink());
-
-        $article->setLanguage($this->getMetaLanguage());
+        $article->setLanguage($this->getMetaLanguage() ?: $this->config()->get('language'));
 
         $this->config()->set('language', $article->getLanguage());
     }
