@@ -357,6 +357,23 @@ class Article {
     }
 
     /**
+     * Original psr7 response object
+     *
+     * @var \Psr\Http\Message\ResponseInterface
+     */
+    protected $rawResponse;
+
+    /** @param \Psr\Http\Message\ResponseInterface|null $rawResponse */
+    public function setRawResponse(\Psr\Http\Message\ResponseInterface $rawResponse) {
+        $this->rawResponse = $rawResponse;
+    }
+
+    /** @return \Psr\Http\Message\ResponseInterface */
+    public function getRawResponse() {
+        return $this->rawResponse;
+    }
+
+    /**
      * Sometimes useful to try and know when the publish date of an article was
      *
      * @var \DateTime|null

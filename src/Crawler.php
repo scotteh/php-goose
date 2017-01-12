@@ -43,7 +43,10 @@ class Crawler {
         $xmlInternalErrors = libxml_use_internal_errors(true);
 
         if (empty($rawHTML)) {
-            $rawHTML = $this->getHTML($parseCandidate->url);
+            $guzzle = new \GuzzleHttp\Client();
+            $response = $guzzle->get($parseCandidate->url, $this->config()->get('browser'));
+            $article->setRawResponse($response);
+            $rawHTML = $response->getBody()->getContents();
         }
 
         // Generate document
@@ -69,20 +72,6 @@ class Crawler {
         libxml_use_internal_errors($xmlInternalErrors);
 
         return $article;
-    }
-
-    /**
-     * @param string $url
-     *
-     * @return string
-     */
-    private function getHTML($url) {
-        $options = $this->config()->get('browser');
-
-        $guzzle = new \GuzzleHttp\Client();
-        $response = $guzzle->get($url, $options);
-
-        return $response->getBody()->getContents();
     }
 
     /**
