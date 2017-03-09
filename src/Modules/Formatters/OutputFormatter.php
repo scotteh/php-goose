@@ -150,6 +150,8 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
      * replace common tags with just text so we don't have any crazy formatting issues
      * so replace <br>, <i>, <strong>, etc.... with whatever text is inside them
      *
+     * replaces header tags h1 ... h6 with newline padded text
+     *
      * @param Element $topNode
      */
     private function replaceTagsWithText(Element $topNode) {
@@ -158,6 +160,12 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
 
             foreach ($items as $item) {
                 $item->replaceWith(new Text($this->getTagCleanedText($item)));
+            }
+            
+            $headers = $topNode->find('h1, h2, h3, h4, h5, h6');
+
+            foreach ($headers as $header) {
+                $header->replaceWith(new Text("\n\n" . $this->getTagCleanedText($header) . "\n\n"));
             }
         }
     }
