@@ -591,10 +591,27 @@ class ImageExtractor extends AbstractModule implements ModuleInterface {
      * @return string
      */
     private function buildImagePath($imageSrc) {
-        $articleUrlParts = parse_url($this->article()->getFinalUrl());
-        $imageUrlParts = parse_url($imageSrc);
+        $parts = array(
+            'scheme',
+            'host',
+            'port',
+            'path',
+            'query',
+        );
 
-        return http_build_url($articleUrlParts, $imageUrlParts, HTTP_URL_JOIN_PATH);
+        $imageUrlParts = parse_url($imageSrc);
+        $articleUrlParts = parse_url($this->article()->getFinalUrl());
+
+        foreach ($parts as $part) {
+            if (!isset($imageUrlParts[$part]) && isset($articleUrlParts[$part])) {
+                $imageUrlParts[$part] = $articleUrlParts[$part];
+
+            } else if (isset($imageUrlParts[$part]) && !isset($articleUrlParts[$part])) {
+                break;
+            }
+        }
+
+        return http_build_url($imageUrlParts, array());
     }
 
     /**
