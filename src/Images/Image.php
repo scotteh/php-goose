@@ -42,7 +42,7 @@ class Image {
     }
 
     /** @var string */
-    private $imageSrc = '';
+    public $imageSrc = '';
 
     /**
      * @param string $imageSrc
@@ -93,7 +93,7 @@ class Image {
     }
 
     /** @var int */
-    private $height = 0;
+    public $height = 0;
 
     /**
      * @param int $height
@@ -110,7 +110,7 @@ class Image {
     }
 
     /** @var int */
-    private $width = 0;
+    public $width = 0;
 
     /**
      * @param int $width
