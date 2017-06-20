@@ -102,7 +102,7 @@ $goose = new GooseClient([
     // Fetch all images
     'image_fetch_all' => false,
     // Guzzle configuration - All values are passed directly to Guzzle
-    //   See: http://guzzle.readthedocs.org/en/latest/clients.html#request-options
+    //   See: http://guzzle.readthedocs.io/en/stable/request-options.html
     'browser' => [
         'timeout' => 60,
         'connect_timeout' => 30
