@@ -10,7 +10,7 @@ namespace Goose;
  */
 class Client {
     /** @var Configuration */
-    protected $config = [];
+    protected $config;
 
     /**
      * @param mixed[] $config

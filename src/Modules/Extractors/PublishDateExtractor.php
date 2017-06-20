@@ -19,8 +19,6 @@ class PublishDateExtractor extends AbstractModule implements ModuleInterface {
 
     /**
      * @param Article $article
-     *
-     * @return \DateTime
      */
     public function run(Article $article) {
         $this->article($article);

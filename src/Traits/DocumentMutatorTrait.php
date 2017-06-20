@@ -11,7 +11,7 @@ use DOMWrap\Document;
  * @license http://www.apache.org/licenses/LICENSE-2.0 Apache License 2.0
  */
 trait DocumentMutatorTrait {
-    /** @var Document */
+    /** @var Document|null */
     protected $document;
 
     /**

@@ -40,7 +40,7 @@ class Helper {
     /**
      * @param string $text
      *
-     * @return text
+     * @return string
      */
     public static function textNormalise($text) {
         $text = preg_replace('@[\n\r\s\t]+@', " ", $text);

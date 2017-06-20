@@ -393,7 +393,7 @@ class Article {
     /**
      * A property bucket for consumers of goose to store custom data extractions.
      *
-     * @return string
+     * @var string
      */
     protected $additionalData;
 
@@ -410,7 +410,7 @@ class Article {
     /**
      * Facebook Open Graph data that that is found in Article Meta tags
      *
-     * @return string
+     * @var string
      */
     protected $openGraphData;
 
@@ -427,7 +427,7 @@ class Article {
     /**
      * Most popular words used in the lovely article
      *
-     * @return string[]
+     * @var string[]
      */
     protected $popularWords = [];
 

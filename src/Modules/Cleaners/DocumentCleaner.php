@@ -195,7 +195,7 @@ class DocumentCleaner extends AbstractModule implements ModuleInterface {
         // 'Ghost' nodes have their ownerDocument property set to null - will throw a warning on access.
         // Use another common property with isset() - won't throw any warnings.
         if (!isset($node->nodeName)) {
-            return;
+            return null;
         }
 
         $newEl = $this->document()->createElement('p');

@@ -44,6 +44,9 @@ class ImageExtractor extends AbstractModule implements ModuleInterface {
     /** @var string[] */
     private static $CUSTOM_SITE_MAPPING = [];
 
+    /**
+     * @param Article $article
+     */
     public function run(Article $article) {
         $this->article($article);
 
