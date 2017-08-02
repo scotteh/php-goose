@@ -22,6 +22,13 @@ class LocallyStoredImage {
         }
     }
 
+    /**
+     * remove unnecessary tmp image files
+     */
+    public function __destruct() {
+        unlink($this->getLocalFileName());
+    }
+    
     /** @var string */
     private $imgSrc = '';
 
