@@ -139,7 +139,7 @@ class AdditionalDataExtractor extends AbstractModule implements ModuleInterface 
         // Determine stop words currently in $words
         $ignoreWords = array_intersect($words, $stopWords);
         // Remove ignored words from $words
-        $words = array_diff($words, $ignoreWords);
+        $words = array_udiff($words, $ignoreWords, 'strcasecmp');
 
         // Count and sort $words
         $words = array_count_values($words);
