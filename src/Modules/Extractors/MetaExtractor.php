@@ -83,8 +83,8 @@ class MetaExtractor extends AbstractModule implements ModuleInterface {
     private function cleanTitle($title) {
         $openGraph = $this->article()->getOpenGraph();
 
-        // Check if we have the site name in OpenGraph data
-        if (isset($openGraph['site_name'])) {
+        // Check if we have the site name in OpenGraph data and it does not match the title
+        if (isset($openGraph['site_name']) && $openGraph['site_name'] != $title) {
             $title = str_replace($openGraph['site_name'], '', $title);
         }
 
