@@ -153,7 +153,7 @@ class ImageExtractor extends AbstractModule implements ModuleInterface {
         } else {
             $depthObj = $this->getDepthLevel($node, $parentDepthLevel, $siblingDepthLevel);
 
-            if ($depthObj) {
+            if ($depthObj && NULL !== $depthObj->node) {
                 return $this->checkForLargeImages($depthObj->node, $depthObj->parentDepth, $depthObj->siblingDepth);
             }
         }
