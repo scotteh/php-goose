@@ -116,8 +116,10 @@ class ContentExtractor extends AbstractModule implements ModuleInterface {
             $this->updateScore($node->parent(), $upscore);
             $this->updateNodeCount($node->parent(), 1);
 
-            $this->updateScore($node->parent()->parent(), $upscore / 2);
-            $this->updateNodeCount($node->parent()->parent(), 1);
+            if ($node->parent()->parent() instanceof Element) {
+                $this->updateScore($node->parent()->parent(), $upscore / 2);
+                $this->updateNodeCount($node->parent()->parent(), 1);
+            }
         }
     }
 
@@ -127,12 +129,16 @@ class ContentExtractor extends AbstractModule implements ModuleInterface {
      */
     private function updateBestNodeCandidates(Element $node, $nodeCandidates) {
         if (!in_array($node->parent(), $nodeCandidates, true)) {
-            $nodeCandidates[] = $node->parent();
+            if ($node->parent() instanceof Element) {
+                $nodeCandidates[] = $node->parent();
+            }
         }
 
         if ($node->parent() instanceof Element) {
             if (!in_array($node->parent()->parent(), $nodeCandidates, true)) {
-                $nodeCandidates[] = $node->parent()->parent();
+                if ($node->parent()->parent() instanceof Element) {
+                    $nodeCandidates[] = $node->parent()->parent();
+                }
             }
         }
 

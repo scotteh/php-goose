@@ -169,7 +169,7 @@ class ImageExtractor extends AbstractModule implements ModuleInterface {
      * @return object|null
      */
     private function getDepthLevel(Element $node, $parentDepth, $siblingDepth) {
-        if (is_null($node)) {
+        if (is_null($node) || !($node->parent() instanceof Element)) {
             return null;
         }
 

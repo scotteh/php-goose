@@ -71,24 +71,28 @@ class AdditionalDataExtractor extends AbstractModule implements ModuleInterface 
     private function getVideos() {
         $videos = [];
 
-        $nodes = $this->article()->getTopNode()->parent()->find('embed, object, iframe');
+        $parentNode = $this->article()->getTopNode()->parent();
 
-        foreach ($nodes as $node) {
-            if ($node->hasAttribute('src')) {
-                $src = $node->attr('src');
-            } else {
-                $src = $node->attr('data');
-            }
+        if ($parentNode instanceof Element) {
+            $nodes = $parentNode->find('embed, object, iframe');
 
-            $match = array_reduce(self::$VIDEO_PROVIDERS, function($match, $domain) use ($src) {
-                $srcHost = parse_url($src, PHP_URL_HOST);
-                $srcScheme = parse_url($src, PHP_URL_SCHEME);
+            foreach ($nodes as $node) {
+                if ($node->hasAttribute('src')) {
+                    $src = $node->attr('src');
+                } else {
+                    $src = $node->attr('data');
+                }
 
-                return $match || preg_match('@' . $domain . '$@i', $srcHost) && in_array($srcScheme, ['http', 'https']);
-            });
+                $match = array_reduce(self::$VIDEO_PROVIDERS, function($match, $domain) use ($src) {
+                    $srcHost = parse_url($src, PHP_URL_HOST);
+                    $srcScheme = parse_url($src, PHP_URL_SCHEME);
 
-            if ($match) {
-                $videos[] = $src;
+                    return $match || preg_match('@' . $domain . '$@i', $srcHost) && in_array($srcScheme, ['http', 'https']);
+                });
+
+                if ($match) {
+                    $videos[] = $src;
+                }
             }
         }
 
@@ -103,14 +107,18 @@ class AdditionalDataExtractor extends AbstractModule implements ModuleInterface 
     private function getLinks() {
         $goodLinks = [];
 
-        $candidates = $this->article()->getTopNode()->parent()->find('a[href]');
+        $parentNode = $this->article()->getTopNode()->parent();
 
-        foreach ($candidates as $el) {
-            if ($el->attr('href') != '#' && trim($el->attr('href')) != '') {
-                $goodLinks[] = [
-                    'url' => $el->attr('href'),
-                    'text' => Helper::textNormalise($el->text()),
-                ];
+        if ($parentNode instanceof Element) {
+            $candidates = $parentNode->find('a[href]');
+
+            foreach ($candidates as $el) {
+                if ($el->attr('href') != '#' && trim($el->attr('href')) != '') {
+                    $goodLinks[] = [
+                        'url' => $el->attr('href'),
+                        'text' => Helper::textNormalise($el->text()),
+                    ];
+                }
             }
         }
 
