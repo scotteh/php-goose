@@ -604,6 +604,10 @@ class ImageExtractor extends AbstractModule implements ModuleInterface {
 
         $imageUrlParts = parse_url($imageSrc);
         $articleUrlParts = parse_url($this->article()->getFinalUrl());
+        if (isset($imageUrlParts['path'], $articleUrlParts['path']) && $imageUrlParts['path'] && $imageUrlParts['path']{0} !== '/') {
+            $articleUrlDir = dirname($articleUrlParts['path']);
+            $imageUrlParts['path'] = $articleUrlDir . '/' . $imageUrlParts['path'];
+        }
 
         foreach ($parts as $part) {
             if (!isset($imageUrlParts[$part]) && isset($articleUrlParts[$part])) {
@@ -635,5 +639,5 @@ class ImageExtractor extends AbstractModule implements ModuleInterface {
 
         return self::$CUSTOM_SITE_MAPPING;
     }
-    
+
 }
