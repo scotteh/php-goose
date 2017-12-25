@@ -21,9 +21,9 @@ class StopWords
     /** @var string[] */
     private $languages = [
         'ar', 'da', 'de', 'en', 'es', 'fi',
-        'fr', 'hu', 'id', 'it', 'ko', 'nb',
-        'nl', 'no', 'pl', 'pt', 'ru', 'sv',
-        'zh'
+        'fr', 'hu', 'id', 'it', 'ja', 'ko',
+        'nb', 'nl', 'no', 'pl', 'pt', 'ru',
+        'sv', 'zh'
     ];
 
     /**
@@ -85,7 +85,7 @@ class StopWords
         }
 
         $strippedInput = $this->removePunctuation($content);
-        $candidateWords = explode(' ', $strippedInput);
+        $candidateWords = $this->getCandidateWords($strippedInput);
 
         $overlappingStopWords = [];
         foreach ($candidateWords as $w) {
@@ -106,5 +106,20 @@ class StopWords
      */
     public function getCurrentStopWords() {
         return $this->getWordList();
+    }
+
+    /**
+     * @param string $strippedInput
+     *
+     * @return array
+     */
+    public function getCandidateWords($strippedInput) {
+        // Simple separating words in Japanese.
+        if ($this->getLanguage() === 'ja') {
+            $regexp = '/(' . implode('|', array_map('preg_quote', $this->getWordList())) . ')/';
+            $strippedInput = preg_replace($regexp, ' $1 ', $strippedInput);
+        }
+
+        return explode(' ', $strippedInput);
     }
 }
