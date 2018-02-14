@@ -143,7 +143,7 @@ class AdditionalDataExtractor extends AbstractModule implements ModuleInterface 
         $text = html_entity_decode($text, ENT_COMPAT | ENT_HTML5, 'UTF-8');
         $words = preg_split('@[\s]+@iu', $text, -1, PREG_SPLIT_NO_EMPTY);
 
-        if (!$words) {
+        if (!is_array($words)) {
             return array();
         }
 

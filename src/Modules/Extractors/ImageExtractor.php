@@ -264,37 +264,6 @@ class ImageExtractor extends AbstractModule implements ModuleInterface {
     }
 
     /**
-     * returns true if we think this is kind of a bannery dimension
-     * like 600 / 100 = 6 may be a fishy dimension for a good image
-     *
-     * @param int $width
-     * @param int $height
-     *
-     * @return bool
-     */
-    private function isBannerDimensions(int $width, int $height): bool {
-        if ($width == $height) {
-            return false;
-        }
-
-        if ($width > $height) {
-            $diff = $width / $height;
-            if ($diff > 5) {
-                return true;
-            }
-        }
-
-        if ($height > $width) {
-            $diff = $height / $width;
-            if ($diff > 5) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
      * takes a list of image elements and filters out the ones with bad names
      *
      * @param \DOMWrap\NodeList $images
