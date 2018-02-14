@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Goose\Traits;
 
@@ -19,11 +19,13 @@ trait ArticleMutatorTrait {
      *
      * @return Article
      */
-    protected function article(Article $article = null) {
+    protected function article(Article $article = null): ?Article {
         if ($article === null) {
             return $this->article;
         }
 
         $this->article = $article;
+
+        return $this->article;
     }
 }

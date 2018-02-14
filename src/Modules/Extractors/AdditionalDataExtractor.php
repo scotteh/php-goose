@@ -1,12 +1,11 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Goose\Modules\Extractors;
 
 use Goose\Article;
 use Goose\Utils\Helper;
 use Goose\Traits\ArticleMutatorTrait;
-use Goose\Modules\AbstractModule;
-use Goose\Modules\ModuleInterface;
+use Goose\Modules\{AbstractModule, ModuleInterface};
 use DOMWrap\Element;
 
 /**
@@ -33,10 +32,8 @@ class AdditionalDataExtractor extends AbstractModule implements ModuleInterface 
         'flic\.kr',
     ];
 
-    /**
-     * @param Article $article
-     */
-    public function run(Article $article) {
+    /** @inheritdoc */
+    public function run(Article $article): self {
         $this->article($article);
 
         $article->setTags($this->getTags());
@@ -46,12 +43,14 @@ class AdditionalDataExtractor extends AbstractModule implements ModuleInterface 
             $article->setLinks($this->getLinks());
             $article->setPopularWords($this->getPopularWords());
         }
+
+        return $this;
     }
 
     /**
      * @return string[]
      */
-    private function getTags() {
+    private function getTags(): array {
         $nodes = $this->article()->getDoc()->find(self::$A_REL_TAG_SELECTOR);
 
         $tags = [];
@@ -68,7 +67,7 @@ class AdditionalDataExtractor extends AbstractModule implements ModuleInterface 
      *
      * @return string[]
      */
-    private function getVideos() {
+    private function getVideos(): array {
         $videos = [];
 
         $parentNode = $this->article()->getTopNode()->parent();
@@ -104,7 +103,7 @@ class AdditionalDataExtractor extends AbstractModule implements ModuleInterface 
      *
      * @return string[]
      */
-    private function getLinks() {
+    private function getLinks(): array {
         $goodLinks = [];
 
         $parentNode = $this->article()->getTopNode()->parent();
@@ -128,10 +127,10 @@ class AdditionalDataExtractor extends AbstractModule implements ModuleInterface 
     /**
      * @return string[]
      */
-    private function getPopularWords() {
+    private function getPopularWords(): array {
         $limit = 5;
         $minimumFrequency = 1;
-        $stopWords = $this->config()->getStopWords()->getCurrentStopWords();
+        $stopWords = $this->config()->getStopWords()->getWordList();
 
         $text = $this->article()->getTitle();
         $text .= ' ' . $this->article()->getMetaDescription();

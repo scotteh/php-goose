@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Goose\Images;
 
@@ -29,15 +29,19 @@ class Image {
 
     /**
      * @param Element $topImageNode
+     *
+     * @return self
      */
-    public function setTopImageNode($topImageNode) {
+    public function setTopImageNode(Element $topImageNode): self {
         $this->topImageNode = $topImageNode;
+
+        return $this;
     }
 
     /**
      * @return Element
      */
-    public function getTopImageNode() {
+    public function getTopImageNode(): Element {
         return $this->topImageNode;
     }
 
@@ -46,49 +50,61 @@ class Image {
 
     /**
      * @param string $imageSrc
+     *
+     * @return self
      */
-    public function setImageSrc($imageSrc) {
+    public function setImageSrc(string $imageSrc): self {
         $this->imageSrc = $imageSrc;
+
+        return $this;
     }
 
     /**
      * @return string
      */
-    public function getImageSrc() {
+    public function getImageSrc(): string {
         return $this->imageSrc;
     }
 
-    /** @var double */
+    /** @var float */
     private $imageScore = 0.0;
 
     /**
-     * @param double $imageScore
+     * @param float $imageScore
+     *
+     * @return self
      */
-    public function setImageScore($imageScore) {
+    public function setImageScore(float $imageScore): self {
         $this->imageScore = $imageScore;
+
+        return $this;
     }
 
     /**
-     * @return double
+     * @return float
      */
-    public function getImageScore() {
+    public function getImageScore(): float {
         return $this->imageScore;
     }
 
-    /** @var double */
+    /** @var float */
     private $confidenceScore = 0.0;
 
     /**
-     * @param double $confidenceScore
+     * @param float $confidenceScore
+     *
+     * @return self
      */
-    public function setConfidenceScore($confidenceScore) {
+    public function setConfidenceScore(float $confidenceScore): self {
         $this->confidenceScore = $confidenceScore;
+
+        return $this;
     }
 
     /**
-     * @return double
+     * @return float
      */
-    public function getConfidenceScore() {
+    public function getConfidenceScore(): float {
         return $this->confidenceScore;
     }
 
@@ -97,15 +113,19 @@ class Image {
 
     /**
      * @param int $height
+     *
+     * @return self
      */
-    public function setHeight($height) {
+    public function setHeight(int $height): self {
         $this->height = $height;
+
+        return $this;
     }
 
     /**
      * @return int
      */
-    public function getHeight() {
+    public function getHeight(): int {
         return $this->height;
     }
 
@@ -114,15 +134,19 @@ class Image {
 
     /**
      * @param int $width
+     *
+     * @return self
      */
-    public function setWidth($width) {
+    public function setWidth(int $width): self {
         $this->width = $width;
+
+        return $this;
     }
 
     /**
      * @return int
      */
-    public function getWidth() {
+    public function getWidth(): int {
         return $this->width;
     }
 
@@ -131,15 +155,19 @@ class Image {
 
     /**
      * @param string $imageExtractionType
+     *
+     * @return self
      */
-    public function setImageExtractionType($imageExtractionType) {
+    public function setImageExtractionType(string $imageExtractionType): self {
         $this->imageExtractionType = $imageExtractionType;
+
+        return $this;
     }
 
     /**
      * @return string
      */
-    public function getImageExtractionType() {
+    public function getImageExtractionType(): string {
         return $this->imageExtractionType;
     }
 
@@ -148,15 +176,19 @@ class Image {
 
     /**
      * @param int $bytes
+     *
+     * @return self
      */
-    public function setBytes($bytes) {
+    public function setBytes(int $bytes): self {
         $this->bytes = $bytes;
+
+        return $this;
     }
 
     /**
      * @return int
      */
-    public function getBytes() {
+    public function getBytes(): int {
         return $this->bytes;
     }
 }

@@ -1,13 +1,10 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Goose\Modules\Extractors;
 
 use Goose\Article;
-use Goose\Traits\NodeCommonTrait;
-use Goose\Traits\NodeGravityTrait;
-use Goose\Traits\ArticleMutatorTrait;
-use Goose\Modules\AbstractModule;
-use Goose\Modules\ModuleInterface;
+use Goose\Traits\{NodeCommonTrait, NodeGravityTrait, ArticleMutatorTrait};
+use Goose\Modules\{AbstractModule, ModuleInterface};
 use DOMWrap\Element;
 
 /**
@@ -19,13 +16,13 @@ use DOMWrap\Element;
 class ContentExtractor extends AbstractModule implements ModuleInterface {
     use ArticleMutatorTrait, NodeGravityTrait, NodeCommonTrait;
 
-    /**
-     * @param Article $article
-     */
-    public function run(Article $article) {
+    /** @inheritdoc  */
+    public function run(Article $article): self {
         $this->article($article);
 
         $article->setTopNode($this->getTopNode());
+
+        return $this;
     }
 
     /**
@@ -33,7 +30,7 @@ class ContentExtractor extends AbstractModule implements ModuleInterface {
      *
      * @return array
      */
-    private function getTopNodeCandidatesByContents(Article $article) {
+    private function getTopNodeCandidatesByContents(Article $article): array {
         $results = [];
 
         $nodes = $article->getDoc()->find('p, td, pre');
@@ -55,9 +52,9 @@ class ContentExtractor extends AbstractModule implements ModuleInterface {
      * @param int $i
      * @param int $totalNodes
      *
-     * @return double
+     * @return float
      */
-    private function getTopNodeCandidateScore(Element $node, $i, $totalNodes) {
+    private function getTopNodeCandidateScore(Element $node, int $i, int $totalNodes): float {
         $boostScore = (1.0 / ($i + 1)) * 50;
         $bottomNodesForNegativeScore = $totalNodes * 0.25;
 
@@ -83,7 +80,7 @@ class ContentExtractor extends AbstractModule implements ModuleInterface {
      *
      * @return Element|null
      */
-    private function getTopNodeByScore($nodes) {
+    private function getTopNodeByScore(array $nodes): ?Element {
         $topNode = null;
         $topNodeScore = 0;
 
@@ -109,9 +106,11 @@ class ContentExtractor extends AbstractModule implements ModuleInterface {
 
     /**
      * @param Element $node
-     * @param double $upscore
+     * @param float $upscore
+     *
+     * @return self
      */
-    private function calculateBestNodeCandidateScores(Element $node, $upscore) {
+    private function calculateBestNodeCandidateScores(Element $node, float $upscore): self {
         if ($node->parent() instanceof Element) {
             $this->updateScore($node->parent(), $upscore);
             $this->updateNodeCount($node->parent(), 1);
@@ -121,13 +120,17 @@ class ContentExtractor extends AbstractModule implements ModuleInterface {
                 $this->updateNodeCount($node->parent()->parent(), 1);
             }
         }
+
+        return $this;
     }
 
     /**
      * @param Element $node
      * @param array $nodeCandidates
+     *
+     * @return array
      */
-    private function updateBestNodeCandidates(Element $node, $nodeCandidates) {
+    private function updateBestNodeCandidates(Element $node, array $nodeCandidates): array {
         if (!in_array($node->parent(), $nodeCandidates, true)) {
             if ($node->parent() instanceof Element) {
                 $nodeCandidates[] = $node->parent();
@@ -152,7 +155,7 @@ class ContentExtractor extends AbstractModule implements ModuleInterface {
      *
      * @return Element|null
      */
-    public function getTopNode() {
+    public function getTopNode(): ?Element {
         $nodes = $this->getTopNodeCandidatesByContents($this->article());
 
         $nodeCandidates = [];
@@ -181,7 +184,7 @@ class ContentExtractor extends AbstractModule implements ModuleInterface {
      *
      * @return bool
      */
-    private function isOkToBoost(Element $node) {
+    private function isOkToBoost(Element $node): bool {
         $stepsAway = 0;
         $minimumStopWordCount = 5;
         $maxStepsAwayFromNode = 3;

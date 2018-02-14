@@ -1,16 +1,12 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Goose\Modules\Formatters;
 
 use Goose\Article;
 use Goose\Utils\Helper;
-use Goose\Traits\NodeCommonTrait;
-use Goose\Traits\NodeGravityTrait;
-use Goose\Traits\ArticleMutatorTrait;
-use Goose\Modules\AbstractModule;
-use Goose\Modules\ModuleInterface;
-use DOMWrap\Text;
-use DOMWrap\Element;
+use Goose\Traits\{NodeCommonTrait, NodeGravityTrait, ArticleMutatorTrait};
+use Goose\Modules\{AbstractModule, ModuleInterface};
+use DOMWrap\{Text, Element};
 
 /**
  * Output Formatter
@@ -21,15 +17,13 @@ use DOMWrap\Element;
 class OutputFormatter extends AbstractModule implements ModuleInterface {
     use ArticleMutatorTrait, NodeGravityTrait, NodeCommonTrait;
 
-    /** @var double */
+    /** @var float */
     protected static $SIBLING_BASE_LINE_SCORE = 0.30;
 
     /** @var string */
     protected static $CLEANUP_IGNORE_SELECTOR = ':not(p):not(strong):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6)';
 
-    /**
-     * @param Article $article
-     */
+    /** @inheritdoc */
     public function run(Article $article) {
         $this->article($article);
 
@@ -39,6 +33,8 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
             $article->setCleanedArticleText($this->getFormattedText());
             $article->setHtmlArticle($this->cleanupHtml());
         }
+
+        return $this;
     }
 
     /**
@@ -46,7 +42,7 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
      *
      * @return string Formatted string with all HTML removed
      */
-    private function getFormattedText() {
+    private function getFormattedText(): string {
         $this->removeNodesWithNegativeScores($this->article()->getTopNode());
         $this->convertLinksToText($this->article()->getTopNode());
         $this->replaceTagsWithText($this->article()->getTopNode());
@@ -62,7 +58,7 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
      *
      * @return string
      */
-    private function convertToText(Element $topNode) {
+    private function convertToText(Element $topNode): string {
         if (empty($topNode)) {
             return '';
         }
@@ -80,7 +76,7 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
      *
      * @return string Formatted string with all HTML
      */
-    private function cleanupHtml() {
+    private function cleanupHtml(): string {
         $topNode = $this->article()->getTopNode();
 
         if (empty($topNode)) {
@@ -99,7 +95,7 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
      *
      * @return string
      */
-    private function convertToHtml(Element $topNode) {
+    private function convertToHtml(Element $topNode): string {
         if (empty($topNode)) {
             return '';
         }
@@ -111,8 +107,10 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
      * cleans up and converts any nodes that should be considered text into text
      *
      * @param Element $topNode
+     *
+     * @return self
      */
-    private function convertLinksToText(Element $topNode) {
+    private function convertLinksToText(Element $topNode): self {
         if (!empty($topNode)) {
             $links = $topNode->find('a');
 
@@ -124,6 +122,8 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
                 }
             }
         }
+
+        return $this;
     }
 
     /**
@@ -131,8 +131,10 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
      * give em the boot
      *
      * @param Element $topNode
+     *
+     * @return self
      */
-    private function removeNodesWithNegativeScores(Element $topNode) {
+    private function removeNodesWithNegativeScores(Element $topNode): self {
         if (!empty($topNode)) {
             $gravityItems = $topNode->find('*[gravityScore]');
 
@@ -144,6 +146,8 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
                 }
             }
         }
+
+        return $this;
     }
 
     /**
@@ -153,8 +157,10 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
      * replaces header tags h1 ... h6 with newline padded text
      *
      * @param Element $topNode
+     *
+     * @return self
      */
-    private function replaceTagsWithText(Element $topNode) {
+    private function replaceTagsWithText(Element $topNode): self {
         if (!empty($topNode)) {
             $items = $topNode->find('b, strong, i');
 
@@ -168,6 +174,8 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
                 $header->replaceWith(new Text("\n\n" . $this->getTagCleanedText($header) . "\n\n"));
             }
         }
+
+        return $this;
     }
 
     /**
@@ -177,7 +185,7 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
      *
      * @return string
      */
-    private function getTagCleanedText(Element $item) {
+    private function getTagCleanedText(Element $item): string {
         return Helper::textNormalise($item->text());
     }
 
@@ -185,8 +193,10 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
      * remove paragraphs that have less than x number of words, would indicate that it's some sort of link
      *
      * @param Element $topNode
+     *
+     * @return self
      */
-    private function removeParagraphsWithFewWords(Element $topNode) {
+    private function removeParagraphsWithFewWords(Element $topNode): self {
         if (!empty($topNode)) {
             $nodes = $topNode->find('p');
 
@@ -200,12 +210,16 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
 
             /** @todo Implement */
         }
+
+        return $this;
     }
 
     /**
      * Remove any divs that looks like non-content, clusters of links, or paras with no gusto
+     *
+     * @return self
      */
-    private function postExtractionCleanup() {
+    private function postExtractionCleanup(): self {
         $this->addSiblings($this->article()->getTopNode());
 
         foreach ($this->article()->getTopNode()->contents() as $node) {
@@ -217,12 +231,16 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
                 }
             }
         }
+
+        return $this;
     }
 
     /**
      * @param Element $topNode
+     *
+     * @return self
      */
-    private function removeSmallParagraphs(Element $topNode) {
+    private function removeSmallParagraphs(Element $topNode): self {
         $nodes = $topNode->find('p, strong');
 
         foreach ($nodes as $node) {
@@ -230,6 +248,8 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
                 $node->remove();
             }
         }
+
+        return $this;
     }
 
     /**
@@ -237,7 +257,7 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
      *
      * @return bool
      */
-    private function isTableTagAndNoParagraphsExist(Element $topNode) {
+    private function isTableTagAndNoParagraphsExist(Element $topNode): bool {
         $this->removeSmallParagraphs($topNode);
 
         $nodes = $topNode->find('p');
@@ -267,7 +287,7 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
      *
      * @return bool
      */
-    private function isNodeScoreThreshholdMet(Element $topNode, Element $node) {
+    private function isNodeScoreThreshholdMet(Element $topNode, Element $node): bool {
         $topNodeScore = $this->getScore($topNode);
         $currentNodeScore = $this->getScore($node);
         $thresholdScore = ($topNodeScore * 0.08);
@@ -283,11 +303,11 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
      * Adds any siblings that may have a decent score to this node
      *
      * @param Element $currentSibling
-     * @param int $baselineScoreForSiblingParagraphs
+     * @param float $baselineScoreForSiblingParagraphs
      *
      * @return Element[]
      */
-    private function getSiblingContent(Element $currentSibling, $baselineScoreForSiblingParagraphs) {
+    private function getSiblingContent(Element $currentSibling, float $baselineScoreForSiblingParagraphs): array {
         $text = trim($currentSibling->text());
 
         if ($currentSibling->is('p, strong') && !empty($text)) {
@@ -315,8 +335,10 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
 
     /**
      * @param Element $topNode
+     *
+     * @return self
      */
-    private function addSiblings(Element $topNode) {
+    private function addSiblings(Element $topNode): self {
         $baselineScoreForSiblingParagraphs = $this->getBaselineScoreForSiblings($topNode);
 
         $previousSiblings = $topNode->precedingAll(function($node) {
@@ -331,6 +353,8 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
                 $topNode->insertBefore($result, $topNode->firstChild);
             }
         }
+
+        return $this;
     }
 
     /**
@@ -341,9 +365,9 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
      *
      * @param Element $topNode
      *
-     * @return int
+     * @return float
      */
-    private function getBaselineScoreForSiblings(Element $topNode) {
+    private function getBaselineScoreForSiblings(Element $topNode): float {
         $base = 100000;
         $numberOfParagraphs = 0;
         $scoreOfParagraphs = 0;

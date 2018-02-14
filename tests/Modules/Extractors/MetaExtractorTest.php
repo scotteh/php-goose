@@ -6,7 +6,7 @@ use Goose\Article;
 use Goose\Configuration;
 use Goose\Modules\Extractors\MetaExtractor;
 
-class MetaExtractorTest extends \PHPUnit_Framework_TestCase
+class MetaExtractorTest extends \PHPUnit\Framework\TestCase
 {
     use \Goose\Tests\Harness\TestTrait;
 

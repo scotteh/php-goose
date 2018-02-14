@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Goose\Text;
 
@@ -35,42 +35,54 @@ class WordStats
     /**
      * @return string[]
      */
-    public function getStopWords() {
+    public function getStopWords(): array {
         return $this->stopWords;
     }
 
     /**
      * @param string[] $words
+     *
+     * @return self
      */
-    public function setStopWords($words) {
+    public function setStopWords($words): self {
         $this->stopWords = $words;
+
+        return $this;
     }
 
     /**
      * @return int
      */
-    public function getStopWordCount() {
+    public function getStopWordCount(): int {
         return $this->stopWordCount;
     }
 
     /**
-     * @param int $wordcount
+     * @param int $wordCount
+     *
+     * @return self
      */
-    public function setStopWordCount($wordcount) {
-        $this->stopWordCount = $wordcount;
+    public function setStopWordCount(int $wordCount): self {
+        $this->stopWordCount = $wordCount;
+
+        return $this;
     }
 
     /**
      * @return int
      */
-    public function getWordCount() {
+    public function getWordCount(): int {
         return $this->wordCount;
     }
 
     /**
-     * @param int $cnt
+     * @param int $wordCount
+     *
+     * @return self
      */
-    public function setWordCount($cnt) {
-        $this->wordCount = $cnt;
+    public function setWordCount(int $wordCount): self {
+        $this->wordCount = $wordCount;
+
+        return $this;
     }
 }

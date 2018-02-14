@@ -4,7 +4,7 @@ namespace Goose\Tests\Modules\Extractors;
 
 use Goose\Article;
 
-class PublishDateExtractorTest extends \PHPUnit_Framework_TestCase
+class PublishDateExtractorTest extends \PHPUnit\Framework\TestCase
 {
     use \Goose\Tests\Harness\TestTrait;
 

@@ -1,15 +1,11 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Goose\Modules\Cleaners;
 
 use Goose\Article;
-use Goose\Utils\Helper;
 use Goose\Traits\DocumentMutatorTrait;
-use Goose\Modules\AbstractModule;
-use Goose\Modules\ModuleInterface;
-use DOMWrap\Text;
-use DOMWrap\Element;
-use DOMWrap\NodeList;
+use Goose\Modules\{AbstractModule, ModuleInterface};
+use DOMWrap\{Text, Element, NodeList};
 
 /**
  * Document Cleaner
@@ -60,11 +56,9 @@ class DocumentCleaner extends AbstractModule implements ModuleInterface {
     /**
      * Clean the contents of the supplied article document
      *
-     * @param Article $article
-     *
-     * @return null
+     * @inheritdoc
      */
-    public function run(Article $article) {
+    public function run(Article $article): self {
         $this->document($article->getDoc());
 
         $this->removeXPath('//comment()');
@@ -89,17 +83,19 @@ class DocumentCleaner extends AbstractModule implements ModuleInterface {
             return $node->parent()->is('p');
         });
         $this->convertToParagraph('div, span, article');
+
+        return $this;
     }
 
     /**
      * Remove via CSS selectors
      *
      * @param string $selector
-     * @param \Closure $callback
+     * @param callable $callback
      *
-     * @return null
+     * @return self
      */
-    private function remove($selector, \Closure $callback = null) {
+    private function remove(string $selector, callable $callback = null): self {
         $nodes = $this->document()->find($selector);
 
         foreach ($nodes as $node) {
@@ -107,17 +103,19 @@ class DocumentCleaner extends AbstractModule implements ModuleInterface {
                 $node->remove();
             }
         }
+
+        return $this;
     }
 
     /**
      * Remove using via XPath expressions
      *
      * @param string $expression
-     * @param \Closure $callback
+     * @param callable $callback
      *
-     * @return null
+     * @return self
      */
-    private function removeXPath($expression, \Closure $callback = null) {
+    private function removeXPath(string $expression, callable $callback = null): self {
         $nodes = $this->document()->findXPath($expression);
 
         foreach ($nodes as $node) {
@@ -125,17 +123,19 @@ class DocumentCleaner extends AbstractModule implements ModuleInterface {
                 $node->remove();
             }
         }
+
+        return $this;
     }
 
     /**
      * Replace node with its textual contents via CSS selectors
      *
      * @param string $selector
-     * @param \Closure $callback
+     * @param callable $callback
      *
-     * @return null
+     * @return self
      */
-    private function replace($selector, \Closure $callback = null) {
+    private function replace(string $selector, callable $callback = null): self {
         $nodes = $this->document()->find($selector);
 
         foreach ($nodes as $node) {
@@ -143,14 +143,16 @@ class DocumentCleaner extends AbstractModule implements ModuleInterface {
                 $node->replaceWith(new Text((string)$node->text()));
             }
         }
+
+        return $this;
     }
 
     /**
      * Remove unwanted junk elements based on pre-defined CSS selectors
      *
-     * @return null
+     * @return self
      */
-    private function removeBadTags() {
+    private function removeBadTags(): self {
         $lists = [
             "[%s^='%s']" => $this->startsWithNodes,
             "[%s*='%s']" => $this->searchNodes,
@@ -181,6 +183,8 @@ class DocumentCleaner extends AbstractModule implements ModuleInterface {
                 }
             }
         }
+
+        return $this;
     }
 
     /**
@@ -188,9 +192,9 @@ class DocumentCleaner extends AbstractModule implements ModuleInterface {
      *
      * @param Element $node
      *
-     * @return null
+     * @return self|null
      */
-    private function replaceElementsWithPara(Element $node) {
+    private function replaceElementsWithPara(Element $node): ?self {
         // Check to see if the node no longer exist.
         // 'Ghost' nodes have their ownerDocument property set to null - will throw a warning on access.
         // Use another common property with isset() - won't throw any warnings.
@@ -207,6 +211,8 @@ class DocumentCleaner extends AbstractModule implements ModuleInterface {
         }
 
         $node->replaceWith($newEl);
+
+        return $this;
     }
 
     /**
@@ -214,9 +220,9 @@ class DocumentCleaner extends AbstractModule implements ModuleInterface {
      *
      * @param string $selector
      *
-     * @return null
+     * @return self
      */
-    private function convertToParagraph($selector) {
+    private function convertToParagraph(string $selector): self {
         $nodes = $this->document()->find($selector);
 
         foreach ($nodes as $node) {
@@ -231,16 +237,18 @@ class DocumentCleaner extends AbstractModule implements ModuleInterface {
                 $node->append($replacements);
             }
         }
+
+        return $this;
     }
 
     /**
      * Generate new <p> element with supplied content.
      *
-     * @param \DOMWrap\NodeList $replacementNodes
+     * @param NodeList $replacementNodes
      *
      * @return Element
      */
-    private function getFlushedBuffer(NodeList $replacementNodes) {
+    private function getFlushedBuffer(NodeList $replacementNodes): Element {
         $newEl = $this->document()->createElement('p');
         $newEl->append($replacementNodes);
 
@@ -252,9 +260,9 @@ class DocumentCleaner extends AbstractModule implements ModuleInterface {
      *
      * @param Element $node
      *
-     * @return \DOMWrap\NodeList $nodesToReturn Replacement elements
+     * @return NodeList $nodesToReturn Replacement elements
      */
-    private function getReplacementNodes(Element $node) {
+    private function getReplacementNodes(Element $node): NodeList {
         $nodesToReturn = $node->newNodeList();
         $nodesToRemove = $node->newNodeList();
         $replacementNodes = $node->newNodeList();

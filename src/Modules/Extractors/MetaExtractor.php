@@ -1,13 +1,12 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Goose\Modules\Extractors;
 
 use Goose\Article;
 use Goose\Utils\Helper;
 use Goose\Traits\ArticleMutatorTrait;
-use Goose\Modules\AbstractModule;
-use Goose\Modules\ModuleInterface;
-use DOMWrap\Document;
+use Goose\Modules\{AbstractModule, ModuleInterface};
+use DOMWrap\{Document, NodeList};
 
 /**
  * Content Extractor
@@ -23,10 +22,8 @@ class MetaExtractor extends AbstractModule implements ModuleInterface {
         '|', '-', '»', ':',
     ];
 
-    /**
-     * @param Article $article
-     */
-    public function run(Article $article) {
+    /** @inheritdoc */
+    public function run(Article $article): self {
         $this->article($article);
 
         $article->setOpenGraph($this->getOpenGraph());
@@ -37,6 +34,8 @@ class MetaExtractor extends AbstractModule implements ModuleInterface {
         $article->setLanguage($this->getMetaLanguage() ?: $this->config()->get('language'));
 
         $this->config()->set('language', $article->getLanguage());
+
+        return $this;
     }
 
     /**
@@ -46,7 +45,7 @@ class MetaExtractor extends AbstractModule implements ModuleInterface {
      * 
      * @return string[]
      */
-    private function getOpenGraph() {
+    private function getOpenGraph(): array {
         $results = array();
 
         $nodes = $this->article()->getDoc()->find('meta[property^="og:"]');
@@ -80,7 +79,7 @@ class MetaExtractor extends AbstractModule implements ModuleInterface {
      *
      * @return string
      */
-    private function cleanTitle($title) {
+    private function cleanTitle(string $title): string {
         $openGraph = $this->article()->getOpenGraph();
 
         // Check if we have the site name in OpenGraph data and it does not match the title
@@ -128,7 +127,7 @@ class MetaExtractor extends AbstractModule implements ModuleInterface {
      * 
      * @return string
      */
-    private function getTitle() {
+    private function getTitle(): string {
         $openGraph = $this->article()->getOpenGraph();
 
         // Rely on OpenGraph in case we have the data
@@ -155,9 +154,9 @@ class MetaExtractor extends AbstractModule implements ModuleInterface {
      * @param string $property
      * @param string $value
      *
-     * @return \DOMWrap\NodeList
+     * @return NodeList
      */
-    private function getNodesByLowercasePropertyValue(Document $doc, $tag, $property, $value) {
+    private function getNodesByLowercasePropertyValue(Document $doc, string $tag, string $property, string $value): NodeList {
         return $doc->findXPath("descendant::".$tag."[translate(@".$property.", 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz')='".$value."']");
     }
 
@@ -169,7 +168,7 @@ class MetaExtractor extends AbstractModule implements ModuleInterface {
      *
      * @return string
      */
-    private function getMetaContent(Document $doc, $property, $value, $attr = 'content') {
+    private function getMetaContent(Document $doc, string $property, string $value, string $attr = 'content'): string {
         $nodes = $this->getNodesByLowercasePropertyValue($doc, 'meta', $property, $value);
 
         if (!$nodes->count()) {
@@ -187,7 +186,7 @@ class MetaExtractor extends AbstractModule implements ModuleInterface {
      *
      * @return string
      */
-    private function getMetaLanguage() {
+    private function getMetaLanguage(): string {
         $lang = '';
 
         $el = $this->article()->getDoc()->find('html[lang]');
@@ -224,7 +223,7 @@ class MetaExtractor extends AbstractModule implements ModuleInterface {
      *
      * @return string
      */
-    private function getMetaDescription() {
+    private function getMetaDescription(): string {
         $desc = $this->getMetaContent($this->article()->getDoc(), 'name', 'description');
 
         if (empty($desc)) {
@@ -243,16 +242,16 @@ class MetaExtractor extends AbstractModule implements ModuleInterface {
      *
      * @return string
      */
-    private function getMetaKeywords() {
+    private function getMetaKeywords(): string {
         return $this->getMetaContent($this->article()->getDoc(), 'name', 'keywords');
     }
 
     /**
      * If the article has meta canonical link set in the url
      *
-     * @return string
+     * @return string|null
      */
-    private function getCanonicalLink() {
+    private function getCanonicalLink(): ?string {
         $nodes = $this->getNodesByLowercasePropertyValue($this->article()->getDoc(), 'link', 'rel', 'canonical');
 
         if ($nodes->count()) {

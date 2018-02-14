@@ -1,8 +1,10 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Goose\Images;
 
 use Goose\Configuration;
+use GuzzleHttp\{Client, Pool};
+use GuzzleHttp\Psr7\Request;
 
 /**
  * Image Utils
@@ -16,12 +18,12 @@ class ImageUtils {
      *
      * @return object
      */
-    public static function getImageDimensions($filePath) {
+    public static function getImageDimensions(string $filePath): \stdClass {
         list($width, $height, $type) = getimagesize($filePath);
 
         return (object)[
-            'width' => $width,
-            'height' => $height,
+            'width' => (int)$width,
+            'height' => (int)$height,
             'mime' => image_type_to_mime_type($type),
         ];
     }
@@ -36,7 +38,7 @@ class ImageUtils {
      *
      * @return LocallyStoredImage[]
      */
-    public static function storeImagesToLocalFile($imageSrcs, $returnAll, Configuration $config) {
+    public static function storeImagesToLocalFile($imageSrcs, bool $returnAll, Configuration $config): array {
         $localImages = self::handleEntity($imageSrcs, $returnAll, $config);
 
         if (empty($localImages)) {
@@ -70,7 +72,7 @@ class ImageUtils {
      *
      * @return string
      */
-    private static function getFileExtensionName($imageDetails) {
+    private static function getFileExtensionName(string $imageDetails): string {
         $extensions = [
             'image/gif' => '.gif',
             'image/jpeg' => '.jpg',
@@ -89,10 +91,10 @@ class ImageUtils {
      * @param bool $returnAll
      * @param Configuration $config
      *
-     * @return object[]|null
+     * @return array|null
      */
-    private static function handleEntity($imageSrcs, $returnAll, $config) {
-        $guzzle = new \GuzzleHttp\Client();
+    private static function handleEntity($imageSrcs, bool $returnAll, Configuration $config): ?array {
+        $guzzle = new Client();
 
         $results = [];
 
@@ -108,12 +110,12 @@ class ImageUtils {
                 yield $key => function($options) use ($guzzle, $url, $file) {
                     $options['sink'] = $file;
 
-                    return $guzzle->sendAsync(new \GuzzleHttp\Psr7\Request('GET', $url), $options);
+                    return $guzzle->sendAsync(new Request('GET', $url), $options);
                 };
             }
         };
 
-        $pool = new \GuzzleHttp\Pool($guzzle, $requests($imageSrcs), [
+        $pool = new Pool($guzzle, $requests($imageSrcs), [
             'concurrency' => 25,
             'fulfilled' => function($response, $index) use (&$results, $returnAll) {
                 if (!$returnAll && $response->getStatusCode() != 200) {

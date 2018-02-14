@@ -1,11 +1,10 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Goose\Modules\Extractors;
 
 use Goose\Article;
 use Goose\Traits\ArticleMutatorTrait;
-use Goose\Modules\AbstractModule;
-use Goose\Modules\ModuleInterface;
+use Goose\Modules\{AbstractModule, ModuleInterface};
 use DOMWrap\Element;
 
 /**
@@ -17,10 +16,8 @@ use DOMWrap\Element;
 class PublishDateExtractor extends AbstractModule implements ModuleInterface {
     use ArticleMutatorTrait;
 
-    /**
-     * @param Article $article
-     */
-    public function run(Article $article) {
+    /** @inheritdoc  */
+    public function run(Article $article): self {
         $this->article($article);
 
         $dt = null;
@@ -44,9 +41,14 @@ class PublishDateExtractor extends AbstractModule implements ModuleInterface {
         }
 
         $article->setPublishDate($dt);
+
+        return $this;
     }
 
-    private function getDateFromURL() {
+    /**
+     * @return \DateTime|null
+     */
+    private function getDateFromURL(): ?\DateTime {
         // Determine date based on URL
         if (preg_match('@(?:[\d]{4})(?<delimiter>[/-])(?:[\d]{2})\k<delimiter>(?:[\d]{2})@U', $this->article()->getFinalUrl(), $matches)) {
             $dt = \DateTime::createFromFormat('Y' . $matches['delimiter'] . 'm' . $matches['delimiter'] . 'd', $matches[0]);
@@ -73,7 +75,7 @@ class PublishDateExtractor extends AbstractModule implements ModuleInterface {
      *
      * @see https://schema.org/datePublished
      */
-    private function getDateFromSchemaOrg() {
+    private function getDateFromSchemaOrg(): ?\DateTime {
         $dt = null;
 
         // Check for HTML tags (<meta>, <time>, etc.)
@@ -128,7 +130,7 @@ class PublishDateExtractor extends AbstractModule implements ModuleInterface {
      * @see http://dublincore.org/documents/dcmi-terms/#elements-date
      * @see http://dublincore.org/documents/2000/07/16/usageguide/qualified-html.shtml
      */
-    private function getDateFromDublinCore() {
+    private function getDateFromDublinCore(): ?\DateTime {
         $dt = null;
         $nodes = $this->article()->getRawDoc()->find('*[name="dc.date"], *[name="dc.date.issued"], *[name="DC.date.issued"]');
 
@@ -160,7 +162,7 @@ class PublishDateExtractor extends AbstractModule implements ModuleInterface {
      * @see http://ogp.me/
      * @see http://ogp.me/#type_article
      */
-    private function getDateFromOpenGraph() {
+    private function getDateFromOpenGraph(): ?\DateTime {
         $dt = null;
 
         $og_data = $this->article()->getOpenGraph();
@@ -191,7 +193,7 @@ class PublishDateExtractor extends AbstractModule implements ModuleInterface {
      * @see https://www.parsely.com/help/integration/metatags/
      * @see https://www.parsely.com/help/integration/ppage/
      */
-    private function getDateFromParsely() {
+    private function getDateFromParsely(): ?\DateTime {
         $dt = null;
 
         // JSON-LD

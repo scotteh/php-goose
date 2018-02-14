@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Goose\Images;
 
@@ -34,15 +34,19 @@ class LocallyStoredImage {
 
     /**
      * @param string $imgSrc
+     *
+     * @return self
      */
-    public function setImgSrc($imgSrc) {
+    public function setImgSrc(string $imgSrc): self {
         $this->imgSrc = $imgSrc;
+
+        return $this;
     }
 
     /**
      * @return string
      */
-    public function getImgSrc() {
+    public function getImgSrc(): string {
         return $this->imgSrc;
     }
 
@@ -51,15 +55,19 @@ class LocallyStoredImage {
 
     /**
      * @param string $localFileName
+     *
+     * @return self
      */
-    public function setLocalFileName($localFileName) {
+    public function setLocalFileName(string $localFileName): self {
         $this->localFileName = $localFileName;
+
+        return $this;
     }
 
     /**
      * @return string
      */
-    public function getLocalFileName() {
+    public function getLocalFileName(): string {
         return $this->localFileName;
     }
 
@@ -68,15 +76,19 @@ class LocallyStoredImage {
 
     /**
      * @param string $linkhash
+     *
+     * @return self
      */
-    public function setLinkhash($linkhash) {
+    public function setLinkhash(string $linkhash): self {
         $this->linkhash = $linkhash;
+
+        return $this;
     }
 
     /**
      * @return string
      */
-    public function getLinkhash() {
+    public function getLinkhash(): string {
         return $this->linkhash;
     }
 
@@ -85,15 +97,19 @@ class LocallyStoredImage {
 
     /**
      * @param int $bytes
+     *
+     * @return self
      */
-    public function setBytes($bytes) {
+    public function setBytes(int $bytes): self {
         $this->bytes = $bytes;
+
+        return $this;
     }
 
     /**
      * @return int
      */
-    public function getBytes() {
+    public function getBytes(): int {
         return $this->bytes;
     }
 
@@ -102,15 +118,19 @@ class LocallyStoredImage {
 
     /**
      * @param string $fileExtension
+     *
+     * @return self
      */
-    public function setFileExtension($fileExtension) {
+    public function setFileExtension(string $fileExtension): self {
         $this->fileExtension = $fileExtension;
+
+        return $this;
     }
 
     /**
      * @return string
      */
-    public function getFileExtension() {
+    public function getFileExtension(): string {
         return $this->fileExtension;
     }
 
@@ -119,15 +139,19 @@ class LocallyStoredImage {
 
     /**
      * @param int $height
+     *
+     * @return self
      */
-    public function setHeight($height) {
+    public function setHeight(int $height): self {
         $this->height = $height;
+
+        return $this;
     }
 
     /**
      * @return int
      */
-    public function getHeight() {
+    public function getHeight(): int {
         return $this->height;
     }
 
@@ -136,15 +160,19 @@ class LocallyStoredImage {
 
     /**
      * @param int $width
+     *
+     * @return self
      */
-    public function setWidth($width) {
+    public function setWidth(int $width): self {
         $this->width = $width;
+
+        return $this;
     }
 
     /**
      * @return int
      */
-    public function getWidth() {
+    public function getWidth(): int {
         return $this->width;
     }
 }

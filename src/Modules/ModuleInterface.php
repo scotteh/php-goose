@@ -1,9 +1,8 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Goose\Modules;
 
-use Goose\Article;
-use Goose\Configuration;
+use Goose\{Article, Configuration};
 
 /**
  * Module Interface
@@ -19,6 +18,8 @@ interface ModuleInterface {
 
     /**
      * @param Article $article
+     *
+     * @return self
      */
     public function run(Article $article);
 }

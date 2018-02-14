@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Goose\Modules;
 
@@ -24,7 +24,7 @@ abstract class AbstractModule {
     /**
      * @return Configuration
      */
-    public function config() {
+    public function config(): Configuration {
         return $this->config;
     }
 }

@@ -4,7 +4,7 @@ namespace Goose\Tests\Modules\Cleaners;
 
 use Goose\Article;
 
-class DocumentCleanerTest extends \PHPUnit_Framework_TestCase
+class DocumentCleanerTest extends \PHPUnit\Framework\TestCase
 {
     use \Goose\Tests\Harness\TestTrait;
 

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Goose\Traits;
 
@@ -19,11 +19,13 @@ trait DocumentMutatorTrait {
      *
      * @return Document|null
      */
-    protected function document(Document $document = null) {
+    protected function document(Document $document = null): ?Document {
         if ($document === null) {
             return $this->document;
         }
 
         $this->document = $document;
+
+        return $this->document;
     }
 }

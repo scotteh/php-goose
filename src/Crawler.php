@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Goose;
 
@@ -25,7 +25,7 @@ class Crawler {
     /**
      * @return Configuration
      */
-    public function config() {
+    public function config(): Configuration {
         return $this->config;
     }
 
@@ -35,7 +35,7 @@ class Crawler {
      *
      * @return Article
      */
-    public function crawl($url, $rawHTML = null) {
+    public function crawl(string $url, string $rawHTML = null): ?Article {
         $article = new Article();
 
         $parseCandidate = Helper::getCleanedUrl($url);
@@ -79,7 +79,7 @@ class Crawler {
      *
      * @return Document
      */
-    private function getDocument($rawHTML) {
+    private function getDocument(string $rawHTML): Document {
         $doc = new Document();
         $doc->html($rawHTML);
 
@@ -89,14 +89,18 @@ class Crawler {
     /**
      * @param string $category
      * @param Article $article
+     *
+     * @return self
      */
-    public function modules($category, $article) {
+    public function modules(string $category, Article $article): self {
         $modules = $this->config->getModules($category);
 
         foreach ($modules as $module) {
             $obj = new $module($this->config());
             $obj->run($article);
         }
+
+        return $this;
     }
 }
 

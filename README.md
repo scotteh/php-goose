@@ -22,7 +22,7 @@ The PHP version was rewritten by:
 
 ## Requirement
 
- - PHP 5.5 or later
+ - PHP 7.1 or later
  - PSR-4 compatible autoloader
 
 ## Install
@@ -33,7 +33,7 @@ Add the dependency into your projects composer.json.
 ```
 {
   "require": {
-    "scotteh/php-goose": "^0.6"
+    "scotteh/php-goose": "^1.0"
   }
 }
 ```
