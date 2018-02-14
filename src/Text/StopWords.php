@@ -106,7 +106,7 @@ class StopWords
      *
      * @return array
      */
-    public function getCandidateWords(string $strippedInput): string {
+    public function getCandidateWords(string $strippedInput): array {
         // Simple separating words in Japanese.
         if ($this->getLanguage() === 'ja') {
             $regexp = '/(' . implode('|', array_map('preg_quote', $this->getWordList())) . ')/';
