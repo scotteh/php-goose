@@ -24,6 +24,8 @@ The PHP version was rewritten by:
 
  - PHP 7.1 or later
  - PSR-4 compatible autoloader
+ 
+The older 0.x versions with PHP 5.5+ support are still available under [releases](https://github.com/scotteh/php-goose/releases).
 
 ## Install
 
