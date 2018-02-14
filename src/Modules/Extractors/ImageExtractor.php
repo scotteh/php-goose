@@ -129,7 +129,7 @@ class ImageExtractor extends AbstractModule implements ModuleInterface {
     private function checkForLargeImages(Element $node, int $parentDepthLevel, int $siblingDepthLevel): ?Image {
         $goodLocalImages = $this->getImageCandidates($node);
 
-        $scoredLocalImages = $this->scoreLocalImages($goodLocalImages, $parentDepthLevel);
+        $scoredLocalImages = $this->scoreLocalImages($goodLocalImages);
 
         ksort($scoredLocalImages);
 
@@ -202,11 +202,10 @@ class ImageExtractor extends AbstractModule implements ModuleInterface {
      * so if the image is 3rd found in the dom it's sequence score would be 1 / 3 = .33 * diff in area from the first image
      *
      * @param LocallyStoredImage[] $locallyStoredImages
-     * @param int $depthLevel
      *
      * @return LocallyStoredImage[]
      */
-    private function scoreLocalImages($locallyStoredImages, int $depthLevel): array {
+    private function scoreLocalImages($locallyStoredImages): array {
         $results = [];
         $i = 1;
         $initialArea = 0;
@@ -232,24 +231,6 @@ class ImageExtractor extends AbstractModule implements ModuleInterface {
         }
 
         return $results;
-    }
-
-    /**
-     * @param LocallyStoredImage $locallyStoredImage
-     * @param int $depthLevel
-     *
-     * @return bool
-     */
-    private function isWorthyImage($locallyStoredImage, int $depthLevel): bool {
-        if ($locallyStoredImage->getWidth() <= $this->config()->get('image_min_width')
-          || $locallyStoredImage->getHeight() <= $this->config()->get('image_min_height')
-          || $locallyStoredImage->getFileExtension() == 'NA'
-          || ($depthLevel < 1 && $locallyStoredImage->getWidth() < 300) || $depthLevel >= 1
-          || $this->isBannerDimensions($locallyStoredImage->getWidth(), $locallyStoredImage->getHeight())) {
-            return false;
-        }
-
-        return true;
     }
 
     /**

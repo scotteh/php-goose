@@ -101,7 +101,7 @@ class AdditionalDataExtractor extends AbstractModule implements ModuleInterface 
     /**
      * Pulls out links we like
      *
-     * @return string[]
+     * @return array
      */
     private function getLinks(): array {
         $goodLinks = [];
@@ -142,6 +142,10 @@ class AdditionalDataExtractor extends AbstractModule implements ModuleInterface 
         // Decode and split words by white-space
         $text = html_entity_decode($text, ENT_COMPAT | ENT_HTML5, 'UTF-8');
         $words = preg_split('@[\s]+@iu', $text, -1, PREG_SPLIT_NO_EMPTY);
+
+        if (!$words) {
+            return array();
+        }
 
         // Determine stop words currently in $words
         $ignoreWords = array_intersect($words, $stopWords);

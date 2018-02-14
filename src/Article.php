@@ -232,7 +232,7 @@ class Article {
      *
      * @return self
      */
-    public function setTopNode(Element $topNode = null): ?self {
+    public function setTopNode(Element $topNode = null): self {
         $this->topNode = $topNode;
 
         return $this;
@@ -255,7 +255,7 @@ class Article {
      *
      * @return self
      */
-    public function setTopImage(Image $topImage = null): ?self {
+    public function setTopImage(Image $topImage = null): self {
         $this->topImage = $topImage;
 
         return $this;
@@ -424,7 +424,7 @@ class Article {
     }
 
     /** @return string|null */
-    public function getRawHtml(): string {
+    public function getRawHtml(): ?string {
         return $this->rawHtml;
     }
 
@@ -510,14 +510,14 @@ class Article {
      *
      * @return self
      */
-    public function setPublishDate(\DateTime $publishDate = null): ?self {
+    public function setPublishDate(\DateTime $publishDate = null): self {
         $this->publishDate = $publishDate;
 
         return $this;
     }
 
     /** @return \DateTime|null */
-    public function getPublishDate(): \DateTime {
+    public function getPublishDate(): ?\DateTime {
         return $this->publishDate;
     }
 

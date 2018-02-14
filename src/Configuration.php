@@ -53,9 +53,7 @@ class Configuration {
      * @param mixed[] $options
      */
     public function __construct(array $options = []) {
-        if (is_array($options)) {
-            $this->options = array_replace_recursive($this->options, $options);
-        }
+        $this->options = array_replace_recursive($this->options, $options);
     }
 
     /**
@@ -164,11 +162,9 @@ class Configuration {
      * @return bool
      */
     public function areValidModules(string $category, array $classes): bool {
-        if (is_array($classes)) {
-            foreach ($classes as $class) {
-                if (!$this->isValidModule($category, $class)) {
-                    return false;
-                }
+        foreach ($classes as $class) {
+            if (!$this->isValidModule($category, $class)) {
+                return false;
             }
         }
 

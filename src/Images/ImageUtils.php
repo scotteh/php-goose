@@ -72,7 +72,7 @@ class ImageUtils {
      *
      * @return string
      */
-    private static function getFileExtensionName(string $imageDetails): string {
+    private static function getFileExtensionName(object $imageDetails): string {
         $extensions = [
             'image/gif' => '.gif',
             'image/jpeg' => '.jpg',
@@ -98,7 +98,7 @@ class ImageUtils {
 
         $results = [];
 
-        $requests = function($urls) use ($guzzle, $config, &$results) {
+        $requests = function($urls) use ($guzzle, &$results) {
             foreach ($urls as $key => $url) {
                 $file = tempnam(sys_get_temp_dir(), 'goose');
 

@@ -20,8 +20,6 @@ class PublishDateExtractor extends AbstractModule implements ModuleInterface {
     public function run(Article $article): self {
         $this->article($article);
 
-        $dt = null;
-
         $dt = $this->getDateFromSchemaOrg();
 
         if (is_null($dt)) {
