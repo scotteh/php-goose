@@ -88,8 +88,8 @@ All config options are not required and are optional. Default (fallback) values 
 $goose = new GooseClient([
     // Language - Selects common word dictionary
     //   Supported languages (ISO 639-1):
-    //     ar, da, de, en, es, fi, fr, hu, id, it, ja, ko,
-    //     nb, nl, no, pl, pt, ru, sv, zh
+    //     ar, cs, da, de, en, es, fi, fr, hu, id, it, ja,
+    //     ko, nb, nl, no, pl, pt, ru, sv, zh
     'language' => 'en',
     // Minimum image size (bytes)
     'image_min_bytes' => 4500,
