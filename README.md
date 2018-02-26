@@ -6,12 +6,13 @@ PHP Goose is designed to detect and extract the main body of articles, associate
 Types of data extracted:
 
  - Main text of an article
- - Main feature image of article
+ - Main feature image of an article
  - Other featured images
- - Any YouTube/Vimeo movies embedded in article
+ - YouTube/Vimeo movies embedded in article
  - Meta description
  - Meta tags
  - Publish date
+ - Popular words
 
 ``` php
 use Goose\Client as GooseClient;
@@ -109,7 +110,7 @@ $goose = new GooseClient([
 PHP Goose has been written by:
  - [Andrew Scott](https://github.com/scotteh)
 
-It is a port of [Goose](https://github.com/GravityLabs/goose/) originally developed in Java and converted to Scala by [GravityLabs](https://github.com/GravityLabs/). Portions have also been ported from the Python port [python-goose](https://github.com/grangier/python-goose). 
+This library is a port of [Goose](https://github.com/GravityLabs/goose/) originally developed in Java and converted to Scala by [GravityLabs](https://github.com/GravityLabs/). Portions have also been ported from the Python port [python-goose](https://github.com/grangier/python-goose). 
 
 ## Licensing
 
