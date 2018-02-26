@@ -1,14 +1,13 @@
 # PHP Goose - Article Extractor
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/scotteh/php-goose/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/scotteh/php-goose/?branch=master) [![Build Status](https://travis-ci.org/scotteh/php-goose.svg?branch=master)](https://travis-ci.org/scotteh/php-goose)
 
-## Intro
+PHP Goose is designed to detect and extract the main body of articles, associated media and metadata from a news or article type web page.
 
-This projects mission is to take any news article or article type web page and not only detect and extract what is the main body of the article, but also the most probable feature image candidates and all other metadata/images/videos.
-
-Goose will try to extract the following information:
+Types of data extracted:
 
  - Main text of an article
- - Main image of article
+ - Main feature image of article
+ - Other featured images
  - Any YouTube/Vimeo movies embedded in article
  - Meta description
  - Meta tags
@@ -43,31 +42,39 @@ The older 0.x versions with PHP 5.5+ support are still available under [releases
 
 ## Install
 
-This library is designed to be installed via [Composer](https://getcomposer.org/doc/).
+PHP Goose is designed to be installed via [Composer](https://getcomposer.org/doc/).
 
-Install composer
+Download composer:
 ``` bash
 curl -sS https://getcomposer.org/installer | php
 ```
 
-Next, install the latest stable version of php-goose.
+Next, install the latest stable version of PHP Goose:
 ``` bash
 php composer.phar require scotteh/php-goose ^1.0
 ```
 
-This library requires an autoloader, if you aren't already using one you can include [Composers autoloader](https://getcomposer.org/doc/01-basic-usage.md#autoloading).
+Once installed, require [Composer's autoloader](https://getcomposer.org/doc/01-basic-usage.md#autoloading).
 ``` php
 require('vendor/autoload.php');
 ```
 
-To update php-goose later you can run the following command:
+To update PHP Goose later you can run the following command:
 ``` bash
 php composer.phar update
 ```
 
-## Configuration
+## Usage
 
-All config options are not required and are optional. Default (fallback) values have been used below.
+### Fetching Articles
+
+### Extracting Locally
+
+### Media
+
+### Configuration
+
+All configuration options are optional. Default values are listed below.
 
 ``` php
 $goose = new GooseClient([
@@ -99,11 +106,10 @@ $goose = new GooseClient([
 
 ## About
 
-PHP Goose is a port of [Goose](https://github.com/GravityLabs/goose/) originally developed in Java and converted to Scala by [GravityLabs](https://github.com/GravityLabs/). Portions have also been ported from the Python port [python-goose](https://github.com/grangier/python-goose).
-
-This version was written by:
-
+PHP Goose has been written by:
  - [Andrew Scott](https://github.com/scotteh)
+
+It is a port of [Goose](https://github.com/GravityLabs/goose/) originally developed in Java and converted to Scala by [GravityLabs](https://github.com/GravityLabs/). Portions have also been ported from the Python port [python-goose](https://github.com/grangier/python-goose). 
 
 ## Licensing
 
