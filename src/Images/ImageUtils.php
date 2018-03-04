@@ -72,7 +72,7 @@ class ImageUtils {
      *
      * @return string
      */
-    private static function getFileExtensionName(object $imageDetails): string {
+    private static function getFileExtensionName(\stdClass $imageDetails): string {
         $extensions = [
             'image/gif' => '.gif',
             'image/jpeg' => '.jpg',

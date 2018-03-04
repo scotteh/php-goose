@@ -30,7 +30,7 @@ trait NodeCommonTrait {
 
         $words = preg_split('@[\s]+@iu', $node->text(), -1, PREG_SPLIT_NO_EMPTY);
 
-        if (!is_array($words)) {
+        if (!is_array($words) || empty($words)) {
             return false;
         }
 
