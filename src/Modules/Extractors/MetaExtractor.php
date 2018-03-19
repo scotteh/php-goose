@@ -176,9 +176,12 @@ class MetaExtractor extends AbstractModule implements ModuleInterface {
         }
 
         $content = $nodes->first()->attr($attr);
-        $content = trim($content);
 
-        return $content;
+        if (!is_string($content)) {
+            return '';
+        }
+
+        return trim($content);
     }
 
     /**
