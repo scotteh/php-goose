@@ -61,7 +61,7 @@ require('vendor/autoload.php');
 ## Usage
 
 ``` php
-use Goose\Client as GooseClient;
+use \Goose\Client as GooseClient;
 
 $goose = new GooseClient();
 $article = $goose->extractContent('http://url.to/article');
@@ -85,6 +85,8 @@ $allImages = $article->getAllImages();
 All config options are not required and are optional. Default (fallback) values have been used below.
 
 ``` php
+use \Goose\Client as GooseClient;
+
 $goose = new GooseClient([
     // Language - Selects common word dictionary
     //   Supported languages (ISO 639-1):
