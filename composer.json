@@ -1,9 +1,9 @@
 {
-    "name": "ProjectAusten/php-goose",
+    "name": "projectausten/php-goose",
     "type": "library",
     "description": "Readability / Html Content / Article Extractor & Web Scrapping library written in PHP",
     "keywords": ["scraper", "http", "extractor", "text", "content", "scraping", "website", "readability"],
-    "homepage": "https://github.com/ProjectAusten/php-goose",
+    "homepage": "https://github.com/projectausten/php-goose",
     "license": "Apache-2.0",
     "authors": [
         {
