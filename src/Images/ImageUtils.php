@@ -24,7 +24,7 @@ class ImageUtils {
         return (object)[
             'width' => (int)$width,
             'height' => (int)$height,
-            'mime' => image_type_to_mime_type($type),
+            'mime' => is_null( $type ) ? null : image_type_to_mime_type($type),
         ];
     }
 
@@ -53,6 +53,8 @@ class ImageUtils {
             }
             
             $imageDetails = self::getImageDimensions($localImage->file);
+            if ( !$imageDetails->mime )
+            	continue;
 
             $locallyStoredImages[] = new LocallyStoredImage([
                 'imgSrc' => $localImage->url,
