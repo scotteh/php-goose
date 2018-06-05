@@ -86,7 +86,7 @@ class AdditionalDataExtractor extends AbstractModule implements ModuleInterface 
                     $srcHost = parse_url($src, PHP_URL_HOST);
                     $srcScheme = parse_url($src, PHP_URL_SCHEME);
 
-                    return $match || preg_match('@' . $domain . '$@i', $srcHost) && in_array($srcScheme, ['http', 'https']);
+                    return $match || preg_match('@' . $domain . '$@i', $srcHost ?? '' ) && in_array($srcScheme, ['http', 'https']);
                 });
 
                 if ($match) {
