@@ -104,11 +104,13 @@ class PublishDateExtractor extends AbstractModule implements ModuleInterface {
         $nodes = $this->article()->getRawDoc()->find('script[type="application/ld+json"]');
 
         /* @var $node Element */
-        foreach ($nodes as $node) {
+        foreach ( $nodes as $node )
+        {
             try {
-                $json = json_decode($node->text());
-                if (isset($json->datePublished)) {
-                    $dt = new \DateTime($json->datePublished);
+                $json = json_decode( $node->text() );
+                if ( isset( $json->datePublished ) && is_string( $json->datePublished ) )
+                {
+                    $dt = new \DateTime( $json->datePublished );
                     break;
                 }
             }
