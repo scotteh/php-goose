@@ -32,6 +32,19 @@ class AdditionalDataExtractor extends AbstractModule implements ModuleInterface 
         'flic\.kr',
     ];
 
+    /** @var string[] */
+    protected static $VIDEO_EXTENSIONS = [
+        'mpg',
+        'mp4',
+        'avi',
+        'flv',
+        'mov',
+        'wmv',
+        'ogv',
+        'gifv',
+        'mpeg',
+    ];
+
     /** @inheritdoc */
     public function run(Article $article): self {
         $this->article($article);
@@ -70,10 +83,10 @@ class AdditionalDataExtractor extends AbstractModule implements ModuleInterface 
     private function getVideos(): array {
         $videos = [];
 
-        $parentNode = $this->article()->getTopNode()->parent();
+        $topNode = $this->article()->getTopNode();
 
-        if ($parentNode instanceof Element) {
-            $nodes = $parentNode->find('embed, object, iframe');
+        if ($topNode instanceof Element && $topNode->parent() instanceof Element) {
+            $nodes = $topNode->parent()->find('embed, object, iframe, video');
 
             foreach ($nodes as $node) {
                 if ($node->hasAttribute('src')) {
@@ -83,11 +96,18 @@ class AdditionalDataExtractor extends AbstractModule implements ModuleInterface 
                 }
 
                 $match = array_reduce(self::$VIDEO_PROVIDERS, function($match, $domain) use ($src) {
-                    $srcHost = parse_url($src, PHP_URL_HOST);
-                    $srcScheme = parse_url($src, PHP_URL_SCHEME);
+                    $srcHost = (string)parse_url($src, PHP_URL_HOST);
+                    $srcScheme = (string)parse_url($src, PHP_URL_SCHEME);
 
                     return $match || preg_match('@' . $domain . '$@i', $srcHost) && in_array($srcScheme, ['http', 'https']);
                 });
+
+                if (!$match) {
+                    $srcPath = parse_url(strtolower($src), PHP_URL_PATH);
+                    $srcExtension = pathinfo((string)$srcPath, PATHINFO_EXTENSION);
+
+                    $match = in_array($srcExtension, self::$VIDEO_EXTENSIONS);
+                }
 
                 if ($match) {
                     $videos[] = $src;
