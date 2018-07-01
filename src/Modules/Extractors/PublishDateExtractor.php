@@ -108,7 +108,11 @@ class PublishDateExtractor extends AbstractModule implements ModuleInterface {
             try {
                 $json = json_decode($node->text());
                 if (isset($json->datePublished)) {
-                    $dt = new \DateTime($json->datePublished);
+                    $date = is_array($json->datePublished)
+                        ? array_shift($json->datePublished)
+                        : $json->datePublished;
+
+                    $dt = new \DateTime($date);
                     break;
                 }
             }
@@ -202,7 +206,11 @@ class PublishDateExtractor extends AbstractModule implements ModuleInterface {
             try {
                 $json = json_decode($node->text());
                 if (isset($json->dateCreated)) {
-                    $dt = new \DateTime($json->dateCreated);
+                    $date = is_array($json->dateCreated)
+                        ? array_shift($json->dateCreated)
+                        : $json->dateCreated;
+
+                    $dt = new \DateTime($date);
                     break;
                 }
             }

@@ -75,6 +75,11 @@ class PublishDateExtractorTest extends \PHPUnit\Framework\TestCase
                 'Valid date with JSON-LD and attribute: "datePublished"'
             ],
             [
+                new \DateTime('2016-05-31'),
+                $this->document('<html><head><title>Example Article</title><script type="application/ld+json">{"@context":"http://schema.org","@type":"Article","author":"John Smith","datePublished":["2016-05-31"]}</script></head></html>'),
+                'Valid date with JSON-LD and attribute: "datePublished"'
+            ],
+            [
                 null,
                 $this->document('<html><head><title>Example Article</title></head></html>'),
                 'No date provided'
@@ -197,7 +202,12 @@ class PublishDateExtractorTest extends \PHPUnit\Framework\TestCase
             [
                 new \DateTime('2016-05-31T22:52:11Z'),
                 $this->document('<html><head><title>Example Article</title><script type="application/ld+json">{"@context":"http://schema.org","@type":"NewsArticle","creator":["John Smith"],"dateCreated":"2016-05-31T22:52:11Z"}</script></head></html>'),
-                'Valid date with JSON-LD and attribute: "datePublished"'
+                'Valid date with JSON-LD and attribute: "dateCreated"'
+            ],
+            [
+                new \DateTime('2016-05-31T22:52:11Z'),
+                $this->document('<html><head><title>Example Article</title><script type="application/ld+json">{"@context":"http://schema.org","@type":"NewsArticle","creator":["John Smith"],"dateCreated":["2016-05-31T22:52:11Z"]}</script></head></html>'),
+                'Valid date with JSON-LD and attribute: "dateCreated"'
             ],
             [
                 new \DateTime('2016-05-31T22:52:11Z'),
