@@ -44,8 +44,8 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
      */
     private function getFormattedText(): string {
         $this->removeNodesWithNegativeScores($this->article()->getTopNode());
-        $this->convertLinksToText($this->article()->getTopNode());
-        $this->replaceTagsWithText($this->article()->getTopNode());
+        //$this->convertLinksToText($this->article()->getTopNode());
+        //$this->replaceTagsWithText($this->article()->getTopNode());
         $this->removeParagraphsWithFewWords($this->article()->getTopNode());
 
         return $this->convertToText($this->article()->getTopNode());
