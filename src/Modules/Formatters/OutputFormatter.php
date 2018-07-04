@@ -28,7 +28,7 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
         $this->article($article);
 
         if ($this->article()->getTopNode() instanceof Element) {
-            $this->postExtractionCleanup();
+            //$this->postExtractionCleanup();
 
             $article->setCleanedArticleText($this->getFormattedText());
             $article->setHtmlArticle($this->cleanupHtml());
