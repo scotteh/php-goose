@@ -12,14 +12,14 @@ use DOMWrap\Element;
  */
 trait NodeGravityTrait {
     /**
-     * Returns the gravityScore as an integer from this node
+     * Returns the gravityScore from this node
      *
      * @param Element $node
      *
      * @return float
      */
     private function getScore(Element $node): float {
-        return (int)$node->attr('gravityScore');
+        return (float)$node->attr('gravityScore');
     }
 
     /**
@@ -30,20 +30,20 @@ trait NodeGravityTrait {
      * @param float $addToScore
      */
     private function updateScore(Element $node, float $addToScore): void {
-        $currentScore = (int)$node->attr('gravityScore');
+        $currentScore = (float)$node->attr('gravityScore');
 
-        $node->attr('gravityScore', $currentScore + $addToScore);
+        $node->attr('gravityScore', (string)($currentScore + $addToScore));
     }
 
     /**
      * Stores how many decent nodes are under a parent node
      *
      * @param Element $node
-     * @param float $addToCount
+     * @param int $addToCount
      */
-    private function updateNodeCount(Element $node, float $addToCount): void {
+    private function updateNodeCount(Element $node, int $addToCount): void {
         $currentScore = (int)$node->attr('gravityNodes');
 
-        $node->attr('gravityNodes', $currentScore + $addToCount);
+        $node->attr('gravityNodes', (string)($currentScore + $addToCount));
     }
 }
