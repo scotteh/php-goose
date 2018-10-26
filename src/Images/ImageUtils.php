@@ -16,10 +16,14 @@ class ImageUtils {
     /**
      * @param string $filePath
      *
-     * @return object
+     * @return object|null
      */
-    public static function getImageDimensions(string $filePath): \stdClass {
+    public static function getImageDimensions(string $filePath): ?\stdClass {
         list($width, $height, $type) = getimagesize($filePath);
+
+        if ( $type === null ) {
+            return null;
+        }
 
         return (object)[
             'width' => (int)$width,
@@ -51,17 +55,19 @@ class ImageUtils {
             if (empty($localImage->file)) {
                 continue;
             }
-            
+
             $imageDetails = self::getImageDimensions($localImage->file);
 
-            $locallyStoredImages[] = new LocallyStoredImage([
-                'imgSrc' => $localImage->url,
-                'localFileName' => $localImage->file,
-                'bytes' => filesize($localImage->file),
-                'height' => $imageDetails->height,
-                'width' => $imageDetails->width,
-                'fileExtension' => self::getFileExtensionName($imageDetails),
-            ]);
+            if ( $imageDetails !== null ) {
+                $locallyStoredImages[] = new LocallyStoredImage([
+                    'imgSrc' => $localImage->url,
+                    'localFileName' => $localImage->file,
+                    'bytes' => filesize($localImage->file),
+                    'height' => $imageDetails->height,
+                    'width' => $imageDetails->width,
+                    'fileExtension' => self::getFileExtensionName($imageDetails),
+                ]);
+            }
         }
 
         return $locallyStoredImages;
