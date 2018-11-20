@@ -404,7 +404,7 @@ class ImageExtractor extends AbstractModule implements ModuleInterface {
             return null;
         }
 
-        if (!$node->hasAttribute($attr)) {
+        if (!$node->hasAttribute($attr) || !$node->attr($attr)) {
             return null;
         }
 
