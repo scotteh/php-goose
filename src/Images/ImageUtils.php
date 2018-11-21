@@ -24,7 +24,7 @@ class ImageUtils {
         return (object)[
             'width' => (int)$width,
             'height' => (int)$height,
-            'mime' => image_type_to_mime_type($type),
+            'mime' => $type ? image_type_to_mime_type($type) : null,
         ];
     }
 
