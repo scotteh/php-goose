@@ -48,7 +48,7 @@ class ImageUtils {
         $locallyStoredImages = [];
 
         foreach ($localImages as $localImage) {
-            if (empty($localImage->file)) {
+            if (empty($localImage->file) || !filesize($localImage->file)) {
                 continue;
             }
             
