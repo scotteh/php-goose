@@ -24,7 +24,7 @@ class ImageUtils {
         return (object)[
             'width' => (int)$width,
             'height' => (int)$height,
-            'mime' => image_type_to_mime_type($type),
+            'mime' => $type ? image_type_to_mime_type($type) : null,
         ];
     }
 
@@ -48,7 +48,7 @@ class ImageUtils {
         $locallyStoredImages = [];
 
         foreach ($localImages as $localImage) {
-            if (empty($localImage->file)) {
+            if (empty($localImage->file) || !filesize($localImage->file)) {
                 continue;
             }
             
