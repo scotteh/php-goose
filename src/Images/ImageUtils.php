@@ -21,14 +21,14 @@ class ImageUtils {
     public static function getImageDimensions(string $filePath): ?\stdClass {
         list($width, $height, $type) = getimagesize($filePath);
 
-        if ( $type === null ) {
+        if ($type === null) {
             return null;
         }
 
         return (object)[
             'width' => (int)$width,
             'height' => (int)$height,
-            'mime' => $type ? image_type_to_mime_type($type) : null,
+            'mime' => image_type_to_mime_type($type),
         ];
     }
 
@@ -58,7 +58,7 @@ class ImageUtils {
 
             $imageDetails = self::getImageDimensions($localImage->file);
 
-            if ( $imageDetails !== null ) {
+            if ($imageDetails !== null) {
                 $locallyStoredImages[] = new LocallyStoredImage([
                     'imgSrc' => $localImage->url,
                     'localFileName' => $localImage->file,
