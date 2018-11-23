@@ -91,7 +91,7 @@ $goose = new GooseClient([
     // Language - Selects common word dictionary
     //   Supported languages (ISO 639-1):
     //     ar, cs, da, de, en, es, fi, fr, hu, id, it, ja,
-    //     ko, nb, nl, no, pl, pt, ru, sv, zh
+    //     ko, nb, nl, no, pl, pt, ru, sv, vi, zh
     'language' => 'en',
     // Minimum image size (bytes)
     'image_min_bytes' => 4500,
