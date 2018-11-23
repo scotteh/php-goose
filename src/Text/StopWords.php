@@ -23,7 +23,7 @@ class StopWords
         'ar', 'cs', 'da', 'de', 'en', 'es',
         'fi', 'fr', 'hu', 'id', 'it', 'ja',
         'ko', 'nb', 'nl', 'no', 'pl', 'pt',
-        'ru', 'sv', 'zh'
+        'ru', 'sv', 'zh', 'vi'
     ];
 
     /**
