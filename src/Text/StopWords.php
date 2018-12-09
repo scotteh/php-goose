@@ -68,7 +68,12 @@ class StopWords
         if (empty($this->cached)) {
             $file = sprintf(__DIR__ . '/../../resources/text/stopwords-%s.txt', $this->getLanguage());
 
-            $this->cached = explode("\n", str_replace(["\r\n", "\r"], "\n", file_get_contents($file)));
+            $lines = explode("\n", str_replace(["\r\n", "\r"], "\n", file_get_contents($file)));
+
+            $this->cached = array_filter($lines, function($line) {
+                // Ignore emoty lines and lines starting with '#'.
+                return !(trim($line) == '' || mb_substr($line, 0, 1) == '#');
+            });
         }
 
         return $this->cached;
