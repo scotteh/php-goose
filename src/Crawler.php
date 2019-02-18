@@ -42,12 +42,21 @@ class Crawler {
 
         $xmlInternalErrors = libxml_use_internal_errors(true);
 
-        if (empty($rawHTML)) {
-            $guzzle = new \GuzzleHttp\Client();
+		$guzzle = new \GuzzleHttp\Client();
+        if ( empty( $rawHTML ) )
+        {
             $response = $guzzle->get($parseCandidate->url, $this->config()->get('browser'));
             $article->setRawResponse($response);
             $rawHTML = $response->getBody()->getContents();
         }
+
+        if ( $redirectUrl = $this->getRefreshURL( $rawHTML ) )
+		{
+			$response = $guzzle->get( $redirectUrl, $this->config()->get('browser'));
+			$article->setRawResponse($response);
+			$rawHTML = $response->getBody()->getContents();
+			$parseCandidate = Helper::getCleanedUrl($redirectUrl);
+		}
 
         // Generate document
         $doc = $this->getDocument($rawHTML);
@@ -73,6 +82,18 @@ class Crawler {
 
         return $article;
     }
+
+	private function getRefreshURL( $html )
+	{
+		if ( '' === $html )
+			return false;
+
+		if ( !preg_match('!<meta http-equiv=["\']?refresh["\']? content=["\']?[0-9];\s*url=["\']?([^"\'>]+)["\']?!i', $html, $match ) )
+			return false;
+
+		$redirectUrl = str_replace('&amp;', '&', trim($match[1]));
+		return $redirectUrl;
+	}
 
     /**
      * @param string $rawHTML
