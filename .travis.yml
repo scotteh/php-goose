@@ -4,10 +4,13 @@ php:
   - 7.1
   - 7.2
   - 7.3
+  - 7.4
   - nightly
 
-matrix:
+jobs:
   fast_finish: true
+  allow_failures:
+    - nightly
 
 before_script:
   - composer install --dev --prefer-source
