@@ -552,7 +552,7 @@ class ImageExtractor extends AbstractModule implements ModuleInterface {
 
         $imageUrlParts = parse_url($imageSrc);
         $articleUrlParts = parse_url($this->article()->getFinalUrl());
-        if (isset($imageUrlParts['path'], $articleUrlParts['path']) && $imageUrlParts['path'] && $imageUrlParts['path']{0} !== '/') {
+        if (isset($imageUrlParts['path'], $articleUrlParts['path']) && $imageUrlParts['path'] && $imageUrlParts['path'][0] !== '/') {
             $articleUrlDir = dirname($articleUrlParts['path']);
             $imageUrlParts['path'] = $articleUrlDir . '/' . $imageUrlParts['path'];
         }
