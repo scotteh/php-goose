@@ -56,11 +56,11 @@ class HelperTest extends \PHPUnit\Framework\TestCase
             ],
         ];
     }
-    /**
-     * @expectedException Goose\Exceptions\MalformedURLException
-     */
+
     public function testGetCleanedUrlException()
     {
+        $this->expectException(\Goose\Exceptions\MalformedURLException::class);
+
         Helper::getCleanedUrl('http://example.org:port/');
     }
 }
