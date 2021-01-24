@@ -1,5 +1,5 @@
 # PHP Goose - Article Extractor
-[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/scotteh/php-goose/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/scotteh/php-goose/?branch=master) [![Build Status](https://travis-ci.org/scotteh/php-goose.svg?branch=master)](https://travis-ci.org/scotteh/php-goose)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/scotteh/php-goose/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/scotteh/php-goose/?branch=master)
 
 ## Intro
 
