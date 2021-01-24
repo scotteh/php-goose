@@ -100,7 +100,7 @@ class DocumentCleaner extends AbstractModule implements ModuleInterface {
 
         foreach ($nodes as $node) {
             if (is_null($callback) || $callback($node)) {
-                $node->remove();
+                $node->destroy();
             }
         }
 
@@ -120,7 +120,7 @@ class DocumentCleaner extends AbstractModule implements ModuleInterface {
 
         foreach ($nodes as $node) {
             if (is_null($callback) || $callback($node)) {
-                $node->remove();
+                $node->destroy();
             }
         }
 
@@ -140,7 +140,7 @@ class DocumentCleaner extends AbstractModule implements ModuleInterface {
 
         foreach ($nodes as $node) {
             if (is_null($callback) || $callback($node)) {
-                $node->replaceWith(new Text((string)$node->text()));
+                $node->substituteWith(new Text((string)$node->text()));
             }
         }
 
@@ -178,7 +178,7 @@ class DocumentCleaner extends AbstractModule implements ModuleInterface {
                     $selector = sprintf($expr, $attr, $value) . $exceptions;
 
                     foreach ($this->document()->find($selector) as $node) {
-                        $node->remove();
+                        $node->destroy();
                     }
                 }
             }
@@ -204,13 +204,13 @@ class DocumentCleaner extends AbstractModule implements ModuleInterface {
 
         $newEl = $this->document()->createElement('p');
 
-        $newEl->append($node->contents()->detach());
+        $newEl->appendWith($node->contents()->detach());
 
         foreach ($node->attributes as $attr) {
             $newEl->attr($attr->localName, $attr->nodeValue);
         }
 
-        $node->replaceWith($newEl);
+        $node->substituteWith($newEl);
 
         return $this;
     }
@@ -233,8 +233,8 @@ class DocumentCleaner extends AbstractModule implements ModuleInterface {
             } else {
                 $replacements = $this->getReplacementNodes($node);
 
-                $node->contents()->remove();
-                $node->append($replacements);
+                $node->contents()->destroy();
+                $node->appendWith($replacements);
             }
         }
 
@@ -250,7 +250,7 @@ class DocumentCleaner extends AbstractModule implements ModuleInterface {
      */
     private function getFlushedBuffer(NodeList $replacementNodes): Element {
         $newEl = $this->document()->createElement('p');
-        $newEl->append($replacementNodes);
+        $newEl->appendWith($replacementNodes);
 
         return $newEl;
     }
@@ -327,7 +327,7 @@ class DocumentCleaner extends AbstractModule implements ModuleInterface {
             }
         }
 
-        $nodesToRemove->remove();
+        $nodesToRemove->destroy();
 
         return $nodesToReturn;
     }

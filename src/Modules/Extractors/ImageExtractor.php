@@ -277,7 +277,7 @@ class ImageExtractor extends AbstractModule implements ModuleInterface {
             if ($this->isOkImageFileName($image)) {
                 $goodImages[] = $image;
             } else {
-                $image->remove();
+                $image->destroy();
             }
         }
 
@@ -346,7 +346,7 @@ class ImageExtractor extends AbstractModule implements ModuleInterface {
             $bytes = $localImage->getBytes();
 
             if ($bytes < $this->config()->get('image_min_bytes') && $bytes != 0 || $bytes > $this->config()->get('image_max_bytes')) {
-                $image->remove();
+                $image->destroy();
 
                 return false;
             }

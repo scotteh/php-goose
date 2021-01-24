@@ -118,7 +118,7 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
                 $images = $item->find('img');
 
                 if ($images->count() == 0) {
-                    $item->replaceWith(new Text(Helper::textNormalise($item->text())));
+                    $item->substituteWith(new Text(Helper::textNormalise($item->text())));
                 }
             }
         }
@@ -142,7 +142,7 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
                 $score = (int)$item->attr('gravityScore');
 
                 if ($score < 1) {
-                    $item->remove();
+                    $item->destroy();
                 }
             }
         }
@@ -165,13 +165,13 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
             $items = $topNode->find('b, strong, i');
 
             foreach ($items as $item) {
-                $item->replaceWith(new Text($this->getTagCleanedText($item)));
+                $item->substituteWith(new Text($this->getTagCleanedText($item)));
             }
             
             $headers = $topNode->find('h1, h2, h3, h4, h5, h6');
 
             foreach ($headers as $header) {
-                $header->replaceWith(new Text("\n\n" . $this->getTagCleanedText($header) . "\n\n"));
+                $header->substituteWith(new Text("\n\n" . $this->getTagCleanedText($header) . "\n\n"));
             }
         }
 
@@ -204,7 +204,7 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
                 $stopWords = $this->config()->getStopWords()->getStopwordCount($node->text());
 
                 if (mb_strlen(Helper::textNormalise($node->text())) < 8 && $stopWords->getStopWordCount() < 3 && $node->find('object')->count() == 0 && $node->find('embed')->count() == 0) {
-                    $node->remove();
+                    $node->destroy();
                 }
             }
 
@@ -227,7 +227,7 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
                 if ($this->isHighLinkDensity($node)
                     || $this->isTableTagAndNoParagraphsExist($node)
                     || !$this->isNodeScoreThreshholdMet($this->article()->getTopNode(), $node)) {
-                    $node->remove();
+                    $node->destroy();
                 }
             }
         }
@@ -245,7 +245,7 @@ class OutputFormatter extends AbstractModule implements ModuleInterface {
 
         foreach ($nodes as $node) {
             if (mb_strlen(Helper::textNormalise($node->text())) < 25) {
-                $node->remove();
+                $node->destroy();
             }
         }
 
