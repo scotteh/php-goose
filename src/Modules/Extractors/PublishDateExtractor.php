@@ -112,7 +112,12 @@ class PublishDateExtractor extends AbstractModule implements ModuleInterface {
                         ? array_shift($json->datePublished)
                         : $json->datePublished;
 
-                    $dt = new \DateTime($date);
+                    try {
+                        $dt = new \DateTime($date);
+                    } catch (\Error $ex) {
+                        // Do nothing here in case the node has unrecognizable date information.
+                    }
+
                     break;
                 }
             }
