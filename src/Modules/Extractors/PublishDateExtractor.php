@@ -107,6 +107,26 @@ class PublishDateExtractor extends AbstractModule implements ModuleInterface {
         foreach ($nodes as $node) {
             try {
                 $json = json_decode($node->text());
+
+                // Extract the published date from the Schema.org meta data
+                if (isset($json->{'@graph'}) && is_array($json->{'@graph'})) {
+                    foreach ($json->{'@graph'} as $graphData) {
+                        $graphData = (array)$graphData;
+
+                        if (!isset($graphData['datePublished'])) {
+                            continue;
+                        }
+
+                        $date = @$graphData['datePublished'];
+
+                        try {
+                            $dt = new \DateTime($date);
+                        } catch (\Error $ex) {
+                            // Do nothing here in case the node has unrecognizable date information.
+                        }
+                    }
+                }
+
                 if (isset($json->datePublished)) {
                     $date = is_array($json->datePublished)
                         ? array_shift($json->datePublished)
