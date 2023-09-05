@@ -80,6 +80,11 @@ class PublishDateExtractorTest extends \PHPUnit\Framework\TestCase
                 'Valid date with JSON-LD and attribute: "datePublished"'
             ],
             [
+                new \DateTime('2016-05-31T22:52:11Z'),
+                $this->document('<html><head><title>Example Article</title><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://company.com/#organization","name":"Company.com","url":"https://company.com/","sameAs":["https://www.facebook.com/Company-1234","https://www.linkedin.com/company/1234"]},{"@type":"WebSite","@id":"https://company.com/#website","url":"https://company.com/","name":"Company","publisher":{"@id":"https://company.com/#organization"},"potentialAction":{"@type":"SearchAction","target":"https://company.com/?s={search_term_string}","query-input":"required name=search_term_string"}},{"@type":"WebPage","@id":"https://company.com/news/article-1/#webpage","url":"https://company.com/news/article-1/","inLanguage":"en-US","name":"Article 1 | Company","isPartOf":{"@id":"https://company.com/#website"},"datePublished":"2016-05-31T22:52:11+00:00","dateModified":"2016-05-31T22:52:11+00:00"}]}</script></head></html>'),
+                'Valid date with JSON-LD and attribute: "datePublished"'
+            ],
+            [
                 null,
                 $this->document('<html><head><title>Example Article</title></head></html>'),
                 'No date provided'
